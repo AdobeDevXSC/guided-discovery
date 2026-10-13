@@ -805,12 +805,12 @@ main .form.block form .field-wrapper:not(.radio-wrapper, .checkbox-wrapper) > se
 }
 
 /* consent paragraph */
-main .form.block form .field-consent p {
+main .form.block form .field-consenttext p {
   line-height: 19.25px;
   text-align: center;
 }
 
-main .form.block form .field-consent a:any-link {
+main .form.block form .field-consenttext a:any-link {
   color: #dd291d;
   text-decoration: underline;
   text-underline-offset: auto;

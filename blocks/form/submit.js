@@ -76,12 +76,26 @@ function constructPayload(form) {
 async function prepareRequest(form) {
   const { payload } = constructPayload(form);
   // site customization: an absolute action URL (Submit row "Action" column) receives the
-  // form fields directly as flat JSON, with only Content-Type so simple CORS configs accept it
+  // fields directly as JSON, with only Content-Type so simple CORS configs accept it.
+  // Hidden fields go at the top level ("true"/"false" become booleans); with a payload key
+  // (Submit row "Payload Key" column) the visible fields are nested under that key.
   if (/^https?:\/\//.test(form.dataset.action || '')) {
-    const fields = { ...payload };
-    // eslint-disable-next-line no-underscore-dangle
-    delete fields.__id__;
-    return { headers: { 'Content-Type': 'application/json' }, body: fields, url: form.dataset.action };
+    const hidden = new Set([...form.querySelectorAll('input[type="hidden"][name]')].map((i) => i.name));
+    const { payloadKey } = form.dataset;
+    const body = {};
+    const fields = {};
+    Object.entries(payload).forEach(([name, value]) => {
+      if (name === '__id__') return;
+      if (hidden.has(name)) {
+        body[name] = value === 'true' || value === 'false' ? value === 'true' : value;
+      } else if (payloadKey) {
+        fields[name] = value;
+      } else {
+        body[name] = value;
+      }
+    });
+    if (payloadKey) body[payloadKey] = fields;
+    return { headers: { 'Content-Type': 'application/json' }, body, url: form.dataset.action };
   }
   const headers = {
     'Content-Type': 'application/json',

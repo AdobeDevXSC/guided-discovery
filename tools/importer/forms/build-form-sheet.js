@@ -9,8 +9,9 @@
  * replaced with " /" (the original label is kept in the source capture).
  * Conditionally visible fields are never Mandatory: browsers enforce `required` on
  * hidden inputs, and the form's rules can toggle visibility but not required.
- * spec.submitAction goes in the Submit row's Action column (custom endpoint);
- * spec.hiddenFields become hidden inputs sent with the submission.
+ * spec.submitAction goes in the Submit row's Action column (custom endpoint) and
+ * spec.payloadKey in its Payload Key column; spec.hiddenFields become hidden inputs
+ * sent at the top level of the submission.
  */
 const fs = require('fs');
 const path = require('path');
@@ -19,7 +20,7 @@ const COLUMNS = [
   'Name', 'Type', 'Description', 'Placeholder', 'Label', 'Read Only', 'Mandatory',
   'Pattern', 'Step', 'Min', 'Max', 'Value', 'Options', 'OptionNames', 'Fieldset',
   'Repeatable', 'Visible', 'Visible Expression', 'Required Error Message',
-  'Autocomplete', 'richText', 'Action',
+  'Autocomplete', 'richText', 'Action', 'Payload Key',
 ];
 
 const row = (cells) => Object.fromEntries(COLUMNS.map((c) => [c, cells[c] ?? '']));
@@ -50,14 +51,18 @@ function buildRows(spec) {
   });
   if (spec.consentHtml) {
     rows.push(row({
-      Name: 'consent', Type: 'plain-text', Value: spec.consentHtml, richText: 'true',
+      Name: 'consentText', Type: 'plain-text', Value: spec.consentHtml, richText: 'true',
     }));
   }
   (spec.hiddenFields || []).forEach((h) => {
     rows.push(row({ Name: h.name, Type: 'hidden', Value: h.value }));
   });
   rows.push(row({
-    Name: 'submit', Type: 'submit', Label: spec.submitLabel || 'Submit', Action: spec.submitAction || '',
+    Name: 'submit',
+    Type: 'submit',
+    Label: spec.submitLabel || 'Submit',
+    Action: spec.submitAction || '',
+    'Payload Key': spec.payloadKey || '',
   }));
   return rows;
 }

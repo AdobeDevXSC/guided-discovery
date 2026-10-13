@@ -560,6 +560,8 @@ async function setupForm(formDef, { pathname, block, editMode = false } = {}) {
   form.dataset.redirectUrl = def.redirectUrl || '';
   form.dataset.thankYouMsg = def.thankYouMsg || '';
   form.dataset.action = def.action || pathname?.split('.json')[0];
+  // site customization: payload key for custom submit endpoints (see submit.js)
+  if (def.properties?.payloadKey) form.dataset.payloadKey = def.properties.payloadKey;
   form.dataset.id = def.id;
   return { form, afbForm };
 }
