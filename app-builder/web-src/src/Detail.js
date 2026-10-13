@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 const fmt = (iso) => (iso ? new Date(iso).toLocaleString() : '—');
 const show = (v) => (Array.isArray(v) ? v.join(', ') : v === null || v === undefined || v === '' ? '—' : String(v));
@@ -16,7 +16,23 @@ function Fields({ rows }) {
   );
 }
 
-export default function Detail({ item, onClose }) {
+export default function Detail({ item, onClose, onDelete }) {
+  const [confirming, setConfirming] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState(null);
+  // reset the confirm step when a different submission is selected
+  useEffect(() => { setConfirming(false); setBusy(false); setErr(null); }, [item.submissionId]);
+
+  const doDelete = async () => {
+    setBusy(true);
+    setErr(null);
+    try {
+      await onDelete(item);
+    } catch (e) {
+      setErr(e.status === 401 || e.status === 403 ? 'Your Adobe account is not authorized to delete submissions.' : e.message);
+      setBusy(false);
+    }
+  };
   const p = item.profile || {};
   const sections = Object.entries(item.sections || {});
   return (
@@ -26,6 +42,19 @@ export default function Detail({ item, onClose }) {
         <button type="button" className="ghost no-print" onClick={onClose}>Close</button>
       </div>
       <p className="muted">{item.submissionId}</p>
+
+      <div className="delete-zone no-print">
+        {!confirming ? (
+          <button type="button" className="danger" onClick={() => setConfirming(true)}>Delete submission</button>
+        ) : (
+          <>
+            <p role="alert">Permanently delete this submission? This cannot be undone.</p>
+            <button type="button" className="danger solid" onClick={doDelete} disabled={busy}>{busy ? 'Deleting…' : 'Yes, delete'}</button>
+            <button type="button" className="ghost" onClick={() => setConfirming(false)} disabled={busy}>Cancel</button>
+          </>
+        )}
+        {err && <p role="alert" className="error">{err}</p>}
+      </div>
 
       <h3>Profile</h3>
       <Fields rows={[
