@@ -10,6 +10,9 @@ import {
   loadSections,
   loadCSS,
   buildBlock,
+  readBlockConfig,
+  toCamelCase,
+  toClassName,
 } from './aem.js';
 
 if (window.trustedTypes && window.trustedTypes.createPolicy) {
@@ -143,6 +146,41 @@ function decorateButtons(main) {
 }
 
 /**
+ * Applies any section-metadata blocks left in the markup (the delivery pipeline usually
+ * resolves them server-side): "style" becomes section classes, other keys data attributes.
+ * @param {HTMLElement} main The main container element
+ */
+function decorateSectionMetadata(main) {
+  main.querySelectorAll(':scope > .section div.section-metadata').forEach((sectionMeta) => {
+    const section = sectionMeta.closest('.section');
+    const meta = readBlockConfig(sectionMeta);
+    Object.entries(meta).forEach(([key, value]) => {
+      if (key === 'style') {
+        String(value).split(',').map((style) => toClassName(style.trim()))
+          .filter(Boolean)
+          .forEach((style) => section.classList.add(style));
+      } else {
+        section.dataset[toCamelCase(key)] = value;
+      }
+    });
+    const wrapper = sectionMeta.parentElement;
+    sectionMeta.remove();
+    if (wrapper !== section && !wrapper.children.length) wrapper.remove();
+  });
+}
+
+/**
+ * Applies a section metadata "id" as the section's element id, so in-page anchors resolve.
+ * @param {HTMLElement} main The main container element
+ */
+function decorateSectionIds(main) {
+  main.querySelectorAll(':scope > .section[data-id]').forEach((section) => {
+    const id = section.dataset.id.trim().toLowerCase().replace(/[^a-z0-9-]+/g, '-');
+    if (id && !document.getElementById(id)) section.id = id;
+  });
+}
+
+/**
  * Decorates the main element.
  * @param {Element} main The main element
  */
@@ -151,6 +189,8 @@ export function decorateMain(main) {
   decorateIcons(main);
   buildAutoBlocks(main);
   decorateSections(main);
+  decorateSectionMetadata(main);
+  decorateSectionIds(main);
   decorateBlocks(main);
   decorateButtons(main);
 }

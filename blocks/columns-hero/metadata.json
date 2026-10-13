@@ -1,0 +1,20 @@
+{
+  "variantName": "columns-hero",
+  "baseBlock": "columns",
+  "canonicalModel": "standalone",
+  "visualCharacteristics": {
+    "colorScheme": "dark",
+    "density": "spacious",
+    "purpose": "page-intro-hero",
+    "imagePattern": "side-image",
+    "structure": "eyebrow + h1 + paragraph + 2 CTAs | image"
+  },
+  "contentPattern": "1 row x 2 cells. Cell 1: <p>eyebrow</p>, <h1>, <p>sub</p>, <p><strong><a href=#discovery>Start your guided assessment</a></strong></p>, <p><em><a href=#how-it-works>Learn how it works</a></em></p> (primary/secondary button convention). Cell 2: picture (hero-banner-right.png).",
+  "usage": {
+    "pagesUsing": ["https://landing.adobe.com/acs/analytics-modernization-readiness.html"],
+    "reuseCount": 1,
+    "lastUsed": "2026-10-13"
+  },
+  "options": [],
+  "memberVariantIds": []
+}

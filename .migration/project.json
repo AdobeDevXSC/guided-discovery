@@ -1,0 +1,11 @@
+{
+  "type": "da",
+  "sites": {
+    "guided-discovery": {
+      "previewOrg": "adobedevxsc",
+      "previewSite": "guided-discovery",
+      "contentHostUrl": "https://content.da.live/adobedevxsc/guided-discovery/",
+      "libraryUrl": "https://main--sta-boilerplate--aemdemos.aem.page/tools/sidekick/library.json"
+    }
+  }
+}
