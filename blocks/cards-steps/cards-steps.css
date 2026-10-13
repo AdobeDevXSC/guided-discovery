@@ -1,0 +1,69 @@
+/*
+ * source: div.gate-howitworks — a 660px column of equal step boxes, 14px apart,
+ * 60px below the hero and 30px above the form (padding: 60px 0 30px).
+ * At max-width: 920px the source adds 20px inline padding inside the 660px box.
+ */
+.cards-steps {
+  --cards-steps-line: #dde2ea;
+  --cards-steps-text: #5b6474;
+
+  box-sizing: border-box;
+  max-width: 660px;
+  margin: 0 auto;
+  padding: 60px 0 30px;
+}
+
+.cards-steps > ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.cards-steps .cards-steps-item {
+  flex: 1 1 0;
+  min-width: 150px;
+  box-sizing: border-box;
+  padding: 16px;
+  border: 1px solid var(--cards-steps-line);
+  border-radius: 10px;
+  background-color: var(--background-color);
+  color: var(--cards-steps-text);
+  font-size: var(--body-font-size-s);
+  line-height: 1.5;
+  text-align: start;
+}
+
+.cards-steps .cards-steps-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-bottom: 10px;
+  border-radius: 50%;
+  background-color: var(--brand-black);
+  color: var(--brand-white);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.cards-steps .cards-steps-body > * {
+  margin: 0;
+  color: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.cards-steps .cards-steps-body > * + * {
+  margin-top: 6px;
+}
+
+/* below 600px the section wrapper already supplies the source's 20px gutter */
+@media (width > 600px) and (width <= 920px) {
+  .cards-steps {
+    padding-inline: 20px;
+  }
+}

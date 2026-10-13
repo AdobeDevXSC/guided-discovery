@@ -1,0 +1,20 @@
+{
+  "variantName": "cards-steps",
+  "baseBlock": "cards",
+  "canonicalModel": "standalone",
+  "visualCharacteristics": {
+    "colorScheme": "light",
+    "density": "compact",
+    "purpose": "how-it-works-steps",
+    "imagePattern": "noimg",
+    "structure": "3 equal white bordered boxes in a 660px centered row; each has a 24px black numbered circle above short grey text"
+  },
+  "contentPattern": "3 rows x 1 cell: <p>1</p><p>Tell us a bit about yourself.</p> (number as its own first paragraph so the block can turn it into a badge). Repeat for 2 and 3.",
+  "usage": {
+    "pagesUsing": ["https://landing.adobe.com/acs/CJA-migration-assessment.html"],
+    "reuseCount": 1,
+    "lastUsed": "2026-10-13"
+  },
+  "options": [],
+  "memberVariantIds": []
+}

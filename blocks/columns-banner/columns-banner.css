@@ -1,0 +1,115 @@
+/*
+ * Full-width grey band (source: section.hero, #eaeaea, 350px tall on desktop).
+ * The section carries the band colour; the image sits flush to the band's top and bottom.
+ */
+main > .section.columns-banner-container {
+  --columns-banner-bg: #eaeaea;
+
+  padding: 60px 0 0;
+  background-color: var(--columns-banner-bg);
+}
+
+/* mobile: the image runs edge to edge, the text keeps the inline padding */
+main > .section.columns-banner-container > .columns-banner-wrapper {
+  padding: 0;
+}
+
+.columns-banner .columns-banner-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 56px;
+  align-items: center;
+}
+
+.columns-banner .columns-banner-text {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 var(--content-padding-inline);
+  box-sizing: border-box;
+  color: #000;
+  text-align: start;
+}
+
+.columns-banner .columns-banner-text > :first-child {
+  margin-top: 0;
+}
+
+.columns-banner .columns-banner-text > :last-child {
+  margin-bottom: 0;
+}
+
+.columns-banner .columns-banner-text :is(h1, h2, h3) {
+  margin: 0;
+  color: #000;
+  font-size: clamp(1.9rem, 3.4vw, 2rem);
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.columns-banner .columns-banner-text p {
+  margin: 15px 0 0;
+  color: #000;
+  font-size: 1.12rem;
+  font-weight: 400;
+  line-height: 1.65;
+}
+
+.columns-banner .columns-banner-image {
+  align-self: stretch;
+  line-height: 0;
+}
+
+.columns-banner .columns-banner-image picture {
+  display: block;
+}
+
+.columns-banner .columns-banner-image img {
+  /* source: fixed 350px height at natural aspect (621px wide), capped to the column */
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: 350px;
+  object-fit: cover;
+}
+
+/* text-only banner: keep the band's vertical rhythm */
+.columns-banner.columns-banner-no-image .columns-banner-text {
+  padding-bottom: 60px;
+}
+
+@media (width > 600px) {
+  main > .section.columns-banner-container > .columns-banner-wrapper {
+    padding: 0 var(--content-padding-inline);
+  }
+
+  .columns-banner .columns-banner-text {
+    padding: 0 20px;
+  }
+}
+
+/* desktop (source: two equal columns, 56px gap, from 921px) */
+@media (width > 920px) {
+  main > .section.columns-banner-container {
+    padding: 0;
+  }
+
+  .columns-banner .columns-banner-row {
+    grid-template-columns: 1fr 1fr;
+    min-height: 350px;
+  }
+
+  .columns-banner .columns-banner-text {
+    padding: 31px 0;
+  }
+
+  .columns-banner.columns-banner-no-image .columns-banner-row,
+  .columns-banner.columns-banner-no-text .columns-banner-row {
+    grid-template-columns: 1fr;
+  }
+
+  .columns-banner.columns-banner-no-image .columns-banner-text {
+    max-width: none;
+    padding: 60px 0;
+  }
+}

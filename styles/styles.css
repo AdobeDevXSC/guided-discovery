@@ -82,6 +82,13 @@ header {
   background-color: var(--background-color);
 }
 
+/* theme "subtle" (page metadata Theme: subtle): light grey page behind header and content */
+body.subtle,
+body.subtle header,
+body.subtle header .nav-wrapper {
+  background-color: var(--brand-page-bg-subtle);
+}
+
 header .header,
 footer .footer {
   visibility: hidden;
