@@ -59,11 +59,19 @@ if (!src || !out) {
 }
 const spec = JSON.parse(fs.readFileSync(src, 'utf8'));
 const data = buildRows(spec);
+// Document Authoring opens a JSON file as a spreadsheet when it carries
+// :sheetname and :colWidths (same shape DA writes for its own sheets)
+const colWidths = COLUMNS.map((c) => {
+  const longest = Math.max(c.length, ...data.map((r) => String(r[c]).length));
+  return Math.min(400, Math.max(80, longest * 7));
+});
 const sheet = {
   total: data.length,
-  offset: 0,
   limit: data.length,
+  offset: 0,
   data,
+  ':colWidths': colWidths,
+  ':sheetname': 'data',
   ':type': 'sheet',
 };
 fs.mkdirSync(path.dirname(out), { recursive: true });
