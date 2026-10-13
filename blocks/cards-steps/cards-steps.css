@@ -1,10 +1,16 @@
-/* source: div.gate-howitworks — a 660px column of equal step boxes, 14px apart */
+/*
+ * source: div.gate-howitworks — a 660px column of equal step boxes, 14px apart,
+ * 60px below the hero and 30px above the form (padding: 60px 0 30px).
+ * At max-width: 920px the source adds 20px inline padding inside the 660px box.
+ */
 .cards-steps {
   --cards-steps-line: #dde2ea;
   --cards-steps-text: #5b6474;
 
+  box-sizing: border-box;
   max-width: 660px;
   margin: 0 auto;
+  padding: 60px 0 30px;
 }
 
 .cards-steps > ol {
@@ -38,11 +44,10 @@
   height: 24px;
   margin-bottom: 10px;
   border-radius: 50%;
-  background-color: #000;
-  color: #fff;
+  background-color: var(--brand-black);
+  color: var(--brand-white);
   font-size: 11px;
   font-weight: 700;
-  line-height: 1;
 }
 
 .cards-steps .cards-steps-body > * {
@@ -54,4 +59,11 @@
 
 .cards-steps .cards-steps-body > * + * {
   margin-top: 6px;
+}
+
+/* below 600px the section wrapper already supplies the source's 20px gutter */
+@media (width > 600px) and (width <= 920px) {
+  .cards-steps {
+    padding-inline: 20px;
+  }
 }

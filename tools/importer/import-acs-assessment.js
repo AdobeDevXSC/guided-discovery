@@ -154,7 +154,11 @@ export default {
     // 5. WebImporter built-in rules
     const hr = document.createElement('hr');
     main.appendChild(hr);
-    WebImporter.rules.createMetadata(main, document);
+    // source page sits on a light grey (#f7f8fa) background: theme "subtle" adds body.subtle
+    // (lowercase key: local preview keeps key case and getMetadata matches name="theme")
+    const meta = WebImporter.Blocks.getMetadata(document) || {};
+    meta.theme = 'subtle';
+    main.append(WebImporter.Blocks.getMetadataBlock(document, meta));
     WebImporter.rules.transformBackgroundImages(main, document);
     WebImporter.rules.adjustImageUrls(main, url, params.originalURL);
 
