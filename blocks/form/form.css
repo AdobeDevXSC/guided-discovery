@@ -865,3 +865,22 @@ main .form.block .submit-wrapper button:hover {
     width: auto;
   }
 }
+
+/* preview-only "Fill test data" button (test-fill.js, loaded on *.aem.page only) */
+main .form.block .form-test-fill {
+  display: block;
+  margin: 0 0 12px auto;
+  border: 1px dashed var(--brand-red);
+  border-radius: 4px;
+  padding: 4px 10px;
+  background: var(--brand-white);
+  color: var(--brand-red);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+main .form.block .form-test-fill:hover {
+  background: rgb(235 16 0 / 6%);
+}

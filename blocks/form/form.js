@@ -591,6 +591,11 @@ export default async function decorate(block) {
       editMode: block.classList.contains('edit-mode'),
     }));
     container.replaceWith(form);
+    // site customization: "Fill test data" button, loaded only on preview (*.aem.page)
+    if (window.location.hostname.endsWith('.aem.page')) {
+      const { default: addTestFillButton } = await import('./test-fill.js');
+      addTestFillButton(block, form);
+    }
   }
   return { form, afbForm };
 }
