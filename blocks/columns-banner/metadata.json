@@ -1,0 +1,20 @@
+{
+  "variantName": "columns-banner",
+  "baseBlock": "columns",
+  "canonicalModel": "standalone",
+  "visualCharacteristics": {
+    "colorScheme": "light-grey",
+    "density": "moderate",
+    "purpose": "page-intro-banner",
+    "imagePattern": "side-image-flush",
+    "structure": "h1 + paragraph | full-height image on a full-width #eaeaea band (350px tall on desktop, stacked text-over-image below 921px)"
+  },
+  "contentPattern": "1 row x 2 cells. Cell 1: <h1>, <p>. Cell 2: <picture> (CJA-migration-assessment-workshop.png, alt 'worshop banner').",
+  "usage": {
+    "pagesUsing": ["https://landing.adobe.com/acs/CJA-migration-assessment.html"],
+    "reuseCount": 1,
+    "lastUsed": "2026-10-13"
+  },
+  "options": [],
+  "memberVariantIds": []
+}

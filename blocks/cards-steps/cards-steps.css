@@ -1,0 +1,57 @@
+/* source: div.gate-howitworks — a 660px column of equal step boxes, 14px apart */
+.cards-steps {
+  --cards-steps-line: #dde2ea;
+  --cards-steps-text: #5b6474;
+
+  max-width: 660px;
+  margin: 0 auto;
+}
+
+.cards-steps > ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.cards-steps .cards-steps-item {
+  flex: 1 1 0;
+  min-width: 150px;
+  box-sizing: border-box;
+  padding: 16px;
+  border: 1px solid var(--cards-steps-line);
+  border-radius: 10px;
+  background-color: var(--background-color);
+  color: var(--cards-steps-text);
+  font-size: var(--body-font-size-s);
+  line-height: 1.5;
+  text-align: start;
+}
+
+.cards-steps .cards-steps-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-bottom: 10px;
+  border-radius: 50%;
+  background-color: #000;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.cards-steps .cards-steps-body > * {
+  margin: 0;
+  color: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.cards-steps .cards-steps-body > * + * {
+  margin-top: 6px;
+}

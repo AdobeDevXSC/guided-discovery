@@ -4,13 +4,73 @@
   },
   "templates": [
     {
+      "name": "acs-assessment",
+      "urls": [
+        "https://landing.adobe.com/acs/CJA-migration-assessment.html"
+      ],
+      "representativeUrl": "https://landing.adobe.com/acs/CJA-migration-assessment.html",
+      "description": "Assessment gate page: split hero, 3 numbered how-it-works steps, contact form (form block backed by a sheet).",
+      "blocks": [
+        {
+          "name": "columns-banner",
+          "instances": [
+            "main > section.hero > .wrap",
+            "section.hero .wrap"
+          ]
+        },
+        {
+          "name": "cards-steps",
+          "instances": [
+            "main > .gate-howitworks",
+            ".gate-howitworks"
+          ]
+        },
+        {
+          "name": "form",
+          "instances": [
+            "main > .form-slot",
+            ".formFieldSection"
+          ]
+        }
+      ],
+      "urlPattern": "/acs/*",
+      "sections": [
+        {
+          "id": "rc1",
+          "name": "hero",
+          "selector": [
+            "main > section.hero",
+            "section.hero"
+          ],
+          "style": null,
+          "blocks": [
+            "columns-banner"
+          ],
+          "defaultContent": []
+        },
+        {
+          "id": "rc2",
+          "name": "assessment-gate",
+          "selector": [
+            "main > .gate-howitworks",
+            ".gate-howitworks"
+          ],
+          "style": null,
+          "blocks": [
+            "cards-steps",
+            "form"
+          ],
+          "defaultContent": []
+        }
+      ]
+    },
+    {
       "name": "acs",
       "urls": [
         "https://landing.adobe.com/acs/analytics-modernization-readiness.html"
       ],
       "representativeUrl": "https://landing.adobe.com/acs/analytics-modernization-readiness.html",
-      "description": "ACS campaign landing page: dark split hero, light stats band, centered intro with feature cards, black closing CTA. Sections #how-it-works and #discovery are in-page anchor targets.",
-      "urlPattern": "/acs/*",
+      "description": "To be named in naming step",
       "blocks": [
         {
           "name": "columns-hero",
@@ -91,7 +151,8 @@
             "section.closing a.btn"
           ]
         }
-      ]
+      ],
+      "urlPattern": "/acs/*"
     }
   ]
 }

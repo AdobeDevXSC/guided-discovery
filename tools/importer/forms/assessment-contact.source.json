@@ -1,0 +1,33 @@
+{
+  "capturedFrom": "https://survey.adobe.com/jfe/form/SV_2ukJGxddee6mfHg?source=null",
+  "embeddedIn": "https://landing.adobe.com/acs/CJA-migration-assessment.html",
+  "capturedAt": "2026-10-13",
+  "note": "First survey screen only (contact gate). Captured from the rendered Qualtrics DOM; nothing was submitted.",
+  "intro": "Let's get started — just a few details first:",
+  "fields": [
+    { "name": "first_name", "type": "text", "label": "First name", "required": true, "autocomplete": "given-name" },
+    { "name": "last_name", "type": "text", "label": "Last name", "required": true, "autocomplete": "family-name" },
+    { "name": "email", "type": "email", "label": "Business email", "required": true, "autocomplete": "email" },
+    { "name": "phone", "type": "tel", "label": "Business number", "required": true, "autocomplete": "tel" },
+    { "name": "job_title", "type": "text", "label": "Job title or role", "required": true, "autocomplete": "organization-title" },
+    { "name": "department", "type": "text", "label": "Department", "required": true },
+    { "name": "organization", "type": "text", "label": "Organization name", "required": true, "autocomplete": "organization" },
+    {
+      "name": "country", "type": "select", "label": "Country", "required": true, "placeholder": "Select one",
+      "options": ["United States", "Canada", "United Kingdom", "Australia", "Germany", "France", "Japan", "India", "Other"]
+    },
+    { "name": "country_other", "type": "text", "label": "Other country", "required": true, "visibleWhen": { "field": "country", "equals": "Other" } },
+    { "name": "state", "type": "text", "label": "State/province", "required": true, "autocomplete": "address-level1" },
+    { "name": "postal_code", "type": "text", "label": "ZIP/postal code", "required": true, "autocomplete": "postal-code" },
+    {
+      "name": "product_interest", "type": "select", "label": "Primary product of interest", "required": true, "placeholder": "Select one",
+      "options": ["Acrobat", "Acrobat Sign", "Adobe Analytics", "Adobe Audience Manager", "Adobe Brand Concierge", "Adobe Brand Intelligence", "Adobe Brand Visibility", "Adobe Campaign", "Adobe Commerce", "Adobe Customer Journey Analytics B2B Edition", "Adobe Experience Manager", "Adobe Experience Manager Assets", "Adobe Experience Manager Forms", "Adobe Experience Manager Sites", "Adobe Experience Platform", "Adobe Experience Platform Agents", "Adobe Express", "Adobe Firefly Foundry", "Adobe GenStudio", "Adobe GenStudio for Commerce Media Networks", "Adobe GenStudio for Content Marketing", "Adobe GenStudio for Performance Marketing", "Adobe Journey Optimizer", "Adobe Journey Optimizer B2B Edition", "Adobe Journey Optimizer Loyalty", "Adobe Learning Manager", "Adobe LLM Optimizer", "Adobe Mix Modeler", "Adobe Real-Time CDP Collaboration", "Adobe Target", "Creative Cloud", "Customer Journey Analytics", "Experience Platform Launch", "Firefly", "Frame.io", "Intelligent Services", "Marketo Engage", "Real-Time CDP", "Substance", "Workfront"]
+    },
+    {
+      "name": "industry", "type": "select", "label": "Industry", "required": true, "placeholder": "Select one",
+      "options": ["Advertising", "Agriculture & Forestry", "Construction", "Education - Higher Ed", "Education - K12", "Energy, Mining, Oil & Gas", "Financial Services", "Government-Federal", "Government Local", "Government Military", "Government State", "Health Care", "Insurance", "Manufacturing Aerospace", "Manufacturing Automotive", "Manufacturing Consumergoods", "Manufacturing Industrial", "Media Entertainment", "Membership Organizations", "Non Profit", "Pharmaceuticals Biotech", "Professional Technicalservices", "Realestate Rental Leasing", "Retail", "Technology Hardware", "Technology Software Services", "Telecommunications", "Transportation Warehousing", "Travel Leisure Hospitality", "Utilities"]
+    }
+  ],
+  "consentHtml": "The <a href=\"https://www.adobe.com/privacy/policy.html#info-share\">Adobe family of companies</a> would like to bring you great content like this and keep you informed with <a href=\"https://www.adobe.com/privacy/marketing.html#mktg-email\">personalized</a> communications about Adobe's products and services via email and telephone. By submitting this form, you agree to receive these communications at the email address and phone numbers you provided. See our <a href=\"https://www.adobe.com/privacy/policy.html\">Privacy Policy</a> for more details or to <a href=\"https://www.adobe.com/privacy/opt-out.html\">opt-out</a> at any time.",
+  "submitLabel": "Submit"
+}
