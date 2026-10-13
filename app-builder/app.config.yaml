@@ -25,3 +25,11 @@ application:
               require-adobe-auth: false
               final: true
               include-ims-credentials: true
+          assessments-admin:
+            function: actions/assessments-admin/index.js
+            web: 'yes'
+            runtime: nodejs:22
+            annotations:
+              require-adobe-auth: true
+              final: true
+              include-ims-credentials: true
