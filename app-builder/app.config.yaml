@@ -1,0 +1,35 @@
+application:
+  web: web-src
+  runtimeManifest:
+    database:
+      auto-provision: true
+      region: amer
+    packages:
+      marketingprototype:
+        license: Apache-2.0
+        actions:
+          items:
+            function: actions/items/index.js
+            web: 'yes'
+            runtime: nodejs:22
+            annotations:
+              require-adobe-auth: false
+              final: true
+              include-ims-credentials: true
+          assessments:
+            function: actions/assessments/index.js
+            web: 'yes'
+            runtime: nodejs:22
+            annotations:
+              web-custom-options: true
+              require-adobe-auth: false
+              final: true
+              include-ims-credentials: true
+          assessments-admin:
+            function: actions/assessments-admin/index.js
+            web: 'yes'
+            runtime: nodejs:22
+            annotations:
+              require-adobe-auth: true
+              final: true
+              include-ims-credentials: true

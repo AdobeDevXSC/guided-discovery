@@ -15,6 +15,7 @@ Edge Delivery Services. Read a block first. Omissions are in the repo or known.
 - `fstab.yaml`, `helix-query.yaml`, `paths.json` are retired. Config lives at tools.aem.live.
 
 ## Remember
+- `app-builder/` is a separate Adobe App Builder project (actions + DB for forms). Not part of EDS code; ignored by `.hlxignore` and eslint. See `app-builder/README.md`.
 - `npx -y @adobe/aem-cli up`: local code, previewed content.
 - Merging `main` ships code; content publishes separately.
 - A PR without a `{branch}--guided-discovery--AdobeDevXSC.aem.page/{path}` link is rejected.
