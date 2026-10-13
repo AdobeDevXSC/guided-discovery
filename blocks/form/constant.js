@@ -64,7 +64,11 @@ export const defaultErrorMessages = {
 };
 
 // eslint-disable-next-line no-useless-escape
-export const emailPattern = '([A-Za-z0-9][._]?)+[A-Za-z0-9]@[A-Za-z0-9]+(\.?[A-Za-z0-9]){2}\.([A-Za-z0-9]{2,4})?';
+// site customization: the vendored pattern rejected valid addresses (hyphens, plus signs,
+// apostrophes, hyphenated domains, one-letter names) and its '\.' collapsed to '.' in a plain
+// string. Written as String.raw and valid for <input pattern>, which browsers compile with
+// the 'v' flag; it requires a domain with a 2+ letter top-level domain.
+export const emailPattern = String.raw`[A-Za-z0-9._%+'\-]+@(?:[A-Za-z0-9](?:[A-Za-z0-9\-]*[A-Za-z0-9])?\.)+[A-Za-z]{2,}`;
 
 let submitBaseUrl = '';
 

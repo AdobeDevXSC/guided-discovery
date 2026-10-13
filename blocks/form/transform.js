@@ -260,6 +260,14 @@ export default class DocBasedFormToAF {
           } else if (submitValue) {
             formDef.thankYouMsg = submitValue;
           }
+          // site customization: the Submit row's "Action" column sets the submit endpoint and
+          // "Payload Key" nests the visible fields under that key (custom endpoints only)
+          if (field.Action?.trim()) {
+            formDef.action = field.Action.trim();
+          }
+          if (field['Payload Key']?.trim()) {
+            formDef.properties.payloadKey = field['Payload Key'].trim();
+          }
         }
 
         if (this.containerNamesSet.has(field.name)) {
