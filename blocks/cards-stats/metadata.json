@@ -1,0 +1,20 @@
+{
+  "variantName": "cards-stats",
+  "baseBlock": "cards",
+  "canonicalModel": "standalone",
+  "visualCharacteristics": {
+    "colorScheme": "light",
+    "density": "minimal",
+    "purpose": "key-stats",
+    "imagePattern": "noimg",
+    "structure": "large value + caption x3"
+  },
+  "contentPattern": "3 rows x 1 cell: <p><strong>15 minutes</strong></p><p>caption</p> (repeated for 4 and 3). Static final values; the count-up animation is optional JS.",
+  "usage": {
+    "pagesUsing": ["https://landing.adobe.com/acs/analytics-modernization-readiness.html"],
+    "reuseCount": 1,
+    "lastUsed": "2026-10-13"
+  },
+  "options": [],
+  "memberVariantIds": []
+}

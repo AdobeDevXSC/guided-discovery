@@ -1,0 +1,114 @@
+/* section spacing for the hero (source: 72px top / 64px bottom, 48px on mobile) */
+main > .section.columns-hero-container {
+  padding: 48px 0;
+}
+
+.columns-hero .columns-hero-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 56px;
+  align-items: center;
+}
+
+.columns-hero .columns-hero-text {
+  max-width: 640px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.columns-hero .columns-hero-text > :first-child {
+  margin-top: 0;
+}
+
+.columns-hero .columns-hero-text > :last-child {
+  margin-bottom: 0;
+}
+
+/* specificity must beat `main .section.dark p` from styles.css */
+main .columns-hero .columns-hero-text p.columns-hero-eyebrow {
+  margin: 0 0 20px;
+  color: var(--accent-color);
+  font-size: var(--body-font-size-m);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.columns-hero h1 {
+  margin: 0;
+  font-size: var(--heading-font-size-xxl);
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.columns-hero .columns-hero-text > p:not(.columns-hero-eyebrow) {
+  margin: 22px 0 0;
+  font-size: var(--body-font-size-l);
+  line-height: 1.65;
+}
+
+.columns-hero .columns-hero-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+  margin-top: 32px;
+}
+
+.columns-hero .columns-hero-actions p.button-wrapper {
+  margin: 0;
+}
+
+.columns-hero .columns-hero-actions a.button {
+  width: 100%;
+}
+
+/* stacked: the image is capped and centred under the text (source: 320px mobile, 420px tablet) */
+.columns-hero .columns-hero-image {
+  width: 100%;
+  max-width: 320px;
+  margin: 16px auto 0;
+}
+
+.columns-hero .columns-hero-image picture,
+.columns-hero .columns-hero-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+@media (width > 600px) {
+  main > .section.columns-hero-container {
+    padding: 72px 0 64px;
+  }
+
+  .columns-hero .columns-hero-actions {
+    flex-flow: row wrap;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .columns-hero .columns-hero-actions a.button {
+    width: auto;
+  }
+
+  .columns-hero .columns-hero-image {
+    max-width: 420px;
+    margin-top: 0;
+  }
+}
+
+@media (width > 920px) {
+  .columns-hero .columns-hero-row {
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 56px;
+  }
+
+  .columns-hero .columns-hero-image {
+    max-width: none;
+  }
+
+  .columns-hero.columns-hero-no-image .columns-hero-row {
+    grid-template-columns: 1fr;
+  }
+}
