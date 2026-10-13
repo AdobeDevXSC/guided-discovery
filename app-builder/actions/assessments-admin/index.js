@@ -27,7 +27,9 @@ async function main (params) {
 
   let client
   try {
-    const token = await generateAccessToken(params)
+    // scopes arrive as a comma-separated string from app.config.yaml inputs
+    const scopes = Array.isArray(params.scopes) ? params.scopes : String(params.scopes || '').split(',').filter(Boolean)
+    const token = await generateAccessToken({ ...params, scopes })
     const db = await libDb.init({ token: token.access_token, region: params.region })
     client = await db.connect()
     const col = client.collection(COLLECTION)

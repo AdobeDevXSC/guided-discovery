@@ -14,6 +14,10 @@ EDS code sync (`.hlxignore`) and from the root lint (`.eslintignore`).
 - Data model and API: [docs/cja-assessment-schema.md](docs/cja-assessment-schema.md)
 - Node 20.12+ (22 recommended). Parcel plugins are pinned to 2.10.3 to match aio-cli 9.x; bump them to the
   Parcel version bundled with your aio-cli if the web build reports a version mismatch.
+- `assessments-admin` is wrapped by the `require-adobe-auth` validator, which does not forward `include-ims-credentials`, so its
+  database credentials come from `inputs` in `app.config.yaml`, read from `.env`: `ADMIN_IMS_CLIENT_ID`, `ADMIN_IMS_CLIENT_SECRET`,
+  `ADMIN_IMS_ORG_ID`, `ADMIN_IMS_SCOPES` (comma-separated). They are the workspace's OAuth Server-to-Server values; set them locally
+  and as CI secrets before deploying, or the action returns 500.
 - `ci-templates/` holds the inactive `aio app init` workflows.
 - After a fresh clone: `npm ci`, then `aio login` and `aio app use <workspace>.json` (download it from Developer Console;
   it contains secrets and is git-ignored) to recreate `.env` and `.aio`. Deploy with `aio app deploy` (add `--no-web-assets` to ship actions only).
