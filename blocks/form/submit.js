@@ -75,6 +75,14 @@ function constructPayload(form) {
 
 async function prepareRequest(form) {
   const { payload } = constructPayload(form);
+  // site customization: an absolute action URL (Submit row "Action" column) receives the
+  // form fields directly as flat JSON, with only Content-Type so simple CORS configs accept it
+  if (/^https?:\/\//.test(form.dataset.action || '')) {
+    const fields = { ...payload };
+    // eslint-disable-next-line no-underscore-dangle
+    delete fields.__id__;
+    return { headers: { 'Content-Type': 'application/json' }, body: fields, url: form.dataset.action };
+  }
   const headers = {
     'Content-Type': 'application/json',
     // eslint-disable-next-line comma-dangle
