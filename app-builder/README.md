@@ -5,13 +5,18 @@ Everything here is self-contained; run all commands from `app-builder/`. The fol
 EDS code sync (`.hlxignore`) and from the root lint (`.eslintignore`).
 
 - Actions: `actions/assessments` (CJA migration assessment capture, CORS-locked to this site's `*.aem.page` / `*.aem.live`),
-  `actions/items` (smoke-test endpoint)
+  `actions/items` (smoke-test endpoint), `actions/assessments-admin` (read-only list of submissions;
+  `require-adobe-auth: true`, so only signed-in users of this org with workspace product-profile access can call it)
+- Submissions viewer: `web-src/` is a React page (table, search, status filter, detail panel, CSV export, print) that gets the
+  signed-in user's token from Experience Cloud Shell (`@adobe/exc-app`). Open the deployed app through the Shell:
+  `https://experience.adobe.com/?devMode=true#/custom-apps/?localDevUrl=<deployed index.html URL>`.
+  Opened directly it shows a prompt instead of data, by design (the data is PII).
 - Data model and API: [docs/cja-assessment-schema.md](docs/cja-assessment-schema.md)
 - Node 20.12+ (22 recommended). Parcel plugins are pinned to 2.10.3 to match aio-cli 9.x; bump them to the
   Parcel version bundled with your aio-cli if the web build reports a version mismatch.
 - `ci-templates/` holds the inactive `aio app init` workflows.
 - After a fresh clone: `npm ci`, then `aio login` and `aio app use <workspace>.json` (download it from Developer Console;
-  it contains secrets and is git-ignored) to recreate `.env` and `.aio`. Deploy actions with `aio app deploy --no-web-assets`.
+  it contains secrets and is git-ignored) to recreate `.env` and `.aio`. Deploy with `aio app deploy` (add `--no-web-assets` to ship actions only).
 
 ## Original generated notes
 
