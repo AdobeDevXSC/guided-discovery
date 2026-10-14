@@ -26,7 +26,7 @@ const PROFILE_FIELDS = {
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const PHONE_RE = /^[0-9+()\-.\s]{5,30}$/
 const SECTION_KEY_RE = /^[a-z0-9][a-z0-9_-]{0,63}$/i
-const SOURCE_RE = /^[\w.\- ]{0,100}$/
+const SOURCE_RE = /^[\w.:/\- ]{0,100}$/
 
 const str = v => (typeof v === 'string' ? v.trim() : '')
 
@@ -52,7 +52,8 @@ function validateProfile (input) {
 
 // Campaign attribution. `source` is the ?source= value the Qualtrics iframe receives.
 function cleanSource (input) {
-  const s = input && typeof input === 'object' ? input : {}
+  // the EDS form block sends a plain string (e.g. "aem-eds:/acs/..."); treat it as source.source
+  const s = typeof input === 'string' ? { source: input } : (input && typeof input === 'object' ? input : {})
   const pick = (v, max) => str(v).slice(0, max)
   const out = {
     source: SOURCE_RE.test(str(s.source)) ? str(s.source) : '',
