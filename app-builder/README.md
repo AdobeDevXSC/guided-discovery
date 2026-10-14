@@ -5,9 +5,11 @@ Everything here is self-contained; run all commands from `app-builder/`. The fol
 EDS code sync (`.hlxignore`) and from the root lint (`.eslintignore`).
 
 - Actions: `actions/assessments` (CJA migration assessment capture, CORS-locked to this site's `*.aem.page` / `*.aem.live`),
-  `actions/items` (smoke-test endpoint), `actions/assessments-admin` (read-only list of submissions;
+  `actions/items` (smoke-test endpoint), `actions/assessments-admin` (list and delete for either dataset via `?dataset=assessments|guided-discovery`;
   `require-adobe-auth: true`, so only signed-in users of this org with workspace product-profile access can call it)
-- Submissions viewer: `web-src/` is a React page (table, search, status filter, detail panel, CSV export, print) that gets the
+- Submissions viewer: `web-src/` is a React page with two datasets, CJA migration assessment (`cja_assessments`) and
+  AA to CJA Guided Discovery (`gd_sessions`, labels from `../tools/importer/guided-discovery/copy.source.json`), each with
+  table, search, status filter, detail panel, delete, CSV export and print. It gets the
   signed-in user's token from Experience Cloud Shell (`@adobe/exc-app`). Open the deployed app through the Shell:
   `https://experience.adobe.com/?devMode=true#/custom-apps/?localDevUrl=<deployed index.html URL>`.
   Opened directly it shows a prompt instead of data, by design (the data is PII).
