@@ -39,3 +39,18 @@ application:
             annotations:
               require-adobe-auth: true
               final: true
+          guided-discovery:
+            function: actions/guided-discovery/index.js
+            web: 'yes'
+            runtime: nodejs:22
+            # include-ims-credentials is not applied to this action by the platform (deployed with
+            # no __ims_oauth_s2s), so the workspace OAuth S2S credentials are passed explicitly.
+            inputs:
+              clientId: $ADMIN_IMS_CLIENT_ID
+              clientSecret: $ADMIN_IMS_CLIENT_SECRET
+              orgId: $ADMIN_IMS_ORG_ID
+              scopes: $ADMIN_IMS_SCOPES
+            annotations:
+              web-custom-options: true
+              require-adobe-auth: false
+              final: true

@@ -5,15 +5,22 @@ Everything here is self-contained; run all commands from `app-builder/`. The fol
 EDS code sync (`.hlxignore`) and from the root lint (`.eslintignore`).
 
 - Actions: `actions/assessments` (CJA migration assessment capture, CORS-locked to this site's `*.aem.page` / `*.aem.live`),
-  `actions/items` (smoke-test endpoint), `actions/assessments-admin` (read-only list of submissions;
+  `actions/items` (smoke-test endpoint), `actions/assessments-admin` (list and delete for either dataset via `?dataset=assessments|guided-discovery`;
   `require-adobe-auth: true`, so only signed-in users of this org with workspace product-profile access can call it)
-- Submissions viewer: `web-src/` is a React page (table, search, status filter, detail panel, CSV export, print) that gets the
+- Submissions viewer: `web-src/` is a React page with two datasets, CJA migration assessment (`cja_assessments`) and
+  AA to CJA Guided Discovery (`gd_sessions`, labels from `../tools/importer/guided-discovery/copy.source.json`), each with
+  table, search, status filter, detail panel, delete, CSV export and print. It gets the
   signed-in user's token from Experience Cloud Shell (`@adobe/exc-app`). Open the deployed app through the Shell:
   `https://experience.adobe.com/?devMode=true#/custom-apps/?localDevUrl=<deployed index.html URL>`.
   Opened directly it shows a prompt instead of data, by design (the data is PII).
 - Data model and API: [docs/cja-assessment-schema.md](docs/cja-assessment-schema.md)
 - Node 20.12+ (22 recommended). Parcel plugins are pinned to 2.10.3 to match aio-cli 9.x; bump them to the
   Parcel version bundled with your aio-cli if the web build reports a version mismatch.
+- `actions/guided-discovery`: autosave backend for the self-guided AA to CJA Guided Discovery EDS block
+  (collection `gd_sessions`; ops `start`, `save`, `complete`, GET resume). It validates against the shared catalog in
+  `../blocks/guided-discovery/lib/catalog.js` and scores with `../blocks/guided-discovery/lib/scoring.js` (webpack
+  bundles both). The platform does not apply `include-ims-credentials` to it, so it also takes the `ADMIN_IMS_*`
+  inputs below.
 - `assessments-admin` is wrapped by the `require-adobe-auth` validator, which does not forward `include-ims-credentials`, so its
   database credentials come from `inputs` in `app.config.yaml`, read from `.env`: `ADMIN_IMS_CLIENT_ID`, `ADMIN_IMS_CLIENT_SECRET`,
   `ADMIN_IMS_ORG_ID`, `ADMIN_IMS_SCOPES` (comma-separated). They are the workspace's OAuth Server-to-Server values; set them locally
