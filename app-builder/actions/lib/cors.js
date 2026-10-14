@@ -1,6 +1,8 @@
 // EDS sites are served at https://<branch>--<repo>--<org>.aem.page (preview) and .aem.live (production).
 const ALLOWED_ORIGIN_PATTERNS = [
-  /^https:\/\/[a-z0-9-]+--guided-discovery--adobedevxsc\.aem\.(page|live)$/
+  /^https:\/\/[a-z0-9-]+--guided-discovery--adobedevxsc\.aem\.(page|live)$/,
+  // local development with `aem up` (Origin is spoofable by non-browsers anyway, so this adds no exposure)
+  /^http:\/\/localhost:\d{2,5}$/
 ]
 
 const isAllowedOrigin = origin => typeof origin === 'string' && ALLOWED_ORIGIN_PATTERNS.some(re => re.test(origin))

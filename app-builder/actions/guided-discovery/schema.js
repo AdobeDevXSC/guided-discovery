@@ -9,7 +9,7 @@ const STATUSES = ['started', 'in_progress', 'completed']
 
 const {
   BUCKETS, NEEDS, PROMPTS, DF_ITEMS, DF_QUANTITIES, SEGMENTS, IDENTITY_STAGES, GOVERNANCE,
-  GOV_STATUSES, ROLES, AI_PROMPT_CAPABILITIES, LEAD_OPTIONS, PAGES, REFERENCE_PAGES
+  GOV_STATUSES, ROLES, CAPABILITIES, LEAD_OPTIONS, PAGES, REFERENCE_PAGES
 } = catalog
 
 const ids = (arr) => arr.map((x) => (typeof x === 'string' ? x : x.id))
@@ -181,7 +181,8 @@ const SECTIONS = {
     if (!c.known(v, ['answers', 'aiCapabilityPicks'])) return {}
     return {
       answers: c.answers('answers', v.answers, STRATEGY_PROMPTS),
-      aiCapabilityPicks: c.idList('aiCapabilityPicks', v.aiCapabilityPicks, AI_PROMPT_CAPABILITIES)
+      // any of the 8 capabilities in the AI-readiness grid can be picked (live app: toggleAiPriority)
+      aiCapabilityPicks: c.idList('aiCapabilityPicks', v.aiCapabilityPicks, CAPABILITIES)
     }
   },
   inventoryReview (v, c) {
