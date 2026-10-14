@@ -29,7 +29,13 @@ application:
             function: actions/assessments-admin/index.js
             web: 'yes'
             runtime: nodejs:22
+            # require-adobe-auth wraps this action in a validator sequence that does not pass through
+            # include-ims-credentials, so the database credentials are supplied explicitly from .env.
+            inputs:
+              clientId: $ADMIN_IMS_CLIENT_ID
+              clientSecret: $ADMIN_IMS_CLIENT_SECRET
+              orgId: $ADMIN_IMS_ORG_ID
+              scopes: $ADMIN_IMS_SCOPES
             annotations:
               require-adobe-auth: true
               final: true
-              include-ims-credentials: true

@@ -50,6 +50,12 @@ td.empty { text-align: center; color: var(--muted); padding: 32px; white-space: 
 .detail-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .fields { display: grid; grid-template-columns: 130px 1fr; gap: 4px 12px; margin: 0; }
 .fields dt { color: var(--muted); } .fields dd { margin: 0; word-break: break-word; }
+.delete-zone { margin: 10px 0 4px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.delete-zone p { flex-basis: 100%; margin: 0 0 2px; }
+.delete-zone .error { padding: 6px 10px; }
+button.danger { color: var(--danger); border-color: var(--danger); background: transparent; }
+button.danger:hover:not(:disabled) { background: color-mix(in srgb, var(--danger) 10%, transparent); }
+button.danger.solid { background: var(--danger); color: #fff; }
 .detail pre { background: var(--bg); padding: 10px; border-radius: 6px; overflow: auto; font-size: 12px; }
 
 .shell-notice { max-width: 520px; margin: 12vh auto; padding: 0 16px; }

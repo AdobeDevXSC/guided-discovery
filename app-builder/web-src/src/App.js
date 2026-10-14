@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import useShellAuth from './useShellAuth';
-import { fetchAssessments } from './api';
+import { fetchAssessments, deleteAssessment } from './api';
 import { toCsv, download } from './csv';
 import Detail from './Detail';
 import './App.css';
@@ -73,6 +73,12 @@ export default function App() {
   useEffect(() => {
     if (auth.status === 'ready') load();
   }, [auth.status, load]);
+
+  const handleDelete = useCallback(async (item) => {
+    await deleteAssessment({ token, org, submissionId: item.submissionId });
+    setSelected(null);
+    setData((d) => ({ items: d.items.filter((r) => r.submissionId !== item.submissionId), total: Math.max(0, d.total - 1) }));
+  }, [token, org]);
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -189,7 +195,7 @@ export default function App() {
             </tbody>
           </table>
         </div>
-        {selected && <Detail item={selected} onClose={() => setSelected(null)} />}
+        {selected && <Detail item={selected} onClose={() => setSelected(null)} onDelete={handleDelete} />}
       </div>
     </div>
   );
