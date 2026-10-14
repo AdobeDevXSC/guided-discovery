@@ -1,9 +1,10 @@
 const crypto = require('crypto')
 const { computeResult } = require('../../../blocks/guided-discovery/lib/scoring.js')
 const {
-  COLLECTION, SCHEMA_VERSION, CONSENT_VERSION, INDEXES,
-  validateLead, cleanSource, validateSection, validateProgress
+  COLLECTION, SCHEMA_VERSION, INDEXES,
+  leadRefId, cleanSource, validateSection, validateProgress
 } = require('./schema')
+const assessments = require('../assessments/schema')
 const { withCors } = require('../lib/cors')
 const { withDb, findOneOrNull, ensureIndexes } = require('../lib/db')
 
@@ -27,7 +28,8 @@ function readBody (params) {
 
 // Public endpoint for the self-guided AA -> CJA Guided Discovery. A session is token-gated by its
 // random sessionId, which the browser keeps to autosave and resume.
-//   POST {op:'start', lead, consent:true, source, contentVersion}  -> 201 {sessionId}
+//   POST {op:'start', leadRef?, source, contentVersion}            -> 201 {sessionId, linked}
+//   POST {op:'link', sessionId, leadRef}                           -> 200 {linked} (only if not yet linked)
 //   POST {op:'save', sessionId, section, rev, data, progress?}     -> 200 {rev, savedAt}; 409 if rev is stale
 //   POST {op:'save', sessionId, progress}                          -> 200 (progress only)
 //   POST {op:'complete', sessionId}                                -> 200 {result}
@@ -38,8 +40,8 @@ async function handle (raw) {
   // honeypot: real users never fill this hidden field
   if (params.website) return reply(200, { ok: true })
   if (method !== 'get' && method !== 'post') return reply(405, { ok: false, error: 'method not allowed' })
-  if (method === 'post' && !['start', 'save', 'complete'].includes(params.op)) {
-    return reply(400, { ok: false, error: 'op must be start, save or complete' })
+  if (method === 'post' && !['start', 'save', 'complete', 'link'].includes(params.op)) {
+    return reply(400, { ok: false, error: 'op must be start, save, link or complete' })
   }
   if ((method === 'get' || params.op !== 'start') && !UUID_RE.test(params.sessionId || '')) {
     return reply(400, { ok: false, error: 'invalid sessionId' })
@@ -50,8 +52,9 @@ async function handle (raw) {
       const col = client.collection(COLLECTION)
       await ensureIndexes(col, INDEXES)
       if (method === 'get') return resume(col, params)
-      if (params.op === 'start') return start(col, params)
+      if (params.op === 'start') return start(client, col, params)
       if (params.op === 'save') return save(col, params)
+      if (params.op === 'link') return link(client, col, params)
       return complete(col, params)
     })
   } catch (e) {
@@ -60,11 +63,16 @@ async function handle (raw) {
   }
 }
 
-async function start (col, params) {
-  const { lead, errors } = validateLead(params.lead)
-  if (params.consent !== true) errors.consent = 'consent required'
-  if (hasErrors(errors)) return reply(400, { ok: false, errors })
+// A lead reference is stored only if that CJA assessment submission actually exists.
+async function verifiedLeadRef (client, input) {
+  const submissionId = leadRefId(input)
+  if (!submissionId) return null
+  const found = await findOneOrNull(client.collection(assessments.COLLECTION), { submissionId })
+  return found ? { kind: 'cja-assessment', submissionId } : null
+}
 
+async function start (client, col, params) {
+  const leadRef = await verifiedLeadRef(client, params.leadRef)
   const now = new Date().toISOString()
   const sessionId = crypto.randomUUID()
   await col.insertOne({
@@ -73,8 +81,7 @@ async function start (col, params) {
     contentVersion: String(params.contentVersion || '').slice(0, 40),
     viewProfile: 'selfguided',
     status: 'started',
-    lead,
-    consent: { marketingContact: true, version: CONSENT_VERSION, acceptedAt: now },
+    leadRef,
     source: cleanSource(params.source),
     progress: { completed: [] },
     sections: {},
@@ -85,7 +92,17 @@ async function start (col, params) {
     updatedAt: now,
     completedAt: null
   })
-  return reply(201, { ok: true, sessionId })
+  return reply(201, { ok: true, sessionId, linked: Boolean(leadRef) })
+}
+
+async function link (client, col, params) {
+  const doc = await findOneOrNull(col, { sessionId: params.sessionId })
+  if (!doc) return reply(404, { ok: false, error: 'not found' })
+  if (doc.leadRef) return reply(200, { ok: true, linked: true, changed: false })
+  const leadRef = await verifiedLeadRef(client, params.leadRef)
+  if (!leadRef) return reply(200, { ok: true, linked: false })
+  await col.updateOne({ sessionId: params.sessionId }, { $set: { leadRef, updatedAt: new Date().toISOString() } })
+  return reply(200, { ok: true, linked: true, changed: true })
 }
 
 async function save (col, params) {
@@ -151,7 +168,8 @@ async function resume (col, params) {
     sessionId: doc.sessionId,
     status: doc.status,
     contentVersion: doc.contentVersion,
-    lead: doc.lead,
+    linked: Boolean(doc.leadRef),
+    leadSubmissionId: doc.leadRef ? doc.leadRef.submissionId : null,
     sections: doc.sections || {},
     revs,
     progress: doc.progress || { completed: [] },

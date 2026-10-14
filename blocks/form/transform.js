@@ -255,7 +255,9 @@ export default class DocBasedFormToAF {
 
         if (field?.fieldType === 'submit') {
           const submitValue = field.value;
-          if (submitValue.startsWith('https')) {
+          // site customization: a site-relative path ("/acs/...") also redirects, so one sheet
+          // works on every preview/live host
+          if (submitValue.startsWith('https') || submitValue.startsWith('/')) {
             formDef.redirectUrl = submitValue;
           } else if (submitValue) {
             formDef.thankYouMsg = submitValue;

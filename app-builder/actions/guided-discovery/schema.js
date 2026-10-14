@@ -4,12 +4,11 @@ const catalog = require('../../../blocks/guided-discovery/lib/catalog.js')
 
 const COLLECTION = 'gd_sessions'
 const SCHEMA_VERSION = 1
-const CONSENT_VERSION = '2026-adobe-marketing-v1'
 const STATUSES = ['started', 'in_progress', 'completed']
 
 const {
   BUCKETS, NEEDS, PROMPTS, DF_ITEMS, DF_QUANTITIES, SEGMENTS, IDENTITY_STAGES, GOVERNANCE,
-  GOV_STATUSES, ROLES, CAPABILITIES, LEAD_OPTIONS, PAGES, REFERENCE_PAGES
+  GOV_STATUSES, ROLES, CAPABILITIES, PAGES, REFERENCE_PAGES
 } = catalog
 
 const ids = (arr) => arr.map((x) => (typeof x === 'string' ? x : x.id))
@@ -26,47 +25,18 @@ const SECTION_KEYS = [
   'strategyAdoption', 'inventoryReview'
 ]
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const PHONE_RE = /^[0-9+()\-.\s]{5,30}$/
 const SOURCE_RE = /^[\w.:/\- ]{0,100}$/
 
 const str = (v) => (typeof v === 'string' ? v.trim() : '')
 const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v)
 
-// Lead gate, copy doc section 5.1. Country is optional there; every other field is required.
-const LEAD_FIELDS = {
-  firstName: { required: true, max: 100 },
-  lastName: { required: true, max: 100 },
-  email: { required: true, max: 254, email: true },
-  phone: { required: true, max: 30, phone: true },
-  jobTitle: { required: true, oneOf: LEAD_OPTIONS.jobTitle },
-  department: { required: true, oneOf: LEAD_OPTIONS.department },
-  organization: { required: true, max: 200 },
-  country: { oneOf: LEAD_OPTIONS.country },
-  countryOther: { requiredIf: (l) => l.country === 'other', max: 100 },
-  state: { required: true, max: 100 },
-  postalCode: { required: true, max: 20 },
-  primaryProduct: { required: true, oneOf: LEAD_OPTIONS.primaryProduct },
-  industry: { required: true, oneOf: LEAD_OPTIONS.industry }
-}
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
-function validateLead (input) {
-  const src = isObj(input) ? input : {}
-  const lead = {}
-  const errors = {}
-  for (const [name, rule] of Object.entries(LEAD_FIELDS)) {
-    const value = str(src[name])
-    if (!value) {
-      if (rule.required || (rule.requiredIf && rule.requiredIf(src))) errors[name] = 'required'
-      continue
-    }
-    if (rule.max && value.length > rule.max) errors[name] = `max ${rule.max} chars`
-    else if (rule.oneOf && !rule.oneOf.includes(value)) errors[name] = 'not an allowed value'
-    else if (rule.email && !EMAIL_RE.test(value)) errors[name] = 'invalid email'
-    else if (rule.phone && !PHONE_RE.test(value)) errors[name] = 'invalid phone number'
-    else lead[name] = rule.email ? value.toLowerCase() : value
-  }
-  return { lead, errors }
+// The lead is captured by the CJA migration assessment form (collection cja_assessments), which
+// hands its submissionId to this page as ?lead=. A session stores only that reference.
+function leadRefId (input) {
+  const id = typeof input === 'string' ? input : (isObj(input) ? input.submissionId : '')
+  return UUID_RE.test(id || '') ? id : null
 }
 
 function cleanSource (input) {
@@ -218,12 +188,12 @@ function validateProgress (input) {
 
 const INDEXES = [
   { spec: { sessionId: 1 }, options: { unique: true } },
-  { spec: { 'lead.email': 1 }, options: {} },
+  { spec: { 'leadRef.submissionId': 1 }, options: {} },
   { spec: { status: 1, createdAt: -1 }, options: {} },
   { spec: { 'source.source': 1 }, options: {} }
 ]
 
 module.exports = {
-  COLLECTION, SCHEMA_VERSION, CONSENT_VERSION, STATUSES, SECTION_KEYS, INDEXES,
-  validateLead, cleanSource, validateSection, validateProgress
+  COLLECTION, SCHEMA_VERSION, STATUSES, SECTION_KEYS, INDEXES,
+  leadRefId, cleanSource, validateSection, validateProgress
 }

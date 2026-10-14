@@ -38,12 +38,26 @@ async function main (params) {
   const limit = Math.min(Math.max(parseInt(params.limit, 10) || 200, 1), MAX_LIMIT)
   const skip = Math.max(parseInt(params.skip, 10) || 0, 0)
 
-  return run(params, ds, async (col) => {
+  return run(params, ds, async (col, client) => {
     const total = await col.countDocuments(filter)
     const items = total
       ? await col.find(filter).sort('createdAt', -1).skip(skip).limit(limit).toArray()
       : []
+    if (dataset === 'guided-discovery') await attachLeads(client, items)
     return reply(200, { ok: true, dataset, total, count: items.length, items })
+  })
+}
+
+// Guided Discovery sessions only reference their lead (leadRef.submissionId, captured by the CJA
+// assessment form); attach that profile so the viewer can show who the session belongs to.
+async function attachLeads (client, items) {
+  const ids = [...new Set(items.map((i) => i.leadRef && i.leadRef.submissionId).filter(Boolean))]
+  if (!ids.length) return
+  const leads = await client.collection(assessments.COLLECTION)
+    .find({ submissionId: { $in: ids } }).limit(ids.length).toArray()
+  const byId = new Map(leads.map((l) => [l.submissionId, l.profile]))
+  items.forEach((i) => {
+    if (i.leadRef && byId.has(i.leadRef.submissionId)) i.leadProfile = byId.get(i.leadRef.submissionId)
   })
 }
 
@@ -59,7 +73,7 @@ async function remove (col, ds, params) {
 
 async function run (params, ds, fn) {
   try {
-    return await withDb(params, (client) => fn(client.collection(ds.collection)))
+    return await withDb(params, (client) => fn(client.collection(ds.collection), client))
   } catch (e) {
     if (isNotFound(e)) return reply(404, { ok: false, error: 'not found' })
     console.error('assessments-admin failed:', e.name, e.httpStatusCode, e.message)

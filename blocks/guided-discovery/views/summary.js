@@ -49,7 +49,7 @@ function inventoryReview(ctx) {
 function answerLog(ctx) {
   const { copy, store } = ctx;
   const { t } = copy;
-  const { lead, sections: s } = store.state;
+  const { sections: s } = store.state;
   const list = (vals) => (vals.length ? vals.join(', ') : t('summary.noneSelected'));
   const promptRows = (group, answers) => PROMPTS.filter((p) => p.group === group).map((p) => row(
     copy.item('prompts', p.id).question,
@@ -60,13 +60,6 @@ function answerLog(ctx) {
   return h(
     'div',
     { class: 'gd-log' },
-    lead && block(
-      t('summary.log.contact'),
-      row(t('gate.firstName'), `${lead.firstName || ''} ${lead.lastName || ''}`.trim()),
-      row(t('gate.email'), lead.email),
-      row(t('gate.organization'), lead.organization),
-      row(t('gate.jobTitle'), copy.leadLabel('jobTitle', lead.jobTitle)),
-    ),
     block(
       t('summary.log.discovery'),
       row(t('discovery.focusHeading'), s.discovery.focus ? copy.item('buckets', s.discovery.focus).name : t('summary.notSet')),

@@ -15,7 +15,11 @@ class HttpError extends Error {
   }
 }
 
-export default function createApi(endpoint, store, onStatus = () => {}) {
+/**
+ * startInfo() returns the {leadRef, source, contentVersion} used to create the session lazily:
+ * the first answer starts it, so merely viewing the page never creates a record.
+ */
+export default function createApi(endpoint, store, onStatus = () => {}, startInfo = () => ({})) {
   const dirty = new Set();
   let progressDirty = false;
   let timer = null;
@@ -62,10 +66,18 @@ export default function createApi(endpoint, store, onStatus = () => {}) {
     }
   }
 
+  async function ensureSession() {
+    if (store.state.sessionId) return;
+    const res = await request('POST', { op: 'start', ...startInfo() });
+    store.startSession(res.sessionId);
+  }
+
   function flush() {
     clearTimeout(timer);
     timer = null;
-    if (!store.state.sessionId || (!dirty.size && !progressDirty)) return chain;
+    // navigation alone (progress) never creates a session; the first answer does
+    if (!store.state.sessionId && !dirty.size) return chain;
+    if (!dirty.size && !progressDirty) return chain;
     const keys = [...dirty];
     dirty.clear();
     const withProgress = progressDirty;
@@ -73,6 +85,7 @@ export default function createApi(endpoint, store, onStatus = () => {}) {
     onStatus('saving');
     chain = chain.then(async () => {
       try {
+        await ensureSession();
         const bodies = keys.map(payloadFor);
         if (withProgress) {
           if (bodies.length) bodies[0].progress = store.state.progress;
@@ -126,14 +139,15 @@ export default function createApi(endpoint, store, onStatus = () => {}) {
     progressChanged() { progressDirty = true; schedule(); },
     flush,
 
-    async start(lead, source, contentVersion) {
-      return request('POST', {
-        op: 'start', lead, consent: true, source, contentVersion,
-      });
+    /** Links an existing session to a CJA assessment lead (no-op if already linked). */
+    async link(leadRef) {
+      if (!store.state.sessionId || !leadRef) return null;
+      return request('POST', { op: 'link', sessionId: store.state.sessionId, leadRef });
     },
 
     async complete() {
       await flush();
+      await ensureSession();
       return request('POST', { op: 'complete', sessionId: store.state.sessionId });
     },
 

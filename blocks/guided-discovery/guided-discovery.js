@@ -5,8 +5,10 @@
  *   Copy     | link to the authored copy sheet (DA multi-sheet JSON)
  *   Endpoint | App Builder guided-discovery action URL
  *
- * Answers autosave to the endpoint section by section; the session id is kept in localStorage so
- * a returning visitor resumes where they left off.
+ * The visitor arrives from the CJA migration assessment form (which captures the lead) with
+ * ?lead=<submissionId>; the session stores that reference. The session itself is created on the
+ * first answer, then answers autosave section by section; the session id is kept in localStorage
+ * so a returning visitor resumes where they left off.
  */
 import { readBlockConfig } from '../../scripts/aem.js';
 import { h } from './lib/dom.js';
@@ -14,7 +16,6 @@ import loadCopy from './lib/copy.js';
 import { createStore, WORKFLOW } from './lib/store.js';
 import createApi from './lib/api.js';
 import { HUB_PAGES, PAGES, REFERENCE_PAGES } from './lib/catalog.js';
-import renderGate from './views/gate.js';
 import renderOverview from './views/overview.js';
 import renderDiscovery from './views/discovery.js';
 import renderHub from './views/hub.js';
@@ -45,6 +46,31 @@ const VIEWS = {
 };
 const ALL_PAGES = [...PAGES, ...REFERENCE_PAGES];
 const HASH_PREFIX = '#gd/';
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+/** Reads ?lead=<submissionId> from the form hand-off and removes it from the address bar. */
+function takeLeadParam() {
+  const url = new URL(window.location.href);
+  const lead = url.searchParams.get('lead');
+  if (!lead) return null;
+  url.searchParams.delete('lead');
+  window.history.replaceState(null, '', url.href);
+  return UUID_RE.test(lead) ? lead : null;
+}
+
+const sourceInfo = () => {
+  const q = new URLSearchParams(window.location.search);
+  const utm = {};
+  ['source', 'medium', 'campaign', 'term', 'content'].forEach((k) => {
+    if (q.get(`utm_${k}`)) utm[k] = q.get(`utm_${k}`);
+  });
+  return {
+    source: (q.get('source') || `aem-eds:${window.location.pathname}`).slice(0, 100),
+    pageUrl: window.location.href.split('#')[0],
+    referrer: document.referrer,
+    utm,
+  };
+};
 
 const configUrl = (cfg, key) => {
   const v = cfg[key];
@@ -111,12 +137,13 @@ export default async function decorate(block) {
     saving: 'save.saving', saved: 'save.saved', offline: 'save.offline', error: 'save.error',
   };
 
+  const leadRef = takeLeadParam();
   const store = createStore();
   const api = createApi(endpoint, store, (s) => {
     saveStatus.textContent = t(statusText[s] || 'save.saved');
     saveStatus.dataset.state = s;
     if (s === 'error') showToast(t('save.error'));
-  });
+  }, () => ({ leadRef, source: sourceInfo(), contentVersion: copy.contentVersion }));
 
   const ctx = {
     copy,
@@ -249,28 +276,26 @@ export default async function decorate(block) {
     ctx.go(start, { fromHash: Boolean(fromHash) });
   }
 
-  function mountGate() {
-    block.replaceChildren(renderGate(ctx, {
-      onStarted: (sessionId, lead) => {
-        store.startSession(sessionId, lead);
-        mountApp();
-      },
-    }));
-  }
-
   if (store.state.sessionId) {
-    loading.textContent = t('gate.resuming');
+    loading.textContent = t('app.resuming');
     try {
-      const session = await api.resume(store.state.sessionId);
+      let session = await api.resume(store.state.sessionId);
+      // a different lead than the stored session's (e.g. a shared computer): start a fresh session
+      if (session && leadRef && session.leadSubmissionId && session.leadSubmissionId !== leadRef) {
+        store.forget();
+        session = null;
+      }
       if (session) {
         store.hydrate(session);
         mountApp();
+        // arriving from the form again with a lead: attach it if this session has none yet
+        if (leadRef && !session.linked) api.link(leadRef).catch(() => {});
         return;
       }
       store.forget();
     } catch (e) {
-      // the server is unreachable: keep the id so a later visit can resume, but show the gate now
+      // the server is unreachable: keep the id so a later visit can resume, and start fresh now
     }
   }
-  mountGate();
+  mountApp();
 }

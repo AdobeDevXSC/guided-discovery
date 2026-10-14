@@ -5,7 +5,12 @@ export function submitSuccess(e, form) {
   const redirectUrl = form.dataset.redirectUrl || payload?.body?.redirectUrl;
   const thankYouMsg = form.dataset.thankYouMsg || payload?.body?.thankYouMessage;
   if (redirectUrl) {
-    window.location.assign(encodeURI(redirectUrl));
+    // site customization: hand the new submission id to the next page (e.g. Guided Discovery)
+    // so it can link its session to this lead
+    const next = new URL(encodeURI(redirectUrl), window.location.href);
+    const id = payload?.body?.submissionId;
+    if (id && /^[0-9a-f-]{36}$/.test(id)) next.searchParams.set('lead', id);
+    window.location.assign(next.href);
   } else {
     let thankYouMessage = form.parentNode.querySelector('.form-message.success-message');
     if (!thankYouMessage) {
@@ -129,7 +134,10 @@ async function submitDocBasedForm(form, captcha) {
       body: JSON.stringify(body),
     });
     if (response.ok) {
-      submitSuccess(response, form);
+      // site customization: pass the JSON response on (custom endpoints return e.g. submissionId)
+      let json = null;
+      try { json = await response.json(); } catch (err) { /* no JSON body */ }
+      submitSuccess({ payload: { body: json } }, form);
     } else {
       const error = await response.text();
       throw new Error(error);
