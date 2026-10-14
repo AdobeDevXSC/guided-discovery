@@ -8,7 +8,7 @@ import { fmt } from './dom.js';
 const SHEETS = [
   'meta', 'ui', 'needs', 'buckets', 'prompts', 'prompt-options', 'routes', 'hub', 'tiers', 'df-categories',
   'df-items', 'segments', 'identity-stages', 'governance', 'roles', 'capabilities', 'crosswalk',
-  'glossary', 'contacts', 'architecture', 'lead-options',
+  'glossary', 'contacts', 'architecture',
 ];
 
 export default async function loadCopy(url) {
@@ -25,11 +25,6 @@ export default async function loadCopy(url) {
     if (!promptOptions.has(r.prompt)) promptOptions.set(r.prompt, new Map());
     promptOptions.get(r.prompt).set(r.id, r);
   });
-  const leadOptions = new Map();
-  rows('lead-options').forEach((r) => {
-    if (!leadOptions.has(r.field)) leadOptions.set(r.field, new Map());
-    leadOptions.get(r.field).set(r.id, r.label);
-  });
   const meta = new Map(rows('meta').map((r) => [r.key, r.text]));
 
   return {
@@ -41,6 +36,5 @@ export default async function loadCopy(url) {
       const o = promptOptions.get(promptId);
       return (o && o.get(optionId)) || { id: optionId, label: optionId, caption: '' };
     },
-    leadLabel: (field, id) => (leadOptions.get(field) && leadOptions.get(field).get(id)) || id,
   };
 }

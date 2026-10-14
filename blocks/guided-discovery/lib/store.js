@@ -43,7 +43,6 @@ export function createStore() {
   const state = {
     sessionId: safeStorage.get(),
     status: null,
-    lead: null,
     sections: emptySections(),
     revs: {},
     progress: { completed: [], lastPage: null },
@@ -55,11 +54,10 @@ export function createStore() {
     state,
     subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
 
-    startSession(sessionId, lead) {
-      Object.assign(state, {
-        sessionId, lead, status: 'started', sections: emptySections(), revs: {}, result: null,
-      });
-      state.progress = { completed: [], lastPage: null };
+    /** Records the server session created lazily on the first answer; keeps answers made so far. */
+    startSession(sessionId) {
+      state.sessionId = sessionId;
+      if (!state.status) state.status = 'in_progress';
       safeStorage.set(sessionId);
     },
 
@@ -71,7 +69,6 @@ export function createStore() {
       Object.assign(state, {
         sessionId: session.sessionId,
         status: session.status,
-        lead: session.lead,
         sections: base,
         revs: { ...(session.revs || {}) },
         progress: { completed: [], ...(session.progress || {}) },

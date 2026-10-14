@@ -71,7 +71,10 @@ const lab = (map, id) => (id ? (map && map[id]) || id : '—');
 const labs = (map, ids) => (ids && ids.length ? ids.map((id) => lab(map, id)) : []);
 const HEADLINES = { 'migration-ready': 'Migration-Ready', 'building-your-case': 'Building Your Case', 'early-discovery': 'Early Discovery Stage' };
 const SIZES = { small: 'Small', medium: 'Medium', large: 'Large' };
-const lead = (r) => r.lead || {};
+// the lead comes from the linked CJA assessment submission (attached by the admin action);
+// `lead` is the pre-hand-off shape stored by early test sessions
+const lead = (r) => r.leadProfile || r.lead || {};
+const isOther = (l) => String(l.country || '').toLowerCase() === 'other';
 
 function promptRows(answers) {
   return Object.entries(answers || {}).map(([pid, opts]) => [lab(L.prompts, pid), labs(L.options[pid], opts)]);
@@ -89,10 +92,12 @@ function GuidedDiscoveryBody({ item }) {
   return (
     <>
       <h3>Lead</h3>
+      {!item.leadProfile && !item.lead && <p className="muted">Not linked to a CJA assessment submission.</p>}
       <Fields rows={[
+        ['Linked submission', item.leadRef ? item.leadRef.submissionId : '—'],
         ['Email', l.email], ['Phone', l.phone], ['Job title', lab(L.lead.jobTitle, l.jobTitle)],
         ['Department', lab(L.lead.department, l.department)], ['Organization', l.organization],
-        ['Country', l.country === 'other' ? `Other: ${l.countryOther}` : lab(L.lead.country, l.country)],
+        ['Country', isOther(l) ? `Other: ${l.countryOther}` : lab(L.lead.country, l.country)],
         ['State / province', l.state], ['Postal code', l.postalCode],
         ['Primary product', lab(L.lead.primaryProduct, l.primaryProduct)], ['Industry', lab(L.lead.industry, l.industry)],
       ]} />
@@ -149,12 +154,12 @@ export const DATASETS = {
     title: 'Guided Discovery sessions',
     file: 'guided-discovery',
     id: (r) => r.sessionId,
-    name: (r) => `${lead(r).firstName || ''} ${lead(r).lastName || ''}`.trim(),
+    name: (r) => `${lead(r).firstName || ''} ${lead(r).lastName || ''}`.trim() || 'Unlinked session',
     haystack: (r) => [lead(r).firstName, lead(r).lastName, lead(r).email, lead(r).organization, r.sessionId,
       r.result && r.result.headline, r.source && r.source.source].join(' ').toLowerCase(),
     table: [
       ['Created', (r) => when(r.createdAt)],
-      ['Name', (r) => `${lead(r).firstName || ''} ${lead(r).lastName || ''}`],
+      ['Name', (r) => `${lead(r).firstName || ''} ${lead(r).lastName || ''}`.trim() || 'Not linked'],
       ['Email', (r) => lead(r).email],
       ['Organization', (r) => lead(r).organization],
       ['Product', (r) => lab(L.lead.primaryProduct, lead(r).primaryProduct)],
@@ -168,7 +173,8 @@ export const DATASETS = {
       { label: 'Job title', value: (r) => lab(L.lead.jobTitle, lead(r).jobTitle) },
       { label: 'Department', value: (r) => lab(L.lead.department, lead(r).department) },
       { label: 'Organization', value: (r) => lead(r).organization },
-      { label: 'Country', value: (r) => (lead(r).country === 'other' ? lead(r).countryOther : lab(L.lead.country, lead(r).country)) },
+      { label: 'Country', value: (r) => (isOther(lead(r)) ? lead(r).countryOther : lab(L.lead.country, lead(r).country)) },
+      { label: 'Linked submission', value: (r) => (r.leadRef ? r.leadRef.submissionId : '') },
       { label: 'State', value: (r) => lead(r).state }, { label: 'Postal code', value: (r) => lead(r).postalCode },
       { label: 'Primary product', value: (r) => lab(L.lead.primaryProduct, lead(r).primaryProduct) },
       { label: 'Industry', value: (r) => lab(L.lead.industry, lead(r).industry) },
