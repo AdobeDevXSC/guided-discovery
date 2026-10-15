@@ -197,7 +197,9 @@ function validateStructured (key, value, doc) {
       const allowed = (q.options || []).map((o) => o.id)
       const unknown = ids.filter((o) => !allowed.includes(o))
       if (unknown.length) { c.fail(`answers.${qid}`, `unknown option ${unknown[0]}`); continue }
-      if (/-single$/.test(q.display || '') && ids.length > 1) { c.fail(`answers.${qid}`, 'at most 1'); continue }
+      // sliders and *-single displays take one answer; swipe and *-multi take any number
+      const single = /-single$/.test(q.display || '') || q.display === 'slider'
+      if (single && ids.length > 1) { c.fail(`answers.${qid}`, 'at most 1'); continue }
     }
     if (ids.length) out[qid] = ids
   }
