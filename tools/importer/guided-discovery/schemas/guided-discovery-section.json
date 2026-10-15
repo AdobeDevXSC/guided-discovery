@@ -152,6 +152,126 @@
           "title": "Close button label (screen readers)",
           "maxLength": 120,
           "default": "Close"
+        },
+        "search": {
+          "type": "string",
+          "title": "Inventory: search placeholder",
+          "maxLength": 160,
+          "default": "Search implementation elements..."
+        },
+        "allCategories": {
+          "type": "string",
+          "title": "Inventory: all categories",
+          "maxLength": 160,
+          "default": "All categories"
+        },
+        "allComplexity": {
+          "type": "string",
+          "title": "Inventory: all complexity levels",
+          "maxLength": 160,
+          "default": "All complexity levels"
+        },
+        "complexityLow": {
+          "type": "string",
+          "title": "Complexity: low",
+          "maxLength": 160,
+          "default": "Low complexity"
+        },
+        "complexityMedium": {
+          "type": "string",
+          "title": "Complexity: medium",
+          "maxLength": 160,
+          "default": "Medium complexity"
+        },
+        "complexityHigh": {
+          "type": "string",
+          "title": "Complexity: high",
+          "maxLength": 160,
+          "default": "High complexity"
+        },
+        "allBuckets": {
+          "type": "string",
+          "title": "Inventory: all needs",
+          "maxLength": 160,
+          "default": "All needs (analysis + activation)"
+        },
+        "bucketAnalysisFilter": {
+          "type": "string",
+          "title": "Inventory: analysis filter",
+          "maxLength": 160,
+          "default": "Data Analysis focus"
+        },
+        "bucketActivationFilter": {
+          "type": "string",
+          "title": "Inventory: activation filter",
+          "maxLength": 160,
+          "default": "Data Activation focus"
+        },
+        "bucketAnalysis": {
+          "type": "string",
+          "title": "Bucket chip: analysis",
+          "maxLength": 160,
+          "default": "Analysis"
+        },
+        "bucketActivation": {
+          "type": "string",
+          "title": "Bucket chip: activation",
+          "maxLength": 160,
+          "default": "Activation"
+        },
+        "bucketBoth": {
+          "type": "string",
+          "title": "Bucket chip: both",
+          "maxLength": 160,
+          "default": "Analysis + Activation"
+        },
+        "resultCount": {
+          "type": "string",
+          "title": "Inventory: result count (use {n} and {total})",
+          "maxLength": 160,
+          "default": "{n} of {total}"
+        },
+        "noMatches": {
+          "type": "string",
+          "title": "Inventory: no matches",
+          "maxLength": 160,
+          "default": "No matches. Try a different search or filter."
+        },
+        "itemCount": {
+          "type": "string",
+          "title": "Per-item progress (use {n} and {total})",
+          "maxLength": 160,
+          "default": "Item {n} of {total}"
+        },
+        "mappingFrom": {
+          "type": "string",
+          "title": "Mapping card: from",
+          "maxLength": 160,
+          "default": "Adobe Analytics"
+        },
+        "mappingTo": {
+          "type": "string",
+          "title": "Mapping card: to",
+          "maxLength": 160,
+          "default": "Customer Journey Analytics"
+        },
+        "mappingWhy": {
+          "type": "string",
+          "title": "Mapping card: why",
+          "maxLength": 160,
+          "default": "Why:"
+        },
+        "mappingPrereqs": {
+          "type": "string",
+          "title": "Mapping card: prerequisites",
+          "maxLength": 160,
+          "default": "Prerequisites:"
+        },
+        "perItemEmpty": {
+          "type": "string",
+          "title": "Per-item: nothing selected yet",
+          "maxLength": 160,
+          "default": "Select items above to see them here."
         }
       }
     },
@@ -171,8 +291,7 @@
       "required": [
         "id",
         "display",
-        "title",
-        "options"
+        "title"
       ],
       "properties": {
         "groupHeading": {
@@ -191,14 +310,16 @@
         "display": {
           "type": "string",
           "title": "Display",
-          "description": "cards = large cards (a single-choice cards question opens the guided flow as its first screen); chips = tiles; swipe = one option at a time, yes/no; slider = a track across the first N options (the rest become chips like \"Don't know\").",
+          "description": "cards = large cards (a single-choice cards question opens the guided flow as its first screen); chips = tiles; swipe = one option at a time, yes/no; slider = a track across the first N options (the rest become chips like \"Don't know\"). inventory = a filterable, searchable card grid (a swipe in the guided flow); per-item = asks \"choices\" about each option picked in the \"itemsFrom\" question.",
           "enum": [
             "cards-single",
             "cards-multi",
             "chips-single",
             "chips-multi",
             "swipe",
-            "slider"
+            "slider",
+            "inventory",
+            "per-item"
           ]
         },
         "sliderStops": {
@@ -232,6 +353,12 @@
           "title": "Question text",
           "maxLength": 300
         },
+        "guidedTitle": {
+          "type": "string",
+          "title": "Title in the guided flow",
+          "description": "Optional. Overrides the question text as the overlay title (e.g. \"What you track\").",
+          "maxLength": 200
+        },
         "help": {
           "type": "string",
           "title": "Help text",
@@ -250,12 +377,25 @@
             "$ref": "#/$defs/Option"
           }
         },
+        "itemsFrom": {
+          "type": "string",
+          "title": "Per-item: question ID whose picked options are the items",
+          "pattern": "^[a-z0-9][a-z0-9-]*$",
+          "maxLength": 64
+        },
+        "choices": {
+          "type": "array",
+          "title": "Per-item: choices asked for each item",
+          "items": {
+            "$ref": "#/$defs/Choice"
+          }
+        },
         "filterByQuestion": {
           "type": "string",
           "title": "Filter options by the answer to question ID",
-          "description": "Optional. Options whose Focus bucket matches that answer are shown first (\"both\" always matches).",
-          "pattern": "^[a-z0-9][a-z0-9-]*$",
-          "maxLength": 64
+          "description": "Optional. Options whose Focus bucket matches that answer come first (\"both\" always matches). Use sectionId.questionId for another section, e.g. discovery.focus.",
+          "pattern": "^[a-z0-9][a-z0-9-]*(\\.[a-z0-9][a-z0-9-]*)?$",
+          "maxLength": 130
         },
         "outsideTitle": {
           "type": "string",
@@ -292,6 +432,30 @@
         "tag": {
           "type": "string",
           "title": "Tag (small label on swipe cards)",
+          "maxLength": 60
+        },
+        "subLabel": {
+          "type": "string",
+          "title": "Sub-label (e.g. eVar · Commerce)",
+          "maxLength": 120
+        },
+        "category": {
+          "type": "string",
+          "title": "Category (inventory filter)",
+          "maxLength": 60
+        },
+        "complexity": {
+          "type": "string",
+          "title": "Complexity",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "tier": {
+          "type": "string",
+          "title": "Tier badge (e.g. Foundation)",
           "maxLength": 60
         },
         "description": {
@@ -332,6 +496,58 @@
               "content-analytics"
             ]
           }
+        },
+        "mapping": {
+          "type": "object",
+          "title": "Mapping details (shown by per-item questions)",
+          "properties": {
+            "target": {
+              "type": "string",
+              "title": "Target approach",
+              "maxLength": 300
+            },
+            "field": {
+              "type": "string",
+              "title": "Field path",
+              "maxLength": 200
+            },
+            "why": {
+              "type": "string",
+              "title": "Why",
+              "maxLength": 800,
+              "x-semantic-type": "long-text"
+            },
+            "prereqs": {
+              "type": "array",
+              "title": "Prerequisites",
+              "items": {
+                "type": "string",
+                "title": "Prerequisite",
+                "maxLength": 200
+              }
+            }
+          }
+        }
+      }
+    },
+    "Choice": {
+      "title": "Choice",
+      "type": "object",
+      "required": [
+        "id",
+        "label"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "Choice ID",
+          "pattern": "^[a-z0-9][a-z0-9-]*$",
+          "maxLength": 64
+        },
+        "label": {
+          "type": "string",
+          "title": "Label",
+          "maxLength": 120
         }
       }
     }

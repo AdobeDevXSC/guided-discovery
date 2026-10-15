@@ -187,13 +187,28 @@ function validateStructured (key, value, doc) {
   const out = {}
   for (const [qid, picked] of Object.entries(answers)) {
     if (!/^[a-z0-9][a-z0-9-]{0,63}$/.test(qid)) { c.fail(`answers.${qid}`, 'invalid question id'); continue }
-    if (!Array.isArray(picked) || picked.length > 100 || picked.some((v) => typeof v !== 'string' || v.length > 64)) {
+    if (!Array.isArray(picked) || picked.length > 100 || picked.some((v) => typeof v !== 'string' || v.length > 130)) {
       c.fail(`answers.${qid}`, 'must be an array of option ids'); continue
     }
     const ids = [...new Set(picked)]
     if (questions) {
       const q = questions.find((x) => x.id === qid)
       if (!q) { c.fail(`answers.${qid}`, 'unknown question'); continue }
+      if (q.display === 'per-item') {
+        // "itemId:choiceId", one per item; items are the options of the itemsFrom question
+        const source = questions.find((x) => x.id === q.itemsFrom) || {}
+        const items = (source.options || []).map((o) => o.id)
+        const choices = (q.choices || []).map((o) => o.id)
+        const bad = ids.find((v) => {
+          const [item, choice, extra] = v.split(':')
+          return extra !== undefined || !items.includes(item) || !choices.includes(choice)
+        })
+        if (bad) { c.fail(`answers.${qid}`, `invalid item answer ${bad.slice(0, 64)}`); continue }
+        const perItem = new Set(ids.map((v) => v.split(':')[0]))
+        if (perItem.size !== ids.length) { c.fail(`answers.${qid}`, 'one answer per item'); continue }
+        if (ids.length) out[qid] = ids
+        continue
+      }
       const allowed = (q.options || []).map((o) => o.id)
       const unknown = ids.filter((o) => !allowed.includes(o))
       if (unknown.length) { c.fail(`answers.${qid}`, `unknown option ${unknown[0]}`); continue }

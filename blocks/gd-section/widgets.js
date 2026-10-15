@@ -217,8 +217,159 @@ export function slider(q, picked, choose, labels) {
   return wrap;
 }
 
+// ---------- inventory (filterable card grid) ----------
+const BUCKET_LABEL = (labels, b) => ({ analysis: labels.bucketAnalysis, activation: labels.bucketActivation, both: labels.bucketBoth }[b] || '');
+const COMPLEXITY_LABEL = (labels, c) => ({ low: labels.complexityLow, medium: labels.complexityMedium, high: labels.complexityHigh }[c] || '');
+
+function inventoryCard(o, on, toggle, labels) {
+  return h(
+    'button',
+    {
+      type: 'button',
+      class: `gd-card gd-inv-card${on ? ' is-on' : ''}${o.bucket ? ` gd-bucket-${o.bucket}` : ''}`,
+      'aria-pressed': String(on),
+      onClick: () => toggle(o.id),
+    },
+    h(
+      'span',
+      { class: 'gd-card-top' },
+      h('span', {}, h('strong', { text: o.label }), o.subLabel && h('span', { class: 'gd-card-sub', text: o.subLabel })),
+      h('span', { class: 'gd-card-check', 'aria-hidden': 'true', text: '✓' }),
+    ),
+    h(
+      'span',
+      { class: 'gd-badges' },
+      o.complexity && h('span', { class: `gd-badge gd-badge-${o.complexity}`, text: COMPLEXITY_LABEL(labels, o.complexity) }),
+      o.tier && h('span', { class: 'gd-badge', text: o.tier }),
+      o.bucket && h('span', { class: 'gd-chip-label', text: BUCKET_LABEL(labels, o.bucket) }),
+    ),
+  );
+}
+
+/**
+ * Filterable inventory. ui (per question, survives re-renders) holds the search and filters;
+ * typing only re-renders the grid, so the search box keeps focus.
+ */
+export function inventory(q, options, picked, toggle, labels, ui) {
+  const st = ui[q.id] || {
+    query: '', category: '', complexity: '', bucket: '',
+  };
+  ui[q.id] = st;
+  const categories = [...new Set(options.map((o) => o.category).filter(Boolean))];
+  const grid = h('div', { class: 'gd-cards gd-inv-grid', role: 'group' });
+  const count = h('p', { class: 'gd-inv-count', 'aria-live': 'polite' });
+  const paint = () => {
+    const query = st.query.trim().toLowerCase();
+    const rows = options.filter((o) => {
+      if (st.category && o.category !== st.category) return false;
+      if (st.complexity && o.complexity !== st.complexity) return false;
+      if (st.bucket && o.bucket !== st.bucket && o.bucket !== 'both') return false;
+      return !query || `${o.label} ${o.subLabel || ''}`.toLowerCase().includes(query);
+    });
+    count.textContent = fmt(labels.resultCount, { n: rows.length, total: options.length });
+    grid.replaceChildren(...(rows.length
+      ? rows.map((o) => inventoryCard(o, picked.includes(o.id), toggle, labels))
+      : [h('p', { class: 'gd-inv-empty', text: labels.noMatches })]));
+  };
+  const select = (key, all, values) => {
+    const el = h('select', { 'aria-label': all }, h('option', { value: '', text: all }), values.map(([v, l]) => h('option', { value: v, selected: st[key] === v, text: l })));
+    el.addEventListener('change', () => { st[key] = el.value; paint(); });
+    return el;
+  };
+  const search = h('input', {
+    type: 'search', placeholder: labels.search, 'aria-label': labels.search, value: st.query,
+  });
+  search.addEventListener('input', () => { st.query = search.value; paint(); });
+  paint();
+  return h(
+    'div',
+    { class: 'gd-inv' },
+    h(
+      'div',
+      { class: 'gd-inv-filters' },
+      search,
+      select('category', labels.allCategories, categories.map((c) => [c, c])),
+      select('complexity', labels.allComplexity, ['low', 'medium', 'high'].map((c) => [c, COMPLEXITY_LABEL(labels, c)])),
+      select('bucket', labels.allBuckets, [['analysis', labels.bucketAnalysisFilter], ['activation', labels.bucketActivationFilter]]),
+    ),
+    count,
+    grid,
+  );
+}
+
+// ---------- per-item mapping cards ----------
+/** One item's mapping card with the per-item choices; set(itemId, choiceId | null). */
+export function mappingCard(q, item, current, set, labels) {
+  const m = item.mapping || {};
+  return h(
+    'div',
+    { class: 'gd-map-card' },
+    h(
+      'div',
+      { class: 'gd-map-head' },
+      h('strong', { text: item.label }),
+      h(
+        'span',
+        { class: 'gd-badges' },
+        item.complexity && h('span', { class: `gd-badge gd-badge-${item.complexity}`, text: COMPLEXITY_LABEL(labels, item.complexity) }),
+        item.tier && h('span', { class: 'gd-badge', text: item.tier }),
+      ),
+    ),
+    h(
+      'div',
+      { class: 'gd-map-row' },
+      h('div', {}, h('span', { class: 'gd-map-label', text: labels.mappingFrom }), h('span', { class: 'gd-map-value', text: item.label })),
+      h('span', { class: 'gd-map-arrow', 'aria-hidden': 'true', text: '→' }),
+      h(
+        'div',
+        {},
+        h('span', { class: 'gd-map-label', text: labels.mappingTo }),
+        h('span', { class: 'gd-map-value', text: m.target || '' }),
+        m.field && h('code', { class: 'gd-map-field', text: m.field }),
+      ),
+    ),
+    (m.why || (m.prereqs && m.prereqs.length)) && h(
+      'div',
+      { class: 'gd-map-why' },
+      m.why && h('p', {}, h('strong', { text: `${labels.mappingWhy} ` }), m.why),
+      m.prereqs && m.prereqs.length ? h('p', {}, h('strong', { text: `${labels.mappingPrereqs} ` }), m.prereqs.join(', ')) : null,
+    ),
+    h(
+      'div',
+      { class: 'gd-map-choices' },
+      h('span', { class: 'gd-map-q', text: q.title }),
+      h('div', { class: 'gd-map-buttons', role: 'radiogroup', 'aria-label': `${q.title} ${item.label}` }, (q.choices || []).map((ch) => h('button', {
+        type: 'button',
+        class: `gd-choice${current === ch.id ? ' is-on' : ''}`,
+        role: 'radio',
+        'aria-checked': String(current === ch.id),
+        onClick: () => set(item.id, current === ch.id ? null : ch.id),
+        text: ch.label,
+      }))),
+    ),
+  );
+}
+
+/** Current choice per item from a per-item answer list ("itemId:choiceId"). */
+export const perItemChoice = (picked, itemId) => {
+  const hit = (picked || []).find((v) => v.startsWith(`${itemId}:`));
+  return hit ? hit.slice(itemId.length + 1) : null;
+};
+
 /** Renders a question's answer control for its display type. */
-export function control(q, options, picked, { toggle, choose }, labels) {
+export function control(q, options, picked, { toggle, choose }, labels, extra = {}) {
+  if (q.display === 'inventory') return inventory(q, options, picked, toggle, labels, extra.ui || {});
+  if (q.display === 'per-item') {
+    const items = extra.items || [];
+    if (!items.length) return h('p', { class: 'gd-sc-help', text: labels.perItemEmpty });
+    return h('div', { class: 'gd-map-list' }, items.map((item) => mappingCard(
+      q,
+      item,
+      perItemChoice(picked, item.id),
+      extra.setItem,
+      labels,
+    )));
+  }
   if (q.display === 'slider') return slider(q, picked, choose, labels);
   if (/^cards-/.test(q.display) || q.display === 'swipe') return cards(q, options, picked, toggle);
   return tiles(q, picked, toggle, labels);

@@ -6,7 +6,7 @@
  */
 import { h } from '../guided-discovery/lib/dom.js';
 import {
-  control, cards, fmt, isSingle,
+  control, cards, fmt, isSingle, mappingCard, perItemChoice,
 } from './widgets.js';
 
 /** Splits the section's questions into guided steps. */
@@ -16,9 +16,12 @@ export function buildSteps(section, focus) {
   (section.questions || []).forEach((q, i) => {
     if (i === 0 && q.display === 'cards-single') {
       steps.push({ type: 'picker', q });
-    } else if (q.display === 'swipe') {
+    } else if (q.display === 'swipe' || q.display === 'inventory') {
       group = null;
       steps.push({ type: 'swipe', q });
+    } else if (q.display === 'per-item') {
+      group = null;
+      steps.push({ type: 'per-item', q });
     } else {
       if (!group || q.groupHeading) {
         group = { type: 'questions', title: q.groupHeading || section.heading, questions: [] };
@@ -98,7 +101,7 @@ export default function openGuided(section, api, onDone) {
 
   function renderSwipe(step) {
     const { q } = step;
-    const focus = q.filterByQuestion ? (api.answers()[q.filterByQuestion] || [])[0] : null;
+    const focus = q.filterByQuestion ? api.answerFor(q.filterByQuestion)[0] : null;
     const all = q.options || [];
     if (!state.items) {
       const matched = all.filter((o) => matchesFocus(o, focus));
@@ -148,14 +151,14 @@ export default function openGuided(section, api, onDone) {
       );
       return;
     }
-    title.textContent = q.title;
+    title.textContent = q.guidedTitle || q.title;
     progress.textContent = fmt(labels.swipeCount, { n: state.i + 1, total: state.items.length });
     const item = state.items[state.i];
     const picked = (api.answers()[q.id] || []).includes(item.id);
     const card = h(
       'div',
       { class: 'gd-swipe-card' },
-      item.tag && h('span', { class: 'gd-swipe-tag', text: item.tag }),
+      (item.subLabel || item.tag) && h('span', { class: 'gd-swipe-tag', text: item.subLabel || item.tag }),
       h('strong', { class: 'gd-swipe-name', text: item.label }),
       item.description && h('span', { class: 'gd-swipe-desc', text: item.description }),
       picked && h('span', { class: 'gd-swipe-badge', text: '✓' }),
@@ -164,7 +167,12 @@ export default function openGuided(section, api, onDone) {
     const stack = h(
       'div',
       { class: 'gd-swipe-stack' },
-      next && h('div', { class: 'gd-swipe-card gd-swipe-under' }, next.tag && h('span', { class: 'gd-swipe-tag', text: next.tag }), h('strong', { class: 'gd-swipe-name', text: next.label })),
+      next && h(
+        'div',
+        { class: 'gd-swipe-card gd-swipe-under' },
+        (next.subLabel || next.tag) && h('span', { class: 'gd-swipe-tag', text: next.subLabel || next.tag }),
+        h('strong', { class: 'gd-swipe-name', text: next.label }),
+      ),
       card,
     );
     let startX = 0;
@@ -228,10 +236,46 @@ export default function openGuided(section, api, onDone) {
     );
   }
 
+  // one item per screen: its mapping card and the per-item choices
+  function renderPerItem(step) {
+    const { q } = step;
+    if (!state.items) {
+      state.items = api.itemsOf(q);
+      state.pi = 0;
+    }
+    if (!state.items.length) { nextStep(); return; }
+    const item = state.items[state.pi];
+    const last = state.pi === state.items.length - 1;
+    title.textContent = q.guidedTitle || q.title;
+    progress.textContent = fmt(labels.itemCount, { n: state.pi + 1, total: state.items.length });
+    foot.hidden = false;
+    const setItem = (itemId, choiceId) => {
+      api.setItem(q)(itemId, choiceId);
+      renderPerItem(step);
+    };
+    const current = perItemChoice(api.answers()[q.id], item.id);
+    body.replaceChildren(mappingCard(q, item, current, setItem, labels));
+    foot.replaceChildren(
+      state.pi > 0 ? h('button', {
+        type: 'button', class: 'gd-btn-ghost', onClick: () => { state.pi -= 1; renderPerItem(step); }, text: labels.back || 'Back',
+      }) : h('span'),
+      h('button', {
+        type: 'button',
+        class: 'gd-btn-primary',
+        onClick: () => {
+          if (last) nextStep();
+          else { state.pi += 1; renderPerItem(step); }
+        },
+        text: last ? (labels.done || 'Done') : (labels.next || 'Next'),
+      }),
+    );
+  }
+
   function render() {
     const step = steps[stepIndex];
     if (step.type === 'picker') renderPicker(step);
     else if (step.type === 'swipe') renderSwipe(step);
+    else if (step.type === 'per-item') renderPerItem(step);
     else renderQuestions(step);
     box.focus({ preventScroll: true });
   }
