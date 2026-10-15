@@ -1,0 +1,151 @@
+/* gd-section: a Guided Discovery section rendered from structured content. Site tokens from styles.css. */
+.gd-section {
+  --gd-radius: 8px;
+  --gd-on: color-mix(in srgb, var(--link-color) 10%, var(--background-color));
+}
+
+.gd-section .gd-sc {
+  scroll-margin-top: calc(var(--nav-height) + 16px);
+}
+
+.gd-section .gd-sc-eyebrow {
+  margin: 0;
+  font-size: var(--body-font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent-color);
+}
+
+.gd-section h2 {
+  margin: 4px 0 8px;
+}
+
+.gd-section .gd-sc-intro {
+  max-width: 70ch;
+}
+
+.gd-section .gd-sc-group {
+  margin: 36px 0 4px;
+  font-size: var(--heading-font-size-m);
+}
+
+.gd-section .gd-sc-q {
+  border: 0;
+  padding: 0;
+  margin: 24px 0 0;
+}
+
+.gd-section .gd-sc-q legend {
+  font-weight: 600;
+  padding: 0;
+  margin-bottom: 6px;
+}
+
+.gd-section .gd-sc-req {
+  color: var(--accent-color);
+}
+
+.gd-section .gd-sc-help,
+.gd-section .gd-sc-caption,
+.gd-section .gd-sc-hint,
+.gd-section .gd-sc-status {
+  color: var(--text-muted-color);
+  font-size: var(--body-font-size-s);
+  margin: 0 0 10px;
+}
+
+.gd-section .gd-sc-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.gd-section .gd-sc-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+  font: inherit;
+  color: var(--text-color);
+  background: var(--background-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--gd-radius);
+  padding: 14px 16px;
+  cursor: pointer;
+}
+
+.gd-section .gd-sc-card span {
+  color: var(--text-muted-color);
+  font-size: var(--body-font-size-s);
+}
+
+.gd-section .gd-sc-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.gd-section .gd-sc-chip {
+  font: inherit;
+  color: var(--text-color);
+  background: var(--background-color);
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+
+.gd-section .gd-sc-card.is-on,
+.gd-section .gd-sc-chip.is-on {
+  border-color: var(--link-color);
+  background: var(--gd-on);
+}
+
+.gd-section .gd-sc-chip.is-on {
+  font-weight: 600;
+}
+
+.gd-section .gd-sc-foot {
+  margin-top: 36px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+.gd-section .gd-sc-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.gd-section .gd-sc-save,
+.gd-section .gd-sc-done {
+  font-size: var(--body-font-size-xs);
+  color: var(--text-muted-color);
+}
+
+.gd-section .gd-sc-save[data-state='error'],
+.gd-section .gd-sc-save[data-state='offline'] {
+  color: var(--accent-color);
+}
+
+.gd-section .gd-sc-btn {
+  font: inherit;
+  border-radius: 999px;
+  padding: 8px 18px;
+  border: 1px solid var(--dark-color);
+  background: var(--dark-color);
+  color: var(--background-color);
+  cursor: pointer;
+}
+
+.gd-section .gd-sc-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.gd-section :focus-visible {
+  outline: 2px solid var(--link-color);
+  outline-offset: 2px;
+}

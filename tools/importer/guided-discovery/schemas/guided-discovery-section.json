@@ -1,0 +1,194 @@
+{
+  "title": "Guided Discovery section",
+  "type": "object",
+  "required": [
+    "sectionId",
+    "heading",
+    "questions"
+  ],
+  "properties": {
+    "sectionId": {
+      "type": "string",
+      "title": "Section ID",
+      "description": "Stable key for this section (e.g. discovery). Answers are stored under it; do not change after launch.",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "maxLength": 64
+    },
+    "eyebrow": {
+      "type": "string",
+      "title": "Eyebrow",
+      "maxLength": 120
+    },
+    "heading": {
+      "type": "string",
+      "title": "Heading",
+      "maxLength": 200
+    },
+    "intro": {
+      "type": "string",
+      "title": "Intro",
+      "maxLength": 1200,
+      "x-semantic-type": "long-text"
+    },
+    "hint": {
+      "type": "string",
+      "title": "Hint shown above Continue",
+      "maxLength": 400,
+      "x-semantic-type": "long-text"
+    },
+    "continueText": {
+      "type": "string",
+      "title": "Text next to Continue",
+      "maxLength": 300
+    },
+    "continueLabel": {
+      "type": "string",
+      "title": "Continue button label",
+      "maxLength": 60,
+      "default": "Continue ->"
+    },
+    "completedLabel": {
+      "type": "string",
+      "title": "Label once the section is complete",
+      "maxLength": 60,
+      "default": "Section complete"
+    },
+    "questions": {
+      "type": "array",
+      "title": "Questions",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/Question"
+      }
+    }
+  },
+  "$defs": {
+    "Question": {
+      "title": "Question",
+      "type": "object",
+      "required": [
+        "id",
+        "display",
+        "title",
+        "options"
+      ],
+      "properties": {
+        "groupHeading": {
+          "type": "string",
+          "title": "Heading above this question",
+          "description": "Optional. Starts a new group on the page (e.g. \"A few starting questions\").",
+          "maxLength": 200
+        },
+        "id": {
+          "type": "string",
+          "title": "Question ID",
+          "description": "Stable key for the answer (e.g. pain). Do not change after launch.",
+          "pattern": "^[a-z0-9][a-z0-9-]*$",
+          "maxLength": 64
+        },
+        "display": {
+          "type": "string",
+          "title": "Display",
+          "description": "cards = large selectable cards; chips = compact buttons. single = pick one; multi = pick any.",
+          "enum": [
+            "cards-single",
+            "cards-multi",
+            "chips-single",
+            "chips-multi"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "title": "Question text",
+          "maxLength": 300
+        },
+        "help": {
+          "type": "string",
+          "title": "Help text",
+          "maxLength": 400
+        },
+        "required": {
+          "type": "boolean",
+          "title": "Required to continue",
+          "default": false
+        },
+        "options": {
+          "type": "array",
+          "title": "Options",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/Option"
+          }
+        },
+        "filterByQuestion": {
+          "type": "string",
+          "title": "Filter options by the answer to question ID",
+          "description": "Optional. Options whose Focus bucket matches that answer are shown first (\"both\" always matches).",
+          "pattern": "^[a-z0-9][a-z0-9-]*$",
+          "maxLength": 64
+        }
+      }
+    },
+    "Option": {
+      "title": "Option",
+      "type": "object",
+      "required": [
+        "id",
+        "label"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "Option ID",
+          "description": "Stable key saved when this option is picked. Do not change after launch.",
+          "pattern": "^[a-z0-9][a-z0-9-]*$",
+          "maxLength": 64
+        },
+        "label": {
+          "type": "string",
+          "title": "Label",
+          "maxLength": 200
+        },
+        "description": {
+          "type": "string",
+          "title": "Description",
+          "maxLength": 400
+        },
+        "caption": {
+          "type": "string",
+          "title": "Caption shown when selected",
+          "maxLength": 300
+        },
+        "bucket": {
+          "type": "string",
+          "title": "Focus bucket",
+          "description": "For focus filtering: analysis, activation or both.",
+          "enum": [
+            "analysis",
+            "activation",
+            "both"
+          ]
+        },
+        "capabilities": {
+          "type": "array",
+          "title": "Unlocks CJA capabilities",
+          "description": "Picking this option recommends these capabilities on the summary.",
+          "items": {
+            "type": "string",
+            "title": "Capability",
+            "enum": [
+              "connected-data",
+              "graph-stitching",
+              "data-transformations",
+              "journey-mapping",
+              "attribution",
+              "experimentation",
+              "ai-capabilities",
+              "content-analytics"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

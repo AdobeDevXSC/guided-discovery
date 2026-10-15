@@ -83,6 +83,8 @@ export function createStore() {
 
     /** Mutates one section; render:false for text inputs that must keep focus. */
     update(key, mutate, { render = true } = {}) {
+      // structured-content sections ("sc-<id>") are created on first use
+      if (!state.sections[key]) state.sections[key] = { answers: {} };
       mutate(state.sections[key]);
       state.revs[key] = (state.revs[key] || 0) + 1;
       if (state.status === 'started') state.status = 'in_progress';

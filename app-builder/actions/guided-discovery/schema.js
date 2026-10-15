@@ -169,6 +169,41 @@ const SECTIONS = {
   }
 }
 
+// Structured-content sections ("sc-<sectionId>") are authored in DA (schema guided-discovery-section)
+// and validated against the published document instead of the catalog.
+const STRUCTURED_KEY_RE = /^sc-[a-z0-9][a-z0-9-]{0,62}$/
+const isStructuredKey = (key) => STRUCTURED_KEY_RE.test(key || '')
+
+/**
+ * Validates { answers: { questionId: [optionId...] } } against the section's published structured
+ * document (doc.data.questions). Without a doc (delivery unreachable) only the shape is checked.
+ */
+function validateStructured (key, value, doc) {
+  const c = checker(key)
+  if (!c.known(value, ['answers'])) return { data: {}, errors: c.errors }
+  const answers = value.answers === undefined ? {} : value.answers
+  if (!isObj(answers)) { c.fail('answers', 'must be an object'); return { data: {}, errors: c.errors } }
+  const questions = doc && Array.isArray(doc.questions) ? doc.questions : null
+  const out = {}
+  for (const [qid, picked] of Object.entries(answers)) {
+    if (!/^[a-z0-9][a-z0-9-]{0,63}$/.test(qid)) { c.fail(`answers.${qid}`, 'invalid question id'); continue }
+    if (!Array.isArray(picked) || picked.length > 100 || picked.some((v) => typeof v !== 'string' || v.length > 64)) {
+      c.fail(`answers.${qid}`, 'must be an array of option ids'); continue
+    }
+    const ids = [...new Set(picked)]
+    if (questions) {
+      const q = questions.find((x) => x.id === qid)
+      if (!q) { c.fail(`answers.${qid}`, 'unknown question'); continue }
+      const allowed = (q.options || []).map((o) => o.id)
+      const unknown = ids.filter((o) => !allowed.includes(o))
+      if (unknown.length) { c.fail(`answers.${qid}`, `unknown option ${unknown[0]}`); continue }
+      if (/-single$/.test(q.display || '') && ids.length > 1) { c.fail(`answers.${qid}`, 'at most 1'); continue }
+    }
+    if (ids.length) out[qid] = ids
+  }
+  return { data: { answers: out }, errors: c.errors }
+}
+
 function validateSection (key, value) {
   if (!SECTION_KEYS.includes(key)) return { errors: { section: 'unknown section' } }
   const c = checker(key)
@@ -180,7 +215,13 @@ function validateProgress (input) {
   if (input === undefined) return { progress: undefined, errors: {} }
   const c = checker('progress')
   if (!c.known(input, ['completed', 'lastPage'])) return { errors: c.errors }
-  const progress = { completed: c.idList('completed', input.completed, PAGES) }
+  // catalog pages plus structured section ids (authored, so only their shape is checked)
+  const completed = Array.isArray(input.completed) ? [...new Set(input.completed)] : []
+  if (input.completed !== undefined && !Array.isArray(input.completed)) c.fail('completed', 'must be an array')
+  completed.filter((p) => !PAGES.includes(p) && !/^[a-z0-9][a-z0-9-]{0,63}$/.test(String(p)))
+    .forEach((p) => c.fail('completed', `invalid page ${String(p).slice(0, 40)}`))
+  if (completed.length > 40) c.fail('completed', 'at most 40')
+  const progress = { completed: completed.filter((p) => PAGES.includes(p) || /^[a-z0-9][a-z0-9-]{0,63}$/.test(String(p))).slice(0, 40) }
   const last = c.oneOf('lastPage', input.lastPage, ALL_PAGES)
   if (last) progress.lastPage = last
   return { progress, errors: c.errors }
@@ -195,5 +236,5 @@ const INDEXES = [
 
 module.exports = {
   COLLECTION, SCHEMA_VERSION, STATUSES, SECTION_KEYS, INDEXES,
-  leadRefId, cleanSource, validateSection, validateProgress
+  leadRefId, cleanSource, validateSection, validateProgress, isStructuredKey, validateStructured
 }
