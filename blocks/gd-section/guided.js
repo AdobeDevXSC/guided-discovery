@@ -6,11 +6,14 @@
  */
 import { h } from '../guided-discovery/lib/dom.js';
 import {
-  control, cards, fmt, isSingle, mappingCard, perItemChoice,
+  control, cards, fmt, isSingle, mappingCard, perItemChoice, ownerCard,
 } from './widgets.js';
 
-/** Splits the section's questions into guided steps. */
-export function buildSteps(section, focus) {
+/**
+ * Splits the section's questions into guided steps. askFirst(q, focus) decides which questions
+ * move to the front of their step for the chosen focus.
+ */
+export function buildSteps(section, focus, askFirst = (q, f) => f && q.firstForFocus === f) {
   const steps = [];
   let group = null;
   (section.questions || []).forEach((q, i) => {
@@ -22,6 +25,12 @@ export function buildSteps(section, focus) {
     } else if (q.display === 'per-item') {
       group = null;
       steps.push({ type: 'per-item', q });
+    } else if (q.display === 'sort') {
+      group = null;
+      steps.push({ type: 'swipe', q, sort: true });
+    } else if (q.display === 'owner-cards') {
+      group = null;
+      steps.push({ type: 'owners', q });
     } else {
       if (!group || q.groupHeading) {
         group = { type: 'questions', title: q.groupHeading || section.heading, questions: [] };
@@ -33,8 +42,8 @@ export function buildSteps(section, focus) {
   // within a step, questions marked "ask first" for the chosen focus move to the front
   steps.filter((s) => s.type === 'questions').forEach((s) => {
     s.questions = [
-      ...s.questions.filter((q) => focus && q.firstForFocus === focus),
-      ...s.questions.filter((q) => !(focus && q.firstForFocus === focus)),
+      ...s.questions.filter((q) => askFirst(q, focus)),
+      ...s.questions.filter((q) => !askFirst(q, focus)),
     ];
   });
   return steps;
@@ -58,7 +67,7 @@ export default function openGuided(section, api, onDone) {
   });
   const overlay = h('div', { class: 'gd-overlay' }, box);
   let stepIndex = 0;
-  let steps = buildSteps(section, api.focusOf());
+  let steps = buildSteps(section, api.focusOf(), api.askFirst);
   let state = {}; // per-step cursor (question index, swipe position, interstitial)
 
   let onKey = null;
@@ -72,7 +81,7 @@ export default function openGuided(section, api, onDone) {
   const nextStep = () => {
     stepIndex += 1;
     // a different focus may reorder the remaining steps' questions
-    steps = buildSteps(section, api.focusOf());
+    steps = buildSteps(section, api.focusOf(), api.askFirst);
     state = {};
     if (stepIndex >= steps.length) finish();
     // eslint-disable-next-line no-use-before-define
@@ -123,8 +132,15 @@ export default function openGuided(section, api, onDone) {
       }
       const item = state.items[state.i];
       const picked = api.answers()[q.id] || [];
-      if (yes && !picked.includes(item.id)) api.toggle(q, item.id);
-      if (!yes && picked.includes(item.id)) api.toggle(q, item.id);
+      if (step.sort) {
+        // sort: right = first choice, left = second choice
+        const [first, second] = q.choices || [];
+        const ch = yes ? first : second;
+        if (ch) api.setItem(q)(item.id, ch.id);
+      } else {
+        if (yes && !picked.includes(item.id)) api.toggle(q, item.id);
+        if (!yes && picked.includes(item.id)) api.toggle(q, item.id);
+      }
       state.i += 1;
       if (state.i >= state.items.length) {
         if (state.rest.length) state.interstitial = true;
@@ -154,14 +170,17 @@ export default function openGuided(section, api, onDone) {
     title.textContent = q.guidedTitle || q.title;
     progress.textContent = fmt(labels.swipeCount, { n: state.i + 1, total: state.items.length });
     const item = state.items[state.i];
-    const picked = (api.answers()[q.id] || []).includes(item.id);
+    const answers = api.answers()[q.id] || [];
+    const sorted = step.sort ? perItemChoice(answers, item.id) : null;
+    const sortLabel = sorted ? ((q.choices || []).find((c) => c.id === sorted) || {}).label : '';
+    const picked = step.sort ? !!sorted : answers.includes(item.id);
     const card = h(
       'div',
       { class: 'gd-swipe-card' },
       (item.subLabel || item.tag) && h('span', { class: 'gd-swipe-tag', text: item.subLabel || item.tag }),
       h('strong', { class: 'gd-swipe-name', text: item.label }),
       item.description && h('span', { class: 'gd-swipe-desc', text: item.description }),
-      picked && h('span', { class: 'gd-swipe-badge', text: '✓' }),
+      picked && h('span', { class: 'gd-swipe-badge', text: step.sort ? `✓ ${sortLabel}` : '✓' }),
     );
     const next = state.items[state.i + 1];
     const stack = h(
@@ -199,7 +218,8 @@ export default function openGuided(section, api, onDone) {
       card.addEventListener('pointerup', up);
       card.addEventListener('pointercancel', up);
     });
-    body.replaceChildren(h('p', { class: 'gd-ov-help gd-center', text: labels.swipeHint }), stack);
+    const hint = step.sort ? (labels.sortHint || labels.swipeHint) : labels.swipeHint;
+    body.replaceChildren(h('p', { class: 'gd-ov-help gd-center', text: hint }), stack);
   }
 
   function renderQuestions(step) {
@@ -217,7 +237,7 @@ export default function openGuided(section, api, onDone) {
       q.help ? h('p', { class: 'gd-ov-help', text: q.help }) : '',
       control(q, options, picked, {
         toggle: (id) => { api.toggle(q, id); renderQuestions(step); },
-        choose: (id) => { api.set(q.id, id ? [id] : []); renderQuestions(step); },
+        choose: (id) => { api.chooseFor(q)(id); renderQuestions(step); },
       }, labels),
     );
     foot.replaceChildren(
@@ -271,11 +291,50 @@ export default function openGuided(section, api, onDone) {
     );
   }
 
+  // owner cards: one option per screen, the ones matching the focus first
+  function renderOwners(step) {
+    const { q } = step;
+    if (!state.items) {
+      const focus = api.focusOf();
+      const all = q.options || [];
+      state.items = [
+        ...all.filter((o) => api.matchesFocus(o.bucket, focus)),
+        ...all.filter((o) => !api.matchesFocus(o.bucket, focus)),
+      ];
+      state.oi = 0;
+    }
+    const o = state.items[state.oi];
+    const last = state.oi === state.items.length - 1;
+    const handlers = api.owners(q);
+    title.textContent = q.guidedTitle || q.title;
+    progress.textContent = fmt(labels.roleCount, { n: state.oi + 1, total: state.items.length });
+    foot.hidden = false;
+    body.replaceChildren(ownerCard(q, o, api.answers()[q.id] || [], {
+      setOwner: handlers.setOwner,
+      toggleFollowUp: (id) => { handlers.toggleFollowUp(id); renderOwners(step); },
+    }, labels, api.matchesFocus(o.bucket, api.focusOf())));
+    foot.replaceChildren(
+      state.oi > 0 ? h('button', {
+        type: 'button', class: 'gd-btn-ghost', onClick: () => { state.oi -= 1; renderOwners(step); }, text: labels.back || 'Back',
+      }) : h('span'),
+      h('button', {
+        type: 'button',
+        class: 'gd-btn-primary',
+        onClick: () => {
+          if (last) nextStep();
+          else { state.oi += 1; renderOwners(step); }
+        },
+        text: last ? (labels.done || 'Done') : (labels.next || 'Next'),
+      }),
+    );
+  }
+
   function render() {
     const step = steps[stepIndex];
     if (step.type === 'picker') renderPicker(step);
     else if (step.type === 'swipe') renderSwipe(step);
     else if (step.type === 'per-item') renderPerItem(step);
+    else if (step.type === 'owners') renderOwners(step);
     else renderQuestions(step);
     box.focus({ preventScroll: true });
   }

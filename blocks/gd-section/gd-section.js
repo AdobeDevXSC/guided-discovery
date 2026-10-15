@@ -13,12 +13,11 @@
  */
 import { readBlockConfig } from '../../scripts/aem.js';
 import { h } from '../guided-discovery/lib/dom.js';
-import getSession, { contentEnv } from './session.js';
+import getSession from './session.js';
+import loadStructured from './content.js';
 import { control, isSingle } from './widgets.js';
 import openGuided from './guided.js';
 
-const SC_BASE = 'https://da-sc.adobeaem.workers.dev';
-const DEFAULT_REPO = 'adobedevxsc/guided-discovery';
 const DEFAULT_LABELS = {
   startHeading: 'Ready when you are',
   start: 'Start ->',
@@ -40,20 +39,6 @@ const DEFAULT_LABELS = {
 
 const first = (v) => (Array.isArray(v) ? v[0] : v);
 
-/** org/site from an EDS host (<ref>--<site>--<org>.aem.page|live); a fixed fallback elsewhere. */
-function repoPath() {
-  const m = window.location.hostname.match(/^[^.]+?--([a-z0-9-]+)--([a-z0-9-]+)\.aem\.(page|live)$/i);
-  return m ? `${m[2]}/${m[1]}`.toLowerCase() : DEFAULT_REPO;
-}
-
-async function loadSection(contentLink) {
-  const path = new URL(contentLink, window.location.href).pathname.replace(/\.(json|html)$/, '');
-  const res = await fetch(`${SC_BASE}/${contentEnv()}/${repoPath()}${path}`);
-  if (!res.ok) throw new Error(`structured content ${path} returned ${res.status}`);
-  const json = await res.json();
-  return json.data || json;
-}
-
 export default async function decorate(block) {
   const cfg = readBlockConfig(block);
   const contentLink = first(cfg.content);
@@ -68,7 +53,7 @@ export default async function decorate(block) {
 
   let section;
   try {
-    section = await loadSection(contentLink);
+    section = await loadStructured(contentLink);
   } catch (e) {
     status.textContent = 'This section could not be loaded. Please reload the page.';
     return;
@@ -129,7 +114,38 @@ export default async function decorate(block) {
     return (((store.state.sections[refKey(ref)] || {}).answers || {})[qid]) || [];
   };
   // sections this one reads from (re-render when they change)
-  const dependsOn = new Set(questions.map((q) => q.filterByQuestion).filter(Boolean).map(refKey));
+  const dependsOn = new Set([...questions.map((q) => q.filterByQuestion), section.focusFrom]
+    .filter(Boolean).map(refKey));
+  // the focus that orders questions and options: the section's focusFrom, else its own picker
+  const sectionFocus = () => (section.focusFrom ? answerFor(section.focusFrom)[0] : focusOf());
+  const matchesFocus = (bucket, focus) => !!focus && focus !== 'both'
+    && (bucket === focus || bucket === 'both');
+  // asked first: questions marked for this focus, or whose bucket matches it
+  const askFirst = (q, focus) => (focus && q.firstForFocus === focus)
+    || matchesFocus(q.bucket, focus);
+
+  // owner cards: "optionId=Name" (saved without re-rendering so typing keeps focus) and
+  // "optionId:follow-up"
+  const owners = (q) => ({
+    setOwner: (optId, text) => store.update(key, (sec) => {
+      const rest = (sec.answers[q.id] || []).filter((v) => !v.startsWith(`${optId}=`));
+      const clean = text.replace(/\s+/g, ' ').trim().slice(0, 120);
+      const next = clean ? [...rest, `${optId}=${clean}`] : rest;
+      if (next.length) sec.answers[q.id] = next;
+      else delete sec.answers[q.id];
+    }, { render: false }),
+    toggleFollowUp: (optId) => {
+      const cur = answersOf()[q.id] || [];
+      const flag = `${optId}:follow-up`;
+      setAnswer(q.id, cur.includes(flag) ? cur.filter((v) => v !== flag) : [...cur, flag]);
+    },
+  });
+  // sliders with differentFrom: picking the other question's stop clears that question
+  const chooseFor = (q) => (id) => {
+    const other = q.differentFrom && (answersOf()[q.differentFrom] || [])[0];
+    if (id && other === id) setAnswer(q.differentFrom, []);
+    setAnswer(q.id, id ? [id] : []);
+  };
 
   // per-item answers are "itemId:choiceId", one per item
   const setItem = (q) => (itemId, choiceId) => {
@@ -154,7 +170,17 @@ export default async function decorate(block) {
   };
 
   const startGuided = () => openGuided(section, {
-    answers: answersOf, set: setAnswer, toggle, focusOf, answerFor, setItem, itemsOf,
+    answers: answersOf,
+    set: setAnswer,
+    toggle,
+    focusOf: sectionFocus,
+    answerFor,
+    setItem,
+    itemsOf,
+    owners,
+    chooseFor,
+    askFirst,
+    matchesFocus,
   }, () => {
     const f = root.querySelector('.gd-sc-foot');
     if (f) f.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -165,7 +191,7 @@ export default async function decorate(block) {
     const anyAnswered = Object.keys(answers).length > 0;
     const missing = questions.filter((q) => q.required && !(answers[q.id] || []).length);
     const done = store.state.progress.completed.includes(section.sectionId);
-    const focus = focusOf();
+    const focus = sectionFocus();
     // the inline page shows the same focus-first order the guided flow asks in
     const groups = [];
     questions.forEach((q) => {
@@ -174,8 +200,8 @@ export default async function decorate(block) {
     });
     // each group keeps its heading on whichever question focus ordering puts first
     const ordered = groups.flatMap((g) => [
-      ...g.filter((q) => focus && q.firstForFocus === focus),
-      ...g.filter((q) => !(focus && q.firstForFocus === focus)),
+      ...g.filter((q) => askFirst(q, focus)),
+      ...g.filter((q) => !askFirst(q, focus)),
     ].map((q, j) => ({ q, heading: j === 0 ? g[0].groupHeading : null })));
     const next = () => {
       store.markComplete(section.sectionId);
@@ -208,8 +234,14 @@ export default async function decorate(block) {
             q.help && h('p', { class: 'gd-sc-help', text: q.help }),
             control(q, orderedOptions(q), picked, {
               toggle: (id) => toggle(q, id),
-              choose: (id) => setAnswer(q.id, id ? [id] : []),
-            }, labels, { ui, items: itemsOf(q), setItem: setItem(q) }),
+              choose: chooseFor(q),
+            }, labels, {
+              ui,
+              items: itemsOf(q),
+              setItem: setItem(q),
+              owners: owners(q),
+              isRelevant: (o) => matchesFocus(o.bucket, focus),
+            }),
           ),
         ];
       }),
@@ -233,7 +265,9 @@ export default async function decorate(block) {
   }
 
   store.subscribe((kind, detail = {}) => {
-    const mine = kind === 'section' && (detail.key === key || dependsOn.has(detail.key));
+    // quiet updates (owner text) save without re-rendering so the input keeps focus
+    const mine = kind === 'section' && detail.render !== false
+      && (detail.key === key || dependsOn.has(detail.key));
     if (mine || kind === 'progress' || kind === 'result') render();
   });
   status.remove();

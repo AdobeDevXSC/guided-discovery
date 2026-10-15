@@ -967,3 +967,112 @@ body.gd-ov-open {
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* ---------- notes, sort and owner cards ---------- */
+.gd-section .gd-card-note,
+.gd-overlay .gd-card-note {
+  display: block;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--gd-text-soft);
+  border-top: 1px dashed var(--gd-line);
+  padding-top: 8px;
+}
+
+.gd-section .gd-card-note strong,
+.gd-overlay .gd-card-note strong {
+  color: var(--gd-text);
+}
+
+.gd-section .gd-sort-card {
+  cursor: default;
+}
+
+.gd-section .gd-sort-card .gd-map-buttons {
+  margin-top: 4px;
+}
+
+.gd-section .gd-owners {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.gd-section .gd-owner-card,
+.gd-overlay .gd-owner-card {
+  cursor: default;
+  gap: 10px;
+}
+
+.gd-section .gd-owner-name,
+.gd-overlay .gd-owner-name {
+  font-size: 17px;
+}
+
+.gd-section .gd-owner-fields,
+.gd-overlay .gd-owner-fields {
+  margin: 0;
+}
+
+.gd-section .gd-owner-fields dt,
+.gd-overlay .gd-owner-fields dt {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--gd-text-soft);
+}
+
+.gd-section .gd-owner-fields dd,
+.gd-overlay .gd-owner-fields dd {
+  margin: 2px 0 0;
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+
+.gd-section .gd-owner-inputs,
+.gd-overlay .gd-owner-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+  padding-top: 12px;
+  border-top: 1px solid var(--gd-line);
+}
+
+.gd-section .gd-owner-inputs > label:first-child,
+.gd-overlay .gd-owner-inputs > label:first-child {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--gd-text-soft);
+}
+
+.gd-section .gd-owner-inputs input[type='text'],
+.gd-overlay .gd-owner-inputs input[type='text'] {
+  font: inherit;
+  padding: 8px 10px;
+  border: 1px solid var(--gd-line-strong);
+  border-radius: 8px;
+}
+
+.gd-section .gd-check,
+.gd-overlay .gd-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14.5px;
+  color: var(--gd-text-soft);
+  cursor: pointer;
+}
+
+.gd-section .gd-relevant,
+.gd-overlay .gd-relevant {
+  align-self: flex-start;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  color: var(--gd-select);
+  background: var(--gd-select-soft);
+}

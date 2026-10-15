@@ -1,5 +1,6 @@
 const crypto = require('crypto')
 const { computeResult } = require('../../../blocks/guided-discovery/lib/scoring.js')
+const { computeSummary } = require('../../../blocks/gd-summary/scoring.js')
 const {
   COLLECTION, SCHEMA_VERSION, INDEXES,
   leadRefId, cleanSource, validateSection, validateProgress, isStructuredKey, validateStructured
@@ -38,6 +39,21 @@ async function structuredDoc (sectionKey, env) {
   }
 }
 
+// The recommendation: structured-content sessions are scored from the published summary and
+// section documents (same module as the gd-summary block); older sessions use the catalog.
+// Returns null when the content can't be fetched right now.
+async function scoredResult (sections, env) {
+  const all = sections || {}
+  if (!Object.keys(all).some(isStructuredKey)) return computeResult(all)
+  const summary = await structuredDoc('sc-summary', env)
+  if (!summary || summary.missing) return null
+  const ids = Array.isArray(summary.sections) ? summary.sections : []
+  const loaded = await Promise.all(ids.map((id) => structuredDoc(`sc-${id}`, env)))
+  if (loaded.some((d) => !d)) return null
+  const docs = Object.fromEntries(ids.map((id, i) => [id, loaded[i].missing ? {} : loaded[i]]))
+  return computeSummary(summary, docs, all)
+}
+
 // The browser's tab-close save is sent as text/plain (a CORS-safelisted type, so no preflight);
 // the web action then receives the raw body in __ow_body instead of merged params.
 function readBody (params) {
@@ -57,7 +73,7 @@ function readBody (params) {
 //   POST {op:'link', sessionId, leadRef}                           -> 200 {linked} (only if not yet linked)
 //   POST {op:'save', sessionId, section, rev, data, progress?}     -> 200 {rev, savedAt}; 409 if rev is stale
 //   POST {op:'save', sessionId, progress}                          -> 200 (progress only)
-//   POST {op:'complete', sessionId}                                -> 200 {result}
+//   POST {op:'complete', sessionId, contentEnv?}                   -> 200 {result}; 503 if content is unreachable
 //   GET  ?sessionId=...                                            -> 200 {session}
 async function handle (raw) {
   const params = readBody(raw)
@@ -171,7 +187,8 @@ async function save (col, params) {
   if (doc.status === 'completed') {
     // edits after completion keep the server-side recommendation current
     const sections = hasSection ? { ...(doc.sections || {}), [params.section]: data } : doc.sections
-    set.result = { ...computeResult(sections), computedAt: now }
+    const result = await scoredResult(sections, params.contentEnv)
+    if (result) set.result = { ...result, computedAt: now }
   } else {
     set.status = 'in_progress'
   }
@@ -183,7 +200,9 @@ async function complete (col, params) {
   const doc = await findOneOrNull(col, { sessionId: params.sessionId })
   if (!doc) return reply(404, { ok: false, error: 'not found' })
   const now = new Date().toISOString()
-  const result = { ...computeResult(doc.sections || {}), computedAt: now }
+  const scored = await scoredResult(doc.sections, params.contentEnv)
+  if (!scored) return reply(503, { ok: false, error: 'content unavailable, try again' })
+  const result = { ...scored, computedAt: now }
   await col.updateOne(
     { sessionId: params.sessionId },
     { $set: { status: 'completed', result, completedAt: doc.completedAt || now, updatedAt: now } }
