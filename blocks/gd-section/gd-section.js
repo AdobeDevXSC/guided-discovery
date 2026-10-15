@@ -104,22 +104,57 @@ export default async function decorate(block) {
   const toggle = (q, optId) => {
     const cur = answersOf()[q.id] || [];
     const on = cur.includes(optId);
-    if (isSingle(q)) setAnswer(q.id, on ? [] : [optId]);
-    else setAnswer(q.id, on ? cur.filter((x) => x !== optId) : [...cur, optId]);
+    // un-picking an item also clears what per-item questions recorded about it
+    const dropItem = (id) => questions.filter((x) => x.display === 'per-item' && x.itemsFrom === q.id)
+      .forEach((x) => {
+        const rest = (answersOf()[x.id] || []).filter((v) => !v.startsWith(`${id}:`));
+        if (rest.length !== (answersOf()[x.id] || []).length) setAnswer(x.id, rest);
+      });
+    if (isSingle(q)) {
+      if (cur[0] && cur[0] !== optId) dropItem(cur[0]);
+      if (on) dropItem(optId);
+      setAnswer(q.id, on ? [] : [optId]);
+    } else {
+      if (on) dropItem(optId);
+      setAnswer(q.id, on ? cur.filter((x) => x !== optId) : [...cur, optId]);
+    }
   };
   const focusOf = () => (focusQuestion ? (answersOf()[focusQuestion.id] || [])[0] : null);
 
-  const orderedOptions = (q, answers) => {
+  // "questionId" in this section, or "sectionId.questionId" in another section on the page
+  const refKey = (ref) => (ref && ref.includes('.') ? `sc-${ref.split('.')[0]}` : key);
+  const answerFor = (ref) => {
+    if (!ref) return [];
+    const qid = ref.includes('.') ? ref.split('.')[1] : ref;
+    return (((store.state.sections[refKey(ref)] || {}).answers || {})[qid]) || [];
+  };
+  // sections this one reads from (re-render when they change)
+  const dependsOn = new Set(questions.map((q) => q.filterByQuestion).filter(Boolean).map(refKey));
+
+  // per-item answers are "itemId:choiceId", one per item
+  const setItem = (q) => (itemId, choiceId) => {
+    const rest = (answersOf()[q.id] || []).filter((v) => !v.startsWith(`${itemId}:`));
+    setAnswer(q.id, choiceId ? [...rest, `${itemId}:${choiceId}`] : rest);
+  };
+  const itemsOf = (q) => {
+    const source = questions.find((x) => x.id === q.itemsFrom);
+    if (!source) return [];
+    const picked = answersOf()[source.id] || [];
+    return (source.options || []).filter((o) => picked.includes(o.id));
+  };
+  const ui = {}; // inventory search / filters, kept across re-renders
+
+  const orderedOptions = (q) => {
     const opts = Array.isArray(q.options) ? q.options : [];
     if (!q.filterByQuestion) return opts;
-    const focus = (answers[q.filterByQuestion] || [])[0];
+    const focus = answerFor(q.filterByQuestion)[0];
     if (!focus || focus === 'both') return opts;
     const matches = (o) => !o.bucket || o.bucket === focus || o.bucket === 'both';
     return [...opts.filter(matches), ...opts.filter((o) => !matches(o))];
   };
 
   const startGuided = () => openGuided(section, {
-    answers: answersOf, set: setAnswer, toggle, focusOf,
+    answers: answersOf, set: setAnswer, toggle, focusOf, answerFor, setItem, itemsOf,
   }, () => {
     const f = root.querySelector('.gd-sc-foot');
     if (f) f.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -168,12 +203,13 @@ export default async function decorate(block) {
           h(
             'fieldset',
             { class: `gd-sc-q gd-sc-${q.display}` },
-            h('legend', {}, q.title, q.required ? h('span', { class: 'gd-sc-req', 'aria-hidden': 'true', text: ' *' }) : null),
+            // per-item cards repeat the question on every card, so its legend is for screen readers
+            h('legend', { class: q.display === 'per-item' ? 'gd-sr' : undefined }, q.title, q.required ? h('span', { class: 'gd-sc-req', 'aria-hidden': 'true', text: ' *' }) : null),
             q.help && h('p', { class: 'gd-sc-help', text: q.help }),
-            control(q, orderedOptions(q, answers), picked, {
+            control(q, orderedOptions(q), picked, {
               toggle: (id) => toggle(q, id),
               choose: (id) => setAnswer(q.id, id ? [id] : []),
-            }, labels),
+            }, labels, { ui, items: itemsOf(q), setItem: setItem(q) }),
           ),
         ];
       }),
@@ -197,7 +233,8 @@ export default async function decorate(block) {
   }
 
   store.subscribe((kind, detail = {}) => {
-    if ((kind === 'section' && detail.key === key) || kind === 'progress' || kind === 'result') render();
+    const mine = kind === 'section' && (detail.key === key || dependsOn.has(detail.key));
+    if (mine || kind === 'progress' || kind === 'result') render();
   });
   status.remove();
   block.append(root);

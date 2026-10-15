@@ -28,7 +28,14 @@ As in the live app (landing.adobe.com/acs/AA-to-CJA-Guided-Discovery.html), the 
    - Questions with `firstForFocus` matching the focus move to the front.
 4. A **`slider`** question puts its first `sliderStops` options on a track, with an optional `gauge` (journey, clock or signal). Each stop's `caption` shows when it's picked. Remaining options (e.g. "Don't know") become chips.
 
-All button and hint text is in `labels` on the section. When the flow ends it closes and scrolls to the section's Continue.
+5. An **`inventory`** question (Data Foundations: what you track) is a filterable, searchable card grid inline and a swipe in the guided flow.
+   - Its options can carry `subLabel`, `category`, `complexity`, `tier` and a `mapping` (target, field, why, prerequisites).
+   - `filterByQuestion` can point into another section, e.g. `discovery.focus`.
+6. A **`per-item`** question asks its `choices` about each option picked in its `itemsFrom` question, e.g. "How many of these do you have?".
+   - It shows that item's `mapping` card, inline and one item per screen in the guided flow ("CJA Mapping, Item 1 of 2").
+   - Answers are saved as `itemId:choiceId`, and un-picking an item clears its per-item answer.
+
+All button and hint text is in `labels` on the section. `guidedTitle` overrides a question's overlay title. When the flow ends it closes and scrolls to the section's Continue.
 
 ## Data and validation
 
@@ -36,4 +43,4 @@ All button and hint text is in `labels` on the section. When the flow ends it cl
 - **Validation:** the `guided-discovery` action validates them against the published structured document (unknown questions or options, and more than one pick on a `-single` question, are rejected).
 - **Lead link:** sessions still start on the first answer and carry the `?lead=` hand-off from the assessment form.
 
-Seed content: `node tools/importer/guided-discovery/build-discovery-content.js out.json`, then convert with `@adobe/da-sc-sdk` (`convertJsonToHtml`) and upload to `/forms/guided-discovery/`.
+Seed content: `node tools/importer/guided-discovery/build-discovery-content.js out.json` (and `build-data-foundations-content.js`), then convert with `@adobe/da-sc-sdk` (`convertJsonToHtml`) and upload to `/forms/guided-discovery/`.
