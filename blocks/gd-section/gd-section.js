@@ -6,15 +6,37 @@
  *   Content  | link to the structured document, e.g. /forms/guided-discovery/discovery
  *   Endpoint | App Builder guided-discovery action URL (only needed on the first gd-section)
  *
- * Answers are saved as sections["sc-<sectionId>"] = { answers: { questionId: [optionId...] } }
- * through the page's shared session (./session.js).
+ * As in the live app, the section is fully answerable inline, and a Start card launches the guided
+ * flow over the page (picker, swipe cards, one question per screen, sliders). Answers are saved as
+ * sections["sc-<sectionId>"] = { answers: { questionId: [optionId...] } } through the page's
+ * shared session (./session.js).
  */
 import { readBlockConfig } from '../../scripts/aem.js';
 import { h } from '../guided-discovery/lib/dom.js';
 import getSession, { contentEnv } from './session.js';
+import { control, isSingle } from './widgets.js';
+import openGuided from './guided.js';
 
 const SC_BASE = 'https://da-sc.adobeaem.workers.dev';
 const DEFAULT_REPO = 'adobedevxsc/guided-discovery';
+const DEFAULT_LABELS = {
+  startHeading: 'Ready when you are',
+  start: 'Start ->',
+  resume: 'Continue ->',
+  next: 'Next ->',
+  back: '<- Back',
+  done: 'Done',
+  questionCount: 'Question {n} of {total}',
+  selectOne: 'Select one',
+  selectAll: 'Select all that apply',
+  swipeHint: 'Swipe left (or tap ✕) for no - right (or tap ✓) for yes.',
+  swipeCount: '{n} of {total}',
+  optionalCount: '{n} more, optional',
+  sliderHint: 'Drag to answer, or tap a point on the line',
+  yes: 'Yes',
+  no: 'No',
+  close: 'Close',
+};
 
 const first = (v) => (Array.isArray(v) ? v[0] : v);
 
@@ -30,24 +52,6 @@ async function loadSection(contentLink) {
   if (!res.ok) throw new Error(`structured content ${path} returned ${res.status}`);
   const json = await res.json();
   return json.data || json;
-}
-
-function optionButton(q, opt, on, toggle) {
-  const single = /-single$/.test(q.display);
-  const cards = /^cards-/.test(q.display);
-  return h(
-    'button',
-    {
-      type: 'button',
-      class: cards ? `gd-sc-card${on ? ' is-on' : ''}` : `gd-sc-chip${on ? ' is-on' : ''}`,
-      role: single ? 'radio' : undefined,
-      'aria-checked': single ? String(on) : undefined,
-      'aria-pressed': single ? undefined : String(on),
-      onClick: toggle,
-    },
-    cards ? h('strong', { text: opt.label }) : opt.label,
-    cards && opt.description ? h('span', { text: opt.description }) : null,
-  );
 }
 
 export default async function decorate(block) {
@@ -69,8 +73,11 @@ export default async function decorate(block) {
     status.textContent = 'This section could not be loaded. Please reload the page.';
     return;
   }
+  section.labels = { ...DEFAULT_LABELS, ...(section.labels || {}) };
+  const { labels } = section;
   const key = `sc-${section.sectionId}`;
   const questions = Array.isArray(section.questions) ? section.questions : [];
+  const focusQuestion = questions.find((q) => q.display === 'cards-single');
 
   const shared = getSession(endpoint);
   if (!shared) {
@@ -90,15 +97,17 @@ export default async function decorate(block) {
     }[s] || '';
   });
 
-  const toggle = (q, optId) => store.update(key, (sec) => {
-    const cur = sec.answers[q.id] || [];
-    const on = cur.includes(optId);
-    let next;
-    if (/-single$/.test(q.display)) next = on ? [] : [optId];
-    else next = on ? cur.filter((x) => x !== optId) : [...cur, optId];
-    if (next.length) sec.answers[q.id] = next;
-    else delete sec.answers[q.id];
+  const setAnswer = (qid, ids) => store.update(key, (sec) => {
+    if (ids.length) sec.answers[qid] = ids;
+    else delete sec.answers[qid];
   });
+  const toggle = (q, optId) => {
+    const cur = answersOf()[q.id] || [];
+    const on = cur.includes(optId);
+    if (isSingle(q)) setAnswer(q.id, on ? [] : [optId]);
+    else setAnswer(q.id, on ? cur.filter((x) => x !== optId) : [...cur, optId]);
+  };
+  const focusOf = () => (focusQuestion ? (answersOf()[focusQuestion.id] || [])[0] : null);
 
   const orderedOptions = (q, answers) => {
     const opts = Array.isArray(q.options) ? q.options : [];
@@ -109,13 +118,32 @@ export default async function decorate(block) {
     return [...opts.filter(matches), ...opts.filter((o) => !matches(o))];
   };
 
+  const startGuided = () => openGuided(section, {
+    answers: answersOf, set: setAnswer, toggle, focusOf,
+  }, () => {
+    const f = root.querySelector('.gd-sc-foot');
+    if (f) f.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+
   function render() {
     const answers = answersOf();
+    const anyAnswered = Object.keys(answers).length > 0;
     const missing = questions.filter((q) => q.required && !(answers[q.id] || []).length);
     const done = store.state.progress.completed.includes(section.sectionId);
+    const focus = focusOf();
+    // the inline page shows the same focus-first order the guided flow asks in
+    const groups = [];
+    questions.forEach((q) => {
+      if (q.groupHeading || !groups.length) groups.push([]);
+      groups[groups.length - 1].push(q);
+    });
+    // each group keeps its heading on whichever question focus ordering puts first
+    const ordered = groups.flatMap((g) => [
+      ...g.filter((q) => focus && q.firstForFocus === focus),
+      ...g.filter((q) => !(focus && q.firstForFocus === focus)),
+    ].map((q, j) => ({ q, heading: j === 0 ? g[0].groupHeading : null })));
     const next = () => {
       store.markComplete(section.sectionId);
-      // scroll to the next section on the long page, if any
       const sections = [...document.querySelectorAll('.gd-sc')];
       const after = sections[sections.indexOf(root) + 1];
       if (after) after.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -125,26 +153,27 @@ export default async function decorate(block) {
       section.eyebrow && h('p', { class: 'gd-sc-eyebrow', text: section.eyebrow }),
       h('h2', { id: `gd-${section.sectionId}-h`, text: section.heading }),
       section.intro && h('p', { class: 'gd-sc-intro', text: section.intro }),
-      questions.map((q) => {
+      h(
+        'div',
+        { class: 'gd-start' },
+        h('p', { class: 'gd-start-heading', text: labels.startHeading }),
+        h('button', {
+          type: 'button', class: 'gd-btn-primary', onClick: startGuided, text: anyAnswered ? labels.resume : labels.start,
+        }),
+      ),
+      ordered.map(({ q, heading }) => {
         const picked = answers[q.id] || [];
-        const caption = picked.length === 1 ? ((q.options || []).find((o) => o.id === picked[0]) || {}).caption : '';
         return [
-          q.groupHeading && h('h3', { class: 'gd-sc-group', text: q.groupHeading }),
+          heading && h('h3', { class: 'gd-sc-group', text: heading }),
           h(
             'fieldset',
             { class: `gd-sc-q gd-sc-${q.display}` },
             h('legend', {}, q.title, q.required ? h('span', { class: 'gd-sc-req', 'aria-hidden': 'true', text: ' *' }) : null),
             q.help && h('p', { class: 'gd-sc-help', text: q.help }),
-            h(
-              'div',
-              {
-                class: /^cards-/.test(q.display) ? 'gd-sc-cards' : 'gd-sc-chips',
-                role: /-single$/.test(q.display) ? 'radiogroup' : 'group',
-              },
-              orderedOptions(q, answers)
-                .map((o) => optionButton(q, o, picked.includes(o.id), () => toggle(q, o.id))),
-            ),
-            caption && h('p', { class: 'gd-sc-caption', text: caption }),
+            control(q, orderedOptions(q, answers), picked, {
+              toggle: (id) => toggle(q, id),
+              choose: (id) => setAnswer(q.id, id ? [id] : []),
+            }, labels),
           ),
         ];
       }),
@@ -159,7 +188,7 @@ export default async function decorate(block) {
           save,
           done && h('span', { class: 'gd-sc-done', text: section.completedLabel || 'Section complete' }),
           h('button', {
-            type: 'button', class: 'gd-sc-btn', disabled: missing.length > 0, onClick: next, text: section.continueLabel || 'Continue',
+            type: 'button', class: 'gd-btn-primary', disabled: missing.length > 0, onClick: next, text: section.continueLabel || 'Continue',
           }),
         ),
       ),

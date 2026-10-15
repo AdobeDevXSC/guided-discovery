@@ -16,6 +16,20 @@ One Guided Discovery section rendered from **DA structured content**. The page i
 - **IDs are stable keys stored with answers.** Reword labels freely; don't change IDs after launch.
 - **Publishing:** preview or publish the structured document like any page. The block reads `preview` content on `*.aem.page` and localhost, `live` content elsewhere.
 
+## Guided flow
+
+As in the live app (landing.adobe.com/acs/AA-to-CJA-Guided-Discovery.html), the section is fully answerable inline, and a **Start** card (`labels.startHeading` / `labels.start`) opens the guided flow over the page. The authored schema decides how it plays:
+
+1. The **first single-choice cards question** (Discovery: focus) is a picker screen. Picking advances.
+2. A **`swipe`** question is a card stack: one option at a time, drag or tap ✕ / ✓.
+   - With `filterByQuestion` set, options matching that answer's bucket come first.
+   - The rest are then offered with `outsideTitle` / `outsideMessage` ("A few more, outside your focus").
+3. **Each `groupHeading` starts a step** shown one question per screen ("Question 1 of 4", Back / Next / Done).
+   - Questions with `firstForFocus` matching the focus move to the front.
+4. A **`slider`** question puts its first `sliderStops` options on a track, with an optional `gauge` (journey, clock or signal). Each stop's `caption` shows when it's picked. Remaining options (e.g. "Don't know") become chips.
+
+All button and hint text is in `labels` on the section. When the flow ends it closes and scrolls to the section's Continue.
+
 ## Data and validation
 
 - **Storage:** answers save through the shared Guided Discovery session (`./session.js`, reusing `../guided-discovery/lib/store.js` and `api.js`) as `sections["sc-<sectionId>"] = { answers: { questionId: [optionId] } }`.

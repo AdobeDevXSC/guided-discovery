@@ -53,6 +53,108 @@
       "maxLength": 60,
       "default": "Section complete"
     },
+    "labels": {
+      "type": "object",
+      "title": "Guided flow labels",
+      "properties": {
+        "startHeading": {
+          "type": "string",
+          "title": "Start card heading",
+          "maxLength": 120,
+          "default": "Ready when you are"
+        },
+        "start": {
+          "type": "string",
+          "title": "Start button",
+          "maxLength": 120,
+          "default": "Start ->"
+        },
+        "resume": {
+          "type": "string",
+          "title": "Resume button",
+          "maxLength": 120,
+          "default": "Continue ->"
+        },
+        "next": {
+          "type": "string",
+          "title": "Next button",
+          "maxLength": 120,
+          "default": "Next ->"
+        },
+        "back": {
+          "type": "string",
+          "title": "Back button",
+          "maxLength": 120,
+          "default": "<- Back"
+        },
+        "done": {
+          "type": "string",
+          "title": "Done button",
+          "maxLength": 120,
+          "default": "Done"
+        },
+        "questionCount": {
+          "type": "string",
+          "title": "Step progress (use {n} and {total})",
+          "maxLength": 120,
+          "default": "Question {n} of {total}"
+        },
+        "selectOne": {
+          "type": "string",
+          "title": "Hint for single choice",
+          "maxLength": 120,
+          "default": "Select one"
+        },
+        "selectAll": {
+          "type": "string",
+          "title": "Hint for multiple choice",
+          "maxLength": 120,
+          "default": "Select all that apply"
+        },
+        "swipeHint": {
+          "type": "string",
+          "title": "Swipe instructions",
+          "maxLength": 120,
+          "default": "Swipe left (or tap ✕) for no - right (or tap ✓) for yes."
+        },
+        "swipeCount": {
+          "type": "string",
+          "title": "Swipe progress (use {n} and {total})",
+          "maxLength": 120,
+          "default": "{n} of {total}"
+        },
+        "optionalCount": {
+          "type": "string",
+          "title": "Optional extra count (use {n})",
+          "maxLength": 120,
+          "default": "{n} more, optional"
+        },
+        "sliderHint": {
+          "type": "string",
+          "title": "Slider hint",
+          "maxLength": 120,
+          "default": "Drag to answer, or tap a point on the line"
+        },
+        "yes": {
+          "type": "string",
+          "title": "Yes button label (screen readers)",
+          "maxLength": 120,
+          "default": "Yes"
+        },
+        "no": {
+          "type": "string",
+          "title": "No button label (screen readers)",
+          "maxLength": 120,
+          "default": "No"
+        },
+        "close": {
+          "type": "string",
+          "title": "Close button label (screen readers)",
+          "maxLength": 120,
+          "default": "Close"
+        }
+      }
+    },
     "questions": {
       "type": "array",
       "title": "Questions",
@@ -75,8 +177,8 @@
       "properties": {
         "groupHeading": {
           "type": "string",
-          "title": "Heading above this question",
-          "description": "Optional. Starts a new group on the page (e.g. \"A few starting questions\").",
+          "title": "Step title / heading above this question",
+          "description": "Starts a new step in the guided flow (and a heading on the page), e.g. \"A few questions to start\".",
           "maxLength": 200
         },
         "id": {
@@ -89,12 +191,40 @@
         "display": {
           "type": "string",
           "title": "Display",
-          "description": "cards = large selectable cards; chips = compact buttons. single = pick one; multi = pick any.",
+          "description": "cards = large cards (a single-choice cards question opens the guided flow as its first screen); chips = tiles; swipe = one option at a time, yes/no; slider = a track across the first N options (the rest become chips like \"Don't know\").",
           "enum": [
             "cards-single",
             "cards-multi",
             "chips-single",
-            "chips-multi"
+            "chips-multi",
+            "swipe",
+            "slider"
+          ]
+        },
+        "sliderStops": {
+          "type": "integer",
+          "title": "Slider: number of stops",
+          "description": "Slider only. The first N options become points on the track; any remaining options are shown as separate chips.",
+          "minimum": 2,
+          "maximum": 10
+        },
+        "gauge": {
+          "type": "string",
+          "title": "Slider: gauge graphic",
+          "enum": [
+            "none",
+            "journey",
+            "clock",
+            "signal"
+          ],
+          "default": "none"
+        },
+        "firstForFocus": {
+          "type": "string",
+          "title": "Ask this question first when the focus is",
+          "enum": [
+            "analysis",
+            "activation"
           ]
         },
         "title": {
@@ -126,6 +256,16 @@
           "description": "Optional. Options whose Focus bucket matches that answer are shown first (\"both\" always matches).",
           "pattern": "^[a-z0-9][a-z0-9-]*$",
           "maxLength": 64
+        },
+        "outsideTitle": {
+          "type": "string",
+          "title": "Swipe: title for options outside the focus",
+          "maxLength": 120
+        },
+        "outsideMessage": {
+          "type": "string",
+          "title": "Swipe: message offering options outside the focus",
+          "maxLength": 400
         }
       }
     },
@@ -148,6 +288,11 @@
           "type": "string",
           "title": "Label",
           "maxLength": 200
+        },
+        "tag": {
+          "type": "string",
+          "title": "Tag (small label on swipe cards)",
+          "maxLength": 60
         },
         "description": {
           "type": "string",
