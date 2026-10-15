@@ -2,7 +2,7 @@ const crypto = require('crypto')
 const { computeResult } = require('../../../blocks/guided-discovery/lib/scoring.js')
 const {
   COLLECTION, SCHEMA_VERSION, INDEXES,
-  leadRefId, cleanSource, validateSection, validateProgress
+  leadRefId, cleanSource, validateSection, validateProgress, isStructuredKey, validateStructured
 } = require('./schema')
 const assessments = require('../assessments/schema')
 const { withCors } = require('../lib/cors')
@@ -12,6 +12,31 @@ const headers = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store
 const reply = (statusCode, body) => ({ statusCode, headers, body })
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 const hasErrors = (errors) => Object.keys(errors).length > 0
+
+// Published structured-content documents for "sc-<sectionId>" sections (DA structured content
+// delivery). Cached per warm container; preview vs live follows the page the visitor is on.
+const SC_BASE = 'https://da-sc.adobeaem.workers.dev'
+const SC_PATH = 'adobedevxsc/guided-discovery/forms/guided-discovery'
+const SC_TTL_MS = 60 * 1000
+const scCache = new Map()
+async function structuredDoc (sectionKey, env) {
+  const id = sectionKey.slice(3)
+  const which = env === 'preview' ? 'preview' : 'live'
+  const cacheKey = `${which}/${id}`
+  const hit = scCache.get(cacheKey)
+  if (hit && Date.now() - hit.at < SC_TTL_MS) return hit.doc
+  try {
+    const res = await fetch(`${SC_BASE}/${which}/${SC_PATH}/${id}`)
+    if (res.status === 404) return { missing: true }
+    if (!res.ok) return null
+    const json = await res.json()
+    const doc = json && json.data ? json.data : null
+    scCache.set(cacheKey, { at: Date.now(), doc })
+    return doc
+  } catch (e) {
+    return null // delivery unreachable: fall back to shape-only validation
+  }
+}
 
 // The browser's tab-close save is sent as text/plain (a CORS-safelisted type, so no preflight);
 // the web action then receives the raw body in __ow_body instead of merged params.
@@ -116,7 +141,13 @@ async function save (col, params) {
   }
   const errors = {}
   let data
-  if (hasSection) {
+  if (hasSection && isStructuredKey(params.section)) {
+    const doc = await structuredDoc(params.section, params.contentEnv)
+    if (doc && doc.missing) return reply(400, { ok: false, errors: { section: 'unknown structured section' } })
+    const v = validateStructured(params.section, params.data, doc)
+    Object.assign(errors, v.errors)
+    data = v.data
+  } else if (hasSection) {
     const v = validateSection(params.section, params.data)
     Object.assign(errors, v.errors)
     data = v.data

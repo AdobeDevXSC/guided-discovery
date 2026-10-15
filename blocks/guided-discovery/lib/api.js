@@ -19,7 +19,13 @@ class HttpError extends Error {
  * startInfo() returns the {leadRef, source, contentVersion} used to create the session lazily:
  * the first answer starts it, so merely viewing the page never creates a record.
  */
-export default function createApi(endpoint, store, onStatus = () => {}, startInfo = () => ({})) {
+export default function createApi(
+  endpoint,
+  store,
+  onStatus = () => {},
+  startInfo = () => ({}),
+  saveExtra = () => ({}),
+) {
   const dirty = new Set();
   let progressDirty = false;
   let timer = null;
@@ -44,7 +50,12 @@ export default function createApi(endpoint, store, onStatus = () => {}, startInf
   function payloadFor(key) {
     const { state } = store;
     return {
-      op: 'save', sessionId: state.sessionId, section: key, rev: state.revs[key] || 1, data: state.sections[key],
+      op: 'save',
+      sessionId: state.sessionId,
+      section: key,
+      rev: state.revs[key] || 1,
+      data: state.sections[key],
+      ...saveExtra(),
     };
   }
 
