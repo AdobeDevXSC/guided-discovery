@@ -194,6 +194,35 @@ function validateStructured (key, value, doc) {
     if (questions) {
       const q = questions.find((x) => x.id === qid)
       if (!q) { c.fail(`answers.${qid}`, 'unknown question'); continue }
+      if (q.display === 'sort') {
+        // "optionId:choiceId", one per option
+        const opts = (q.options || []).map((o) => o.id)
+        const choices = (q.choices || []).map((o) => o.id)
+        const bad = ids.find((v) => {
+          const [opt, choice, extra] = v.split(':')
+          return extra !== undefined || !opts.includes(opt) || !choices.includes(choice)
+        })
+        if (bad) { c.fail(`answers.${qid}`, `invalid sort answer ${bad.slice(0, 64)}`); continue }
+        if (new Set(ids.map((v) => v.split(':')[0])).size !== ids.length) { c.fail(`answers.${qid}`, 'one answer per option'); continue }
+        if (ids.length) out[qid] = ids
+        continue
+      }
+      if (q.display === 'owner-cards') {
+        // "optionId=Owner name" (one per option) and "optionId:follow-up"
+        const opts = (q.options || []).map((o) => o.id)
+        const owners = new Set()
+        const bad = ids.find((v) => {
+          const flag = /^([a-z0-9][a-z0-9-]*):follow-up$/.exec(v)
+          if (flag) return !opts.includes(flag[1])
+          const owner = /^([a-z0-9][a-z0-9-]*)=(.{1,120})$/.exec(v)
+          if (!owner || !opts.includes(owner[1]) || owners.has(owner[1])) return true
+          owners.add(owner[1])
+          return false
+        })
+        if (bad) { c.fail(`answers.${qid}`, `invalid owner answer ${bad.slice(0, 64)}`); continue }
+        if (ids.length) out[qid] = ids
+        continue
+      }
       if (q.display === 'per-item') {
         // "itemId:choiceId", one per item; items are the options of the itemsFrom question
         const source = questions.find((x) => x.id === q.itemsFrom) || {}

@@ -1,6 +1,8 @@
-# gd-section block (structured content test)
+# gd-section block
 
-One Guided Discovery section rendered from **DA structured content**. The page itself is a normal authored page (heading, intro, any blocks); each section is a `gd-section` block pointing at a structured document. Discovery is the first section built this way.
+One Guided Discovery section rendered from **DA structured content**. The page itself is a normal authored page (heading, intro, any blocks); each section is a `gd-section` block pointing at a structured document, and a `gd-summary` block (see `../gd-summary/README.md`) closes the page with the recommendation.
+
+Sections: `discovery`, `data-foundations`, `segmentation`, `identity`, `governance`, `roles`, `strategy-adoption`.
 
 ## Authoring
 
@@ -12,7 +14,8 @@ One Guided Discovery section rendered from **DA structured content**. The page i
 - **Questions and options:** edit them in the structured content editor. Open `/forms/guided-discovery/discovery` in DA; the `/forms` folder is mapped to the form editor via the org config `editor.path`.
 - **Schema:** `guided-discovery-section`, source in `tools/importer/guided-discovery/schemas/`, stored in DA under `.da/forms/schemas/`.
 - **Each question:** display (cards or chips, single or multi), required flag, optional group heading, optional "filter options by the answer to question" (by option bucket).
-- **Each option:** id, label, description, caption, bucket, and the CJA capabilities it unlocks.
+- **Each option:** id, label, description, caption, `note` (with the question's `noteLabel`, e.g. "CJA logic:"), `fields` (label/text rows), bucket, and the CJA capabilities it unlocks.
+- **Focus:** `focusFrom` (e.g. `discovery.focus`) orders a section by the Discovery focus: options and questions whose `bucket` matches come first.
 - **IDs are stable keys stored with answers.** Reword labels freely; don't change IDs after launch.
 - **Publishing:** preview or publish the structured document like any page. The block reads `preview` content on `*.aem.page` and localhost, `live` content elsewhere.
 
@@ -35,12 +38,16 @@ As in the live app (landing.adobe.com/acs/AA-to-CJA-Guided-Discovery.html), the 
    - It shows that item's `mapping` card, inline and one item per screen in the guided flow ("CJA Mapping, Item 1 of 2").
    - Answers are saved as `itemId:choiceId`, and un-picking an item clears its per-item answer.
 
+7. A **`sort`** question (Governance) asks its two `choices` about every option: a swipe in the guided flow (✓ = first choice, ✕ = second) and a pair of buttons per card inline. Answers are `optionId:choiceId`.
+8. An **`owner-cards`** question (Roles) shows one option per screen with its `fields`, an owner text box and a follow-up checkbox. Options matching the focus come first, tagged `labels.relevantTag`. Answers are `optionId=Name` and `optionId:follow-up`.
+9. **`differentFrom`** on a slider (Identity today / target) clears the other question when both would land on the same stop. **`upgradeFrom`** + `upgradeCapabilities` unlock capabilities when this answer is further along than the referenced one.
+
 All button and hint text is in `labels` on the section. `guidedTitle` overrides a question's overlay title. When the flow ends it closes and scrolls to the section's Continue.
 
 ## Data and validation
 
 - **Storage:** answers save through the shared Guided Discovery session (`./session.js`, reusing `../guided-discovery/lib/store.js` and `api.js`) as `sections["sc-<sectionId>"] = { answers: { questionId: [optionId] } }`.
-- **Validation:** the `guided-discovery` action validates them against the published structured document (unknown questions or options, and more than one pick on a `-single` question, are rejected).
+- **Validation:** the `guided-discovery` action validates them against the published structured document (unknown questions or options, more than one pick on a `-single` question, and malformed per-item, sort or owner answers are rejected).
 - **Lead link:** sessions still start on the first answer and carry the `?lead=` hand-off from the assessment form.
 
-Seed content: `node tools/importer/guided-discovery/build-discovery-content.js out.json` (and `build-data-foundations-content.js`), then convert with `@adobe/da-sc-sdk` (`convertJsonToHtml`) and upload to `/forms/guided-discovery/`.
+Seed content: `build-discovery-content.js out.json`, `build-data-foundations-content.js out.json` and `build-sections-content.js <dir>` in `tools/importer/guided-discovery/`, then convert with `@adobe/da-sc-sdk` (`convertJsonToHtml`) and upload to `/forms/guided-discovery/`.

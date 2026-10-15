@@ -46,6 +46,7 @@ export function cards(q, options, picked, toggle) {
       },
       h('span', { class: 'gd-card-top' }, h('strong', { text: o.label }), single ? null : h('span', { class: 'gd-card-check', 'aria-hidden': 'true', text: '✓' })),
       o.description && h('span', { class: 'gd-card-desc', text: o.description }),
+      o.note && h('span', { class: 'gd-card-note' }, q.noteLabel ? h('strong', { text: `${q.noteLabel} ` }) : null, o.note),
     );
   }));
 }
@@ -356,6 +357,66 @@ export const perItemChoice = (picked, itemId) => {
   return hit ? hit.slice(itemId.length + 1) : null;
 };
 
+// ---------- sort (each option into one of two choices) ----------
+/** Current choice for an option in a sort / per-item answer list ("optionId:choiceId"). */
+const choiceOf = (picked, id) => {
+  const hit = (picked || []).find((v) => v.startsWith(`${id}:`));
+  return hit ? hit.slice(id.length + 1) : null;
+};
+
+export function sortCards(q, options, picked, set) {
+  return h('div', { class: 'gd-cards gd-sort' }, options.map((o) => {
+    const current = choiceOf(picked, o.id);
+    return h(
+      'div',
+      { class: `gd-card gd-sort-card${current ? ' is-on' : ''}` },
+      h('span', { class: 'gd-card-top' }, h('span', {}, h('strong', { text: o.label }), o.tag && h('span', { class: 'gd-card-sub', text: o.tag }))),
+      o.description && h('span', { class: 'gd-card-desc', text: o.description }),
+      o.note && h('span', { class: 'gd-card-note' }, q.noteLabel ? h('strong', { text: `${q.noteLabel} ` }) : null, o.note),
+      h('div', { class: 'gd-map-buttons', role: 'radiogroup', 'aria-label': o.label }, (q.choices || []).map((ch) => h('button', {
+        type: 'button',
+        class: `gd-choice${current === ch.id ? ' is-on' : ''}`,
+        role: 'radio',
+        'aria-checked': String(current === ch.id),
+        onClick: () => set(o.id, current === ch.id ? null : ch.id),
+        text: ch.label,
+      }))),
+    );
+  }));
+}
+
+// ---------- owner cards ----------
+/** Owner text and follow-up flag per option: answers "optionId=Name" and "optionId:follow-up". */
+export const ownerOf = (picked, id) => {
+  const hit = (picked || []).find((v) => v.startsWith(`${id}=`));
+  return hit ? hit.slice(id.length + 1) : '';
+};
+export const followUpOf = (picked, id) => (picked || []).includes(`${id}:follow-up`);
+
+export function ownerCard(q, o, picked, { setOwner, toggleFollowUp }, labels, relevant) {
+  const inputId = `gd-owner-${q.id}-${o.id}`;
+  const input = h('input', {
+    id: inputId, type: 'text', maxlength: '120', placeholder: labels.ownerPlaceholder, value: ownerOf(picked, o.id),
+  });
+  input.addEventListener('input', () => setOwner(o.id, input.value));
+  return h(
+    'div',
+    { class: `gd-card gd-owner-card${o.bucket ? ` gd-bucket-${o.bucket}` : ''}` },
+    relevant && h('span', { class: 'gd-relevant', text: labels.relevantTag }),
+    h('strong', { class: 'gd-owner-name', text: o.label }),
+    h('dl', { class: 'gd-owner-fields' }, (o.fields || []).map((f) => [h('dt', { text: f.label }), h('dd', { text: f.text })])),
+    h(
+      'div',
+      { class: 'gd-owner-inputs' },
+      h('label', { for: inputId, text: labels.ownerLabel }),
+      input,
+      h('label', { class: 'gd-check' }, h('input', {
+        type: 'checkbox', checked: followUpOf(picked, o.id), onChange: () => toggleFollowUp(o.id),
+      }), ` ${labels.followUp}`),
+    ),
+  );
+}
+
 /** Renders a question's answer control for its display type. */
 export function control(q, options, picked, { toggle, choose }, labels, extra = {}) {
   if (q.display === 'inventory') return inventory(q, options, picked, toggle, labels, extra.ui || {});
@@ -369,6 +430,10 @@ export function control(q, options, picked, { toggle, choose }, labels, extra = 
       extra.setItem,
       labels,
     )));
+  }
+  if (q.display === 'sort') return sortCards(q, options, picked, extra.setItem);
+  if (q.display === 'owner-cards') {
+    return h('div', { class: 'gd-cards gd-owners' }, options.map((o) => ownerCard(q, o, picked, extra.owners, labels, extra.isRelevant && extra.isRelevant(o))));
   }
   if (q.display === 'slider') return slider(q, picked, choose, labels);
   if (/^cards-/.test(q.display) || q.display === 'swipe') return cards(q, options, picked, toggle);

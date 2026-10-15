@@ -159,7 +159,7 @@ export default function createApi(
     async complete() {
       await flush();
       await ensureSession();
-      return request('POST', { op: 'complete', sessionId: store.state.sessionId });
+      return request('POST', { op: 'complete', sessionId: store.state.sessionId, ...saveExtra() });
     },
 
     async resume(sessionId) {

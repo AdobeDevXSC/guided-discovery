@@ -53,6 +53,13 @@
       "maxLength": 60,
       "default": "Section complete"
     },
+    "focusFrom": {
+      "type": "string",
+      "title": "Focus comes from (sectionId.questionId)",
+      "description": "Optional. Questions and options whose bucket matches this answer come first, e.g. discovery.focus.",
+      "pattern": "^[a-z0-9][a-z0-9-]*(\\.[a-z0-9][a-z0-9-]*)?$",
+      "maxLength": 130
+    },
     "labels": {
       "type": "object",
       "title": "Guided flow labels",
@@ -272,6 +279,42 @@
           "title": "Per-item: nothing selected yet",
           "maxLength": 160,
           "default": "Select items above to see them here."
+        },
+        "ownerLabel": {
+          "type": "string",
+          "title": "Owner cards: owner field label",
+          "maxLength": 160,
+          "default": "Owner today"
+        },
+        "ownerPlaceholder": {
+          "type": "string",
+          "title": "Owner cards: owner placeholder",
+          "maxLength": 160,
+          "default": "Name or team"
+        },
+        "followUp": {
+          "type": "string",
+          "title": "Owner cards: follow-up checkbox",
+          "maxLength": 160,
+          "default": "Needs a follow-up conversation"
+        },
+        "relevantTag": {
+          "type": "string",
+          "title": "Tag on options matching the focus",
+          "maxLength": 160,
+          "default": "Most relevant to your focus"
+        },
+        "roleCount": {
+          "type": "string",
+          "title": "Owner cards: guided progress (use {n} and {total})",
+          "maxLength": 160,
+          "default": "Role {n} of {total}"
+        },
+        "sortHint": {
+          "type": "string",
+          "title": "Sort: swipe instructions",
+          "maxLength": 160,
+          "default": "Swipe left (or ✕) if it's a gap for you, right (or ✓) if it's already in place."
         }
       }
     },
@@ -310,7 +353,7 @@
         "display": {
           "type": "string",
           "title": "Display",
-          "description": "cards = large cards (a single-choice cards question opens the guided flow as its first screen); chips = tiles; swipe = one option at a time, yes/no; slider = a track across the first N options (the rest become chips like \"Don't know\"). inventory = a filterable, searchable card grid (a swipe in the guided flow); per-item = asks \"choices\" about each option picked in the \"itemsFrom\" question.",
+          "description": "cards = large cards (a single-choice cards question opens the guided flow as its first screen); chips = tiles; swipe = one option at a time, yes/no; slider = a track across the first N options (the rest become chips like \"Don't know\"). inventory = a filterable, searchable card grid (a swipe in the guided flow); per-item = asks \"choices\" about each option picked in the \"itemsFrom\" question. sort = puts each option into one of two choices (swipe right = first choice, left = second); owner-cards = a card per option with its fields, an owner text box and a follow-up checkbox.",
           "enum": [
             "cards-single",
             "cards-multi",
@@ -319,7 +362,9 @@
             "swipe",
             "slider",
             "inventory",
-            "per-item"
+            "per-item",
+            "sort",
+            "owner-cards"
           ]
         },
         "sliderStops": {
@@ -347,6 +392,52 @@
             "analysis",
             "activation"
           ]
+        },
+        "bucket": {
+          "type": "string",
+          "title": "Question bucket (ordering by focus)",
+          "enum": [
+            "analysis",
+            "activation",
+            "both"
+          ]
+        },
+        "differentFrom": {
+          "type": "string",
+          "title": "Slider: must differ from question ID",
+          "description": "Optional. Picking the same stop clears the other question (e.g. today vs target).",
+          "pattern": "^[a-z0-9][a-z0-9-]*$",
+          "maxLength": 64
+        },
+        "upgradeFrom": {
+          "type": "string",
+          "title": "Slider: compare with question ID",
+          "description": "Optional. When this answer is further along the track than that question, the capabilities below are recommended.",
+          "pattern": "^[a-z0-9][a-z0-9-]*$",
+          "maxLength": 64
+        },
+        "upgradeCapabilities": {
+          "type": "array",
+          "title": "Slider: capabilities when further along",
+          "items": {
+            "type": "string",
+            "title": "Capability",
+            "enum": [
+              "connected-data",
+              "graph-stitching",
+              "data-transformations",
+              "journey-mapping",
+              "attribution",
+              "experimentation",
+              "ai-capabilities",
+              "content-analytics"
+            ]
+          }
+        },
+        "noteLabel": {
+          "type": "string",
+          "title": "Label for option notes (e.g. CJA logic:)",
+          "maxLength": 60
         },
         "title": {
           "type": "string",
@@ -463,6 +554,19 @@
           "title": "Description",
           "maxLength": 400
         },
+        "note": {
+          "type": "string",
+          "title": "Note (shown expandable, e.g. CJA logic)",
+          "maxLength": 800,
+          "x-semantic-type": "long-text"
+        },
+        "fields": {
+          "type": "array",
+          "title": "Owner cards: detail fields",
+          "items": {
+            "$ref": "#/$defs/Field"
+          }
+        },
         "caption": {
           "type": "string",
           "title": "Caption shown when selected",
@@ -548,6 +652,45 @@
           "type": "string",
           "title": "Label",
           "maxLength": 120
+        },
+        "capabilities": {
+          "type": "array",
+          "title": "Unlocks CJA capabilities when chosen",
+          "items": {
+            "type": "string",
+            "title": "Capability",
+            "enum": [
+              "connected-data",
+              "graph-stitching",
+              "data-transformations",
+              "journey-mapping",
+              "attribution",
+              "experimentation",
+              "ai-capabilities",
+              "content-analytics"
+            ]
+          }
+        }
+      }
+    },
+    "Field": {
+      "title": "Field",
+      "type": "object",
+      "required": [
+        "label",
+        "text"
+      ],
+      "properties": {
+        "label": {
+          "type": "string",
+          "title": "Label",
+          "maxLength": 60
+        },
+        "text": {
+          "type": "string",
+          "title": "Text",
+          "maxLength": 600,
+          "x-semantic-type": "long-text"
         }
       }
     }

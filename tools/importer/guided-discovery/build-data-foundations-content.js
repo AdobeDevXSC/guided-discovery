@@ -26,6 +26,10 @@ if (!out) {
   const tierLabel = Object.fromEntries(copy.tiers.map((t) => [t.id, t.name]));
   const BUCKET_TAG = { analysis: 'Analysis', activation: 'Activation', both: 'Analysis + Activation' };
 
+  // the live app recommends these capabilities when the item is tracked today
+  const ITEM_CAPABILITIES = {
+    'cross-device': ['graph-stitching'], attribution: ['attribution'], anomaly: ['experimentation'],
+  };
   const options = DF_ITEMS.map((item) => {
     const c = itemCopy[item.id];
     const category = categoryLabel[item.category];
@@ -38,6 +42,7 @@ if (!out) {
       complexity: item.complexity,
       tier: tierLabel[item.tier],
       bucket: item.bucket,
+      ...(ITEM_CAPABILITIES[item.id] ? { capabilities: ITEM_CAPABILITIES[item.id] } : {}),
       mapping: {
         target: c.approach,
         field: c.field,

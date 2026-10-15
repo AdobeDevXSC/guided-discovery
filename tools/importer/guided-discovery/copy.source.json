@@ -1838,7 +1838,7 @@
     },
     {
       "id": "consent",
-      "name": "Consent &amp; Identity Governance",
+      "name": "Consent & Identity Governance",
       "description": "Opt-outs and consent preferences propagate to every identity tied to a person, not just one dataset.",
       "example": "A customer opts out on the website; that preference is honored across app, email and offline touchpoints because it's tied to the identity graph.",
       "mechanism": "Consent flags stored against the identity graph; checked before activation or export."
