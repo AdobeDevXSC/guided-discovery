@@ -107,11 +107,11 @@
     },
     {
       "key": "section.back",
-      "text": "<- Back"
+      "text": "← Back"
     },
     {
       "key": "section.continue",
-      "text": "Continue ->"
+      "text": "Continue →"
     },
     {
       "key": "overview.benefitsHeading",
@@ -171,15 +171,15 @@
     },
     {
       "key": "overview.ctaStart",
-      "text": "Start ->"
+      "text": "Start →"
     },
     {
       "key": "overview.ctaContinue",
-      "text": "Continue ->"
+      "text": "Continue →"
     },
     {
       "key": "overview.ctaDone",
-      "text": "Go to Your Summary & Next Steps ->"
+      "text": "Go to Your Summary & Next Steps →"
     },
     {
       "key": "discovery.eyebrow",
@@ -559,15 +559,15 @@
     },
     {
       "key": "summary.link1",
-      "text": "Adobe Professional Services: AA to CJA Evolution Assessment ->"
+      "text": "Adobe Professional Services: AA to CJA Evolution Assessment →"
     },
     {
       "key": "summary.link2",
-      "text": "Customer Journey Analytics overview ->"
+      "text": "Customer Journey Analytics overview →"
     },
     {
       "key": "summary.link3",
-      "text": "Customer stories: migrating to CJA ->"
+      "text": "Customer stories: migrating to CJA →"
     },
     {
       "key": "summary.snapshot",
@@ -591,7 +591,7 @@
     },
     {
       "key": "summary.answerLog",
-      "text": "View detailed answer log ->"
+      "text": "View detailed answer log →"
     },
     {
       "key": "summary.hideAnswerLog",
@@ -875,7 +875,7 @@
     },
     {
       "key": "crosswalk.heading",
-      "text": "Adobe Analytics concept -> Customer Journey Analytics equivalent"
+      "text": "Adobe Analytics concept → Customer Journey Analytics equivalent"
     },
     {
       "key": "crosswalk.search",

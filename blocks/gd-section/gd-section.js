@@ -20,10 +20,10 @@ import openGuided from './guided.js';
 
 const DEFAULT_LABELS = {
   startHeading: 'Ready when you are',
-  start: 'Start ->',
-  resume: 'Continue ->',
-  next: 'Next ->',
-  back: '<- Back',
+  start: 'Start →',
+  resume: 'Continue →',
+  next: 'Next →',
+  back: '← Back',
   done: 'Done',
   questionCount: 'Question {n} of {total}',
   selectOne: 'Select one',
