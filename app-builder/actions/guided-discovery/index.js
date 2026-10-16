@@ -1,9 +1,8 @@
 const crypto = require('crypto')
-const { computeResult } = require('../../../blocks/guided-discovery/lib/scoring.js')
 const { computeSummary } = require('../../../blocks/gd-summary/scoring.js')
 const {
   COLLECTION, SCHEMA_VERSION, INDEXES,
-  leadRefId, cleanSource, validateSection, validateProgress, isStructuredKey, validateStructured
+  leadRefId, cleanSource, validateProgress, isStructuredKey, validateStructured
 } = require('./schema')
 const assessments = require('../assessments/schema')
 const { withCors } = require('../lib/cors')
@@ -39,12 +38,10 @@ async function structuredDoc (sectionKey, env) {
   }
 }
 
-// The recommendation: structured-content sessions are scored from the published summary and
-// section documents (same module as the gd-summary block); older sessions use the catalog.
-// Returns null when the content can't be fetched right now.
+// The recommendation, scored from the published summary and section documents (same module as the
+// gd-summary block). Returns null when the content can't be fetched right now.
 async function scoredResult (sections, env) {
   const all = sections || {}
-  if (!Object.keys(all).some(isStructuredKey)) return computeResult(all)
   const summary = await structuredDoc('sc-summary', env)
   if (!summary || summary.missing) return null
   const ids = Array.isArray(summary.sections) ? summary.sections : []
@@ -157,14 +154,13 @@ async function save (col, params) {
   }
   const errors = {}
   let data
-  if (hasSection && isStructuredKey(params.section)) {
+  if (hasSection && !isStructuredKey(params.section)) {
+    return reply(400, { ok: false, errors: { section: 'unknown section' } })
+  }
+  if (hasSection) {
     const doc = await structuredDoc(params.section, params.contentEnv)
     if (doc && doc.missing) return reply(400, { ok: false, errors: { section: 'unknown structured section' } })
     const v = validateStructured(params.section, params.data, doc)
-    Object.assign(errors, v.errors)
-    data = v.data
-  } else if (hasSection) {
-    const v = validateSection(params.section, params.data)
     Object.assign(errors, v.errors)
     data = v.data
   }

@@ -46,7 +46,7 @@ All button and hint text is in `labels` on the section. `guidedTitle` overrides 
 
 ## Data and validation
 
-- **Storage:** answers save through the shared Guided Discovery session (`./session.js`, reusing `../guided-discovery/lib/store.js` and `api.js`) as `sections["sc-<sectionId>"] = { answers: { questionId: [optionId] } }`.
+- **Storage:** answers save through the shared Guided Discovery session (`./session.js`, with the store and autosave queue in `./lib/`) as `sections["sc-<sectionId>"] = { answers: { questionId: [optionId] } }`.
 - **Validation:** the `guided-discovery` action validates them against the published structured document (unknown questions or options, more than one pick on a `-single` question, and malformed per-item, sort or owner answers are rejected).
 - **Lead link:** sessions still start on the first answer and carry the `?lead=` hand-off from the assessment form.
 

@@ -4,7 +4,7 @@
  * your focus" round), and every step group ("A few questions to start", ...) one question per
  * screen with Back / Next / Done. Answers go through the same store as the inline view.
  */
-import { h } from '../guided-discovery/lib/dom.js';
+import h from './lib/dom.js';
 import {
   control, cards, fmt, isSingle, mappingCard, perItemChoice, ownerCard,
 } from './widgets.js';

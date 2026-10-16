@@ -1,10 +1,8 @@
 /*
- * Guided Discovery catalog: stable IDs and structure only (no copy). Shared by the EDS block
- * and the App Builder action (app-builder/actions/guided-discovery), which validates against it.
- * Generated once from the live app's data literals
- * (landing.adobe.com/acs/AA-to-CJA-Guided-Discovery.html).
- * Labels and descriptions live in the authored copy sheet, keyed by these IDs. Changing an ID is a
- * breaking change for stored sessions.
+ * Guided Discovery catalog: the live app's stable IDs and structure (no copy), generated once from
+ * its data literals (landing.adobe.com/acs/AA-to-CJA-Guided-Discovery.html). Used by the content
+ * seed scripts in this folder and as the reference for the scoring parity test; the published
+ * structured content documents are the source of truth at runtime.
  */
 
 export const PAGES = [

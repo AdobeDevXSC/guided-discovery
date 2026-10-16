@@ -12,7 +12,7 @@
  * if answers change afterwards.
  */
 import { readBlockConfig } from '../../scripts/aem.js';
-import { h } from '../guided-discovery/lib/dom.js';
+import h from '../gd-section/lib/dom.js';
 import getSession from '../gd-section/session.js';
 import loadStructured, { contentPath } from '../gd-section/content.js';
 import { fmt } from '../gd-section/widgets.js';

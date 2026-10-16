@@ -11,8 +11,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { computeSummary } from '../../blocks/gd-summary/scoring.js';
-import { computeResult } from '../../blocks/guided-discovery/lib/scoring.js';
-import { DF_ITEMS } from '../../blocks/guided-discovery/lib/catalog.js';
+import { computeResult } from './fixtures/legacy-scoring.js';
+import { DF_ITEMS } from '../../tools/importer/guided-discovery/catalog.js';
 
 const tools = path.join(path.dirname(fileURLToPath(import.meta.url)), '../../tools/importer/guided-discovery');
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'gd-docs-'));
