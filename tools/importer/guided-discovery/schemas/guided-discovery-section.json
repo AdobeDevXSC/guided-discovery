@@ -45,7 +45,7 @@
       "type": "string",
       "title": "Continue button label",
       "maxLength": 60,
-      "default": "Continue ->"
+      "default": "Continue →"
     },
     "completedLabel": {
       "type": "string",
@@ -74,25 +74,25 @@
           "type": "string",
           "title": "Start button",
           "maxLength": 120,
-          "default": "Start ->"
+          "default": "Start →"
         },
         "resume": {
           "type": "string",
           "title": "Resume button",
           "maxLength": 120,
-          "default": "Continue ->"
+          "default": "Continue →"
         },
         "next": {
           "type": "string",
           "title": "Next button",
           "maxLength": 120,
-          "default": "Next ->"
+          "default": "Next →"
         },
         "back": {
           "type": "string",
           "title": "Back button",
           "maxLength": 120,
-          "default": "<- Back"
+          "default": "← Back"
         },
         "done": {
           "type": "string",

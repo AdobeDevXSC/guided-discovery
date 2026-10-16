@@ -45,10 +45,10 @@ const STRATEGY_BUCKET = {
 
 const LABELS = {
   startHeading: 'Ready when you are',
-  start: 'Start ->',
-  resume: 'Continue ->',
-  next: 'Next ->',
-  back: '<- Back',
+  start: 'Start →',
+  resume: 'Continue →',
+  next: 'Next →',
+  back: '← Back',
   done: 'Done',
   questionCount: 'Question {n} of {total}',
   selectOne: 'Select one',
@@ -69,7 +69,7 @@ const LABELS = {
 };
 const base = (sectionId, extra) => ({
   sectionId,
-  continueLabel: 'Continue ->',
+  continueLabel: 'Continue →',
   completedLabel: 'Section complete',
   focusFrom: 'discovery.focus',
   labels: LABELS,

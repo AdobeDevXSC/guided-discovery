@@ -17,6 +17,11 @@
   --gd-text-faint: #6b7280;
 }
 
+/* the live app's page background, behind the whole overview section */
+main > .section.gd-overview-container {
+  background: #f7f8fa;
+}
+
 .gd-overview .gd-ov-eyebrow {
   margin: 0 0 10px;
   font-size: 13px;

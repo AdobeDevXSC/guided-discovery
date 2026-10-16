@@ -21,8 +21,6 @@ if (!out) {
 const copy = JSON.parse(fs.readFileSync(path.join(__dirname, 'copy.source.json'), 'utf8'));
 const ui = Object.fromEntries(copy.ui.map((u) => [u.key, u.text]));
 const ACCENTS = ['analysis', 'activation', 'both'];
-// the overview's buttons use a real arrow, as on the live page
-const arrow = (text) => String(text).replace(/->/g, '→');
 
 const data = {
   eyebrow: 'Guided Discovery · Your Client',
@@ -50,9 +48,9 @@ const data = {
     progressZero: ui['overview.progressZero'],
     progressHeading: ui['overview.progressHeading'],
     progressCount: ui['overview.progressCount'],
-    start: arrow(ui['overview.ctaStart']),
-    resume: arrow(ui['overview.ctaContinue']),
-    done: arrow(ui['overview.ctaDone']),
+    start: ui['overview.ctaStart'],
+    resume: ui['overview.ctaContinue'],
+    done: ui['overview.ctaDone'],
   },
 };
 
