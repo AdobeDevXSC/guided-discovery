@@ -1,29 +1,8 @@
-// Validation for the self-guided AA -> CJA Guided Discovery (collection gd_sessions).
-// Allowed IDs come from the catalog shared with the EDS block, so the two cannot drift.
-const catalog = require('../../../blocks/guided-discovery/lib/catalog.js')
-
+// Validation for the self-guided AA -> CJA Guided Discovery (collection gd_sessions). Answers are
+// checked against the published DA structured content documents they were authored in.
 const COLLECTION = 'gd_sessions'
 const SCHEMA_VERSION = 1
 const STATUSES = ['started', 'in_progress', 'completed']
-
-const {
-  BUCKETS, NEEDS, PROMPTS, DF_ITEMS, DF_QUANTITIES, SEGMENTS, IDENTITY_STAGES, GOVERNANCE,
-  GOV_STATUSES, ROLES, CAPABILITIES, PAGES, REFERENCE_PAGES
-} = catalog
-
-const ids = (arr) => arr.map((x) => (typeof x === 'string' ? x : x.id))
-const NEED_IDS = ids(NEEDS)
-const DF_IDS = ids(DF_ITEMS)
-const SEGMENT_IDS = ids(SEGMENTS)
-const DISCOVERY_PROMPTS = PROMPTS.filter((p) => p.group !== 'strategy')
-const STRATEGY_PROMPTS = PROMPTS.filter((p) => p.group === 'strategy')
-const ALL_PAGES = [...PAGES, ...REFERENCE_PAGES]
-
-// Section keys stored under `sections.<key>`.
-const SECTION_KEYS = [
-  'discovery', 'dataFoundations', 'segmentation', 'identity', 'governance', 'roles',
-  'strategyAdoption', 'inventoryReview'
-]
 
 const SOURCE_RE = /^[\w.:/\- ]{0,100}$/
 
@@ -56,8 +35,6 @@ function cleanSource (input) {
   return out
 }
 
-// ---- section validators: each returns { data, errors } and rejects unknown keys and IDs ----
-
 function checker (section) {
   const errors = {}
   const fail = (path, msg) => { errors[path ? `${section}.${path}` : section] = msg }
@@ -66,111 +43,10 @@ function checker (section) {
     Object.keys(obj).filter((k) => !allowed.includes(k)).forEach((k) => fail(k, 'unknown field'))
     return true
   }
-  const idList = (path, v, allowed, max = allowed.length) => {
-    if (v === undefined) return []
-    if (!Array.isArray(v)) { fail(path, 'must be an array'); return [] }
-    const out = [...new Set(v)]
-    if (out.length > max) fail(path, `at most ${max}`)
-    out.filter((x) => !allowed.includes(x)).forEach((x) => fail(path, `unknown id ${String(x).slice(0, 40)}`))
-    return out.filter((x) => allowed.includes(x))
-  }
-  const idMap = (path, v, keys, values) => {
-    if (v === undefined) return {}
-    if (!isObj(v)) { fail(path, 'must be an object'); return {} }
-    const out = {}
-    for (const [k, val] of Object.entries(v)) {
-      if (!keys.includes(k)) fail(`${path}.${k}`, 'unknown id')
-      else if (val === null || val === '') continue
-      else if (!values.includes(val)) fail(`${path}.${k}`, 'not an allowed value')
-      else out[k] = val
-    }
-    return out
-  }
-  const oneOf = (path, v, allowed) => {
-    if (v === undefined || v === null || v === '') return null
-    if (!allowed.includes(v)) { fail(path, 'not an allowed value'); return null }
-    return v
-  }
-  // prompt answers: { promptId: [optionId...] }, single-select prompts allow at most one
-  const answers = (path, v, prompts) => {
-    if (v === undefined) return {}
-    if (!isObj(v)) { fail(path, 'must be an object'); return {} }
-    const out = {}
-    for (const [pid, val] of Object.entries(v)) {
-      const prompt = prompts.find((p) => p.id === pid)
-      if (!prompt) { fail(`${path}.${pid}`, 'unknown prompt'); continue }
-      const picked = idList(`${path}.${pid}`, val, prompt.options, prompt.single ? 1 : prompt.options.length)
-      if (picked.length) out[pid] = picked
-    }
-    return out
-  }
-  return { errors, fail, known, idList, idMap, oneOf, answers }
+  return { errors, fail, known }
 }
 
-const SECTIONS = {
-  discovery (v, c) {
-    if (!c.known(v, ['focus', 'needs', 'answers'])) return {}
-    return {
-      focus: c.oneOf('focus', v.focus, BUCKETS),
-      needs: c.idList('needs', v.needs, NEED_IDS),
-      answers: c.answers('answers', v.answers, DISCOVERY_PROMPTS)
-    }
-  },
-  dataFoundations (v, c) {
-    if (!c.known(v, ['selected', 'quantity', 'dataView'])) return {}
-    return {
-      selected: c.idList('selected', v.selected, DF_IDS),
-      quantity: c.idMap('quantity', v.quantity, DF_IDS, DF_QUANTITIES),
-      dataView: c.idList('dataView', v.dataView, DF_IDS)
-    }
-  },
-  segmentation (v, c) {
-    if (!c.known(v, ['prioritized'])) return {}
-    return { prioritized: c.idList('prioritized', v.prioritized, SEGMENT_IDS) }
-  },
-  identity (v, c) {
-    if (!c.known(v, ['current', 'target'])) return {}
-    return { current: c.oneOf('current', v.current, IDENTITY_STAGES), target: c.oneOf('target', v.target, IDENTITY_STAGES) }
-  },
-  governance (v, c) {
-    if (!c.known(v, ['status'])) return {}
-    return { status: c.idMap('status', v.status, GOVERNANCE, GOV_STATUSES) }
-  },
-  roles (v, c) {
-    if (!c.known(v, ['owners', 'followUp'])) return {}
-    const owners = {}
-    if (v.owners !== undefined && !isObj(v.owners)) c.fail('owners', 'must be an object')
-    for (const [role, name] of Object.entries(isObj(v.owners) ? v.owners : {})) {
-      if (!ROLES.includes(role)) c.fail(`owners.${role}`, 'unknown id')
-      else if (typeof name !== 'string' || name.length > 120) c.fail(`owners.${role}`, 'max 120 chars')
-      else if (name.trim()) owners[role] = name.trim()
-    }
-    return { owners, followUp: c.idList('followUp', v.followUp, ROLES) }
-  },
-  strategyAdoption (v, c) {
-    if (!c.known(v, ['answers', 'aiCapabilityPicks'])) return {}
-    return {
-      answers: c.answers('answers', v.answers, STRATEGY_PROMPTS),
-      // any of the 8 capabilities in the AI-readiness grid can be picked (live app: toggleAiPriority)
-      aiCapabilityPicks: c.idList('aiCapabilityPicks', v.aiCapabilityPicks, CAPABILITIES)
-    }
-  },
-  inventoryReview (v, c) {
-    if (!c.known(v, ['added'])) return {}
-    if (v.added !== undefined && !Array.isArray(v.added)) { c.fail('added', 'must be an array'); return {} }
-    const added = (v.added || []).slice(0, 50).map((row, i) => {
-      if (!isObj(row)) { c.fail(`added.${i}`, 'must be an object'); return null }
-      const name = str(row.name).slice(0, 200)
-      const note = str(row.note).slice(0, 1000)
-      return name || note ? { name, note } : null
-    }).filter(Boolean)
-    if ((v.added || []).length > 50) c.fail('added', 'at most 50')
-    return { added }
-  }
-}
-
-// Structured-content sections ("sc-<sectionId>") are authored in DA (schema guided-discovery-section)
-// and validated against the published document instead of the catalog.
+// Sections are stored as "sc-<sectionId>", authored in DA (schema guided-discovery-section).
 const STRUCTURED_KEY_RE = /^sc-[a-z0-9][a-z0-9-]{0,62}$/
 const isStructuredKey = (key) => STRUCTURED_KEY_RE.test(key || '')
 
@@ -250,27 +126,20 @@ function validateStructured (key, value, doc) {
   return { data: { answers: out }, errors: c.errors }
 }
 
-function validateSection (key, value) {
-  if (!SECTION_KEYS.includes(key)) return { errors: { section: 'unknown section' } }
-  const c = checker(key)
-  const data = SECTIONS[key](value, c)
-  return { data, errors: c.errors }
-}
+const PAGE_RE = /^[a-z0-9][a-z0-9-]{0,63}$/
 
+// progress.completed lists section ids (authored, so only their shape is checked). lastPage is
+// accepted and dropped: sessions saved before it was retired still send it back after resuming.
 function validateProgress (input) {
   if (input === undefined) return { progress: undefined, errors: {} }
   const c = checker('progress')
   if (!c.known(input, ['completed', 'lastPage'])) return { errors: c.errors }
-  // catalog pages plus structured section ids (authored, so only their shape is checked)
-  const completed = Array.isArray(input.completed) ? [...new Set(input.completed)] : []
   if (input.completed !== undefined && !Array.isArray(input.completed)) c.fail('completed', 'must be an array')
-  completed.filter((p) => !PAGES.includes(p) && !/^[a-z0-9][a-z0-9-]{0,63}$/.test(String(p)))
+  const completed = Array.isArray(input.completed) ? [...new Set(input.completed)] : []
+  completed.filter((p) => !PAGE_RE.test(String(p)))
     .forEach((p) => c.fail('completed', `invalid page ${String(p).slice(0, 40)}`))
   if (completed.length > 40) c.fail('completed', 'at most 40')
-  const progress = { completed: completed.filter((p) => PAGES.includes(p) || /^[a-z0-9][a-z0-9-]{0,63}$/.test(String(p))).slice(0, 40) }
-  const last = c.oneOf('lastPage', input.lastPage, ALL_PAGES)
-  if (last) progress.lastPage = last
-  return { progress, errors: c.errors }
+  return { progress: { completed: completed.filter((p) => PAGE_RE.test(String(p))).slice(0, 40) }, errors: c.errors }
 }
 
 const INDEXES = [
@@ -281,6 +150,6 @@ const INDEXES = [
 ]
 
 module.exports = {
-  COLLECTION, SCHEMA_VERSION, STATUSES, SECTION_KEYS, INDEXES,
-  leadRefId, cleanSource, validateSection, validateProgress, isStructuredKey, validateStructured
+  COLLECTION, SCHEMA_VERSION, STATUSES, INDEXES,
+  leadRefId, cleanSource, validateProgress, isStructuredKey, validateStructured
 }

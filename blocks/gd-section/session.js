@@ -1,11 +1,11 @@
 /*
  * One Guided Discovery session shared by every gd-section block on the page.
- * Reuses the store and autosave queue from blocks/guided-discovery: the session is created on the
+ * Built on the store and autosave queue in ./lib: the session is created on the
  * first answer (carrying ?lead=<submissionId> from the assessment form) and resumed from
  * localStorage on return visits.
  */
-import { createStore } from '../guided-discovery/lib/store.js';
-import createApi from '../guided-discovery/lib/api.js';
+import createStore from './lib/store.js';
+import createApi from './lib/api.js';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const CONTENT_VERSION = 'structured-content';

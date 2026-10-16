@@ -3,7 +3,7 @@
  * cards and the stop slider (with optional journey / clock / signal gauge). Ported from the live
  * Guided Discovery app; every widget reports changes through the callbacks it is given.
  */
-import { h } from '../guided-discovery/lib/dom.js';
+import h from './lib/dom.js';
 
 export const isSingle = (q) => /-single$/.test(q.display || '') || q.display === 'slider';
 export const fmt = (text, vars) => String(text || '').replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m));

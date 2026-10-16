@@ -1,12 +1,11 @@
 /*
- * Recommendation scoring for the self-guided Guided Discovery. Pure functions over the stored
- * `sections` object (catalog IDs only), so the EDS block and the App Builder action compute the
- * same result. Ported from the live app's computeRecommendation / getMatchedCapabilities /
- * getEngagementSize; reasons are returned as IDs so copy can be authored.
+ * Reference only: the original catalog scoring, ported from the live app's computeRecommendation /
+ * getMatchedCapabilities / getEngagementSize. summary-scoring.test.js checks the structured-content
+ * scoring (blocks/gd-summary/scoring.js) and the seeded documents against it.
  */
 import {
   CAPABILITIES, DF_ITEMS, GOVERNANCE, IDENTITY_STAGES, NEED_TO_CAPABILITY, NEEDS,
-} from './catalog.js';
+} from '../../../tools/importer/guided-discovery/catalog.js';
 
 const AI_INTEREST = ['actively-exploring', 'not-yet-but-interested'];
 

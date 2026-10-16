@@ -21,7 +21,7 @@ const copy = JSON.parse(fs.readFileSync(path.join(__dirname, 'copy.source.json')
 const ui = Object.fromEntries(copy.ui.map((r) => [r.key, r.text]));
 const prompts = Object.fromEntries(copy.prompts.map((p) => [p.id, p]));
 
-// From blocks/guided-discovery/lib/catalog.js (kept here so this stays a plain Node script).
+// From ./catalog.js (kept here so this stays a plain Node script).
 const NEED_BUCKET = {
   personalization: 'activation',
   messaging: 'activation',

@@ -12,7 +12,7 @@
  * shared session (./session.js).
  */
 import { readBlockConfig } from '../../scripts/aem.js';
-import { h } from '../guided-discovery/lib/dom.js';
+import h from './lib/dom.js';
 import getSession from './session.js';
 import loadStructured from './content.js';
 import { control, isSingle } from './widgets.js';

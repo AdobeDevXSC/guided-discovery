@@ -20,7 +20,7 @@ if (!out) {
 
 (async () => {
   const copy = JSON.parse(fs.readFileSync(path.join(__dirname, 'copy.source.json'), 'utf8'));
-  const { DF_ITEMS } = await import(path.join(__dirname, '../../../blocks/guided-discovery/lib/catalog.js'));
+  const { DF_ITEMS } = await import(path.join(__dirname, 'catalog.js'));
   const itemCopy = Object.fromEntries(copy.dfItems.map((i) => [i.id, i]));
   const categoryLabel = Object.fromEntries(copy.dfCategories.map((c) => [c.id, c.label]));
   const tierLabel = Object.fromEntries(copy.tiers.map((t) => [t.id, t.name]));
