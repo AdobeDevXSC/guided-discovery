@@ -3,8 +3,9 @@ const ALLOWED_ORIGIN_PATTERNS = [
   /^https:\/\/[a-z0-9-]+--guided-discovery--adobedevxsc\.aem\.(page|live)$/,
   // the Adobe landing-page host, for testing the front end outside EDS
   /^https:\/\/landing\.adobe\.com$/,
-  // local development with `aem up` (Origin is spoofable by non-browsers anyway, so this adds no exposure)
-  /^http:\/\/localhost:\d{2,5}$/
+  // local development with `aem up` on localhost or 127.0.0.1 (Origin is spoofable by non-browsers anyway, so this adds no exposure)
+  /^http:\/\/localhost:\d{2,5}$/,
+  /^http:\/\/127\.0\.0\.1:\d{2,5}$/
 ]
 
 const isAllowedOrigin = origin => typeof origin === 'string' && ALLOWED_ORIGIN_PATTERNS.some(re => re.test(origin))

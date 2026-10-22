@@ -96,6 +96,7 @@ export const OVERVIEW = {
       '`https://<branch>--guided-discovery--adobedevxsc.aem.page` and `.aem.live` (EDS preview and live)',
       '`https://landing.adobe.com`',
       '`http://localhost:<port>` (local `aem up`)',
+      '`http://127.0.0.1:<port>` (local `aem up`)',
     ],
     rules: [
       'A request with an allowed `Origin` gets `Access-Control-Allow-Origin` echoed back. Allowed methods are GET, POST and OPTIONS; the only allowed request header is `Content-Type`. Preflight answers are cached for 600 seconds.',
