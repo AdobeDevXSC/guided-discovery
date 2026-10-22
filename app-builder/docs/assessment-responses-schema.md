@@ -73,7 +73,7 @@ Each question stores a list of strings. What a value looks like depends on how t
 | Start | `POST {op:"start", assessment?, leadRef?, source, contentVersion, contentEnv?}` | `201 {responseId, linked}`. `assessment` defaults to `self-guided`; `leadRef` is the profile's `submissionId` |
 | Link | `POST {op:"link", responseId, leadRef}` | `200 {linked}` (only if not linked yet) |
 | Save | `POST {op:"save", responseId, section, rev, data:{answers}, progress?, contentEnv?}` | `200 {rev, savedAt}`, `409` if `rev` is stale, `400 {errors}` |
-| Answer | `POST {op:"answer", responseId, userId?, section, question, value, contentEnv?}` or `POST {op:"answer", responseId, userId?, answers:[{section, question, value}, …]}` | `200 {userId, saved:[{section, question}], revs:{section: rev}, savedAt}`, `400 {errors}`, `403` if the response isn't linked to a user, `404` (also when `userId` isn't the response's) |
+| Answer | `POST {op:"answer", responseId, userId?, section, question, value, contentEnv?}` or `POST {op:"answer", responseId, userId?, answers:[{section, question, value}, …]}` | `200 {userId, saved:[{section, question}], revs:{section: rev}, savedAt}`, `400 {errors}`, `400` if the response isn't linked to a user, `404` (also when `userId` isn't the response's) |
 | Complete | `POST {op:"complete", responseId, contentEnv?}` | `200 {result}`, `503` if the content can't be fetched |
 | Questions | `GET ?op=questions&assessment=` | `200 {sections:[{section, title, questions:[{question, text, help?, type, display, required, options:[{key, label}], choices?, itemsFrom?}]}]}` |
 | Answers for a person | `GET ?op=answers&userId=&responseId=&assessment=?` | `200 {userId, count, responses:[{assessment, status, sections:[{section, title, answers:[{question, text, values:[{value, label…}]}]}], result, …}]}`. `responseId` must be one of that person's responses (otherwise `404`); only that one is echoed back |
@@ -83,7 +83,7 @@ Each question stores a list of strings. What a value looks like depends on how t
 
 `answer` is for callers that post as they go, outside the page's own autosave: a front end on another site, or an integration.
 
-- **Linked responses only.** `answer` only stores answers it can attribute to a person: the response must have a `userId`, so start it with `leadRef` or link it with `op:"link"` first. Otherwise it returns `403 {error:"response is not linked to a user", hint}` and stores nothing. `save` (the page's autosave) still works for unlinked visitors.
+- **Linked responses only.** `answer` only stores answers it can attribute to a person: the response must have a `userId`, so start it with `leadRef` or link it with `op:"link"` first. Otherwise it returns `400 {error:"response is not linked to a user", hint}` and stores nothing. `save` (the page's autosave) still works for unlinked visitors.
 - **Optional `userId` check.** Send `userId` to make sure you're writing to that person's response. It must be a UUID (otherwise `400 {error:"invalid userId"}`) and match the response's `userId`; if it doesn't, the reply is `404 not found`, so it doesn't reveal whose response it is. The success reply always includes the response's `userId`.
 - **One answer or several.** Send one answer at the top level, or up to 50 in `answers`, across any sections.
 - **Merges, doesn't replace.** Each answer sets one question and keeps the section's other answers. `save` replaces the whole section.
