@@ -373,13 +373,13 @@ const responsesApi = {
         { status: 400, when: 'Bad section or question ID (keyed by position in the batch)', body: json({ ok: false, errors: { 'answers.0.section': 'unknown section', 'answers.2.question': 'invalid question id' } }) },
         { status: 400, when: 'Value not valid for the published question (keyed by section)', body: json({ ok: false, errors: { 'discovery.answers.focus': 'unknown option growth', 'identity.answers.identity-target': 'at most 1' } }) },
         { status: 400, when: 'userId is not a UUID', body: json({ ok: false, error: 'invalid userId' }) },
-        { status: 403, when: 'Response not linked to a user (nothing stored)', body: json({ ok: false, error: 'response is not linked to a user', hint: 'start the response with leadRef, or link it with op "link", first' }) },
+        { status: 400, when: 'Response not linked to a user (nothing stored)', body: json({ ok: false, error: 'response is not linked to a user', hint: 'start the response with leadRef, or link it with op "link", first' }) },
         { status: 404, when: 'No such response, or userId is not the response\'s', body: json({ ok: false, error: 'not found' }) },
       ],
       curl: [curlPost('guided-discovery', answerOne), '', '# batch', curlPost('guided-discovery', answerBatch), '', '# clear a question', curlPost('guided-discovery', answerClear)].join('\n'),
       fetch: [fetchPost('guided-discovery', answerBatch)].join('\n'),
       notes: [
-        'Only answers that can be attributed to a person are stored: a response started without `leadRef` (and never linked) gets `403`. The assessment page\'s own `save` autosave still works for unlinked visitors.',
+        'Only answers that can be attributed to a person are stored: a response started without `leadRef` (and never linked) gets `400`. The assessment page\'s own `save` autosave still works for unlinked visitors.',
         'All or nothing: every answer is checked first, and if any is invalid nothing is stored and `errors` lists each problem.',
         'The server bumps the `rev` of each section it touched and returns them in `revs`; you don\'t send a `rev`. Answering a completed response recalculates its `result`; otherwise the status becomes `in_progress`.',
         'One writer per section: if the assessment page has the same response open, its next autosave of that section re-sends its own copy of the whole section and overwrites answers posted here.',
@@ -784,7 +784,7 @@ export const WALKTHROUGH = {
     },
     {
       title: 'Answer one question',
-      text: 'Only linked responses take answers (unlinked ones get `403`). Discovery focus is a single-choice question: `analysis`, `activation` or `both`.',
+      text: 'Only linked responses take answers (unlinked ones get `400`). Discovery focus is a single-choice question: `analysis`, `activation` or `both`.',
       code: "await post('guided-discovery', {\n  op: 'answer', responseId, section: 'discovery', question: 'focus', value: 'activation',\n});",
     },
     {

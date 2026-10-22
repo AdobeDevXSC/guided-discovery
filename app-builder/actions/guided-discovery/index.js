@@ -83,7 +83,7 @@ function readBody (params) {
 //   POST {op:'save', responseId, section, rev, data, progress?} -> 200 {rev, savedAt}; 409 if rev is stale
 //   POST {op:'save', responseId, progress}                   -> 200 (progress only)
 //   POST {op:'answer', responseId, userId?, section, question, value, contentEnv?}
-//        -> 200 {userId, saved, revs, savedAt}; 403 if the response isn't linked to a user
+//        -> 200 {userId, saved, revs, savedAt}; 400 if the response isn't linked to a user
 //   POST {op:'answer', responseId, userId?, answers:[{section, question, value}, ...]} (up to 50, all or nothing)
 //        Each answer replaces that one question; the section's other answers are kept. value is a
 //        string or an array of strings; null or [] clears the question. Only responses with a userId
@@ -309,7 +309,8 @@ function answerOwnerError (doc, params) {
   const given = params.userId !== undefined && params.userId !== null
   if (given && !UUID_RE.test(String(params.userId))) return reply(400, { ok: false, error: 'invalid userId' })
   if (!doc.userId) {
-    return reply(403, {
+    // 400 rather than 403: the CDN in front of web actions turns a 403 into an HTML 503 page
+    return reply(400, {
       ok: false,
       error: 'response is not linked to a user',
       hint: 'start the response with leadRef, or link it with op "link", first'
