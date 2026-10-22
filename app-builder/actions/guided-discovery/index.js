@@ -75,6 +75,10 @@ function readBody (params) {
 //   POST {op:'link', responseId, leadRef}                    -> 200 {linked} (only if not yet linked)
 //   POST {op:'save', responseId, section, rev, data, progress?} -> 200 {rev, savedAt}; 409 if rev is stale
 //   POST {op:'save', responseId, progress}                   -> 200 (progress only)
+//   POST {op:'answer', responseId, section, question, value, contentEnv?}  -> 200 {saved, revs, savedAt}
+//   POST {op:'answer', responseId, answers:[{section, question, value}, ...]} (up to 50, all or nothing)
+//        Each answer replaces that one question; the section's other answers are kept. value is a
+//        string or an array of strings; null or [] clears the question.
 //   POST {op:'complete', responseId, contentEnv?}            -> 200 {result}; 503 if content is unreachable
 //   GET  ?responseId=...                                     -> 200 {response}
 // Clients from before the rename send sessionId (and read sessionId / session back); both are
@@ -85,8 +89,8 @@ async function handle (raw) {
   // honeypot: real users never fill this hidden field
   if (params.website) return reply(200, { ok: true })
   if (method !== 'get' && method !== 'post') return reply(405, { ok: false, error: 'method not allowed' })
-  if (method === 'post' && !['start', 'save', 'complete', 'link'].includes(params.op)) {
-    return reply(400, { ok: false, error: 'op must be start, save, link or complete' })
+  if (method === 'post' && !['start', 'save', 'answer', 'complete', 'link'].includes(params.op)) {
+    return reply(400, { ok: false, error: 'op must be start, save, answer, link or complete' })
   }
   const responseId = params.responseId || params.sessionId
   if ((method === 'get' || params.op !== 'start') && !UUID_RE.test(responseId || '')) {
@@ -101,6 +105,7 @@ async function handle (raw) {
       if (params.op === 'start') return start(client, col, params)
       if (params.op === 'save') return save(col, responseId, params)
       if (params.op === 'link') return link(client, col, responseId, params)
+      if (params.op === 'answer') return answer(col, responseId, params)
       return complete(col, responseId, params)
     })
   } catch (e) {
@@ -201,6 +206,69 @@ async function save (col, responseId, params) {
   }
   await col.updateOne({ responseId }, { $set: set })
   return reply(200, { ok: true, ...(hasSection ? { rev } : {}), savedAt: now })
+}
+
+const MAX_ANSWERS = 50
+const QUESTION_ID_RE = /^[a-z0-9][a-z0-9-]{0,63}$/
+
+// Answers to individual questions, for callers that post as they go (one question or a batch)
+// instead of saving whole sections. Every answer is checked first; nothing is stored on error.
+async function answer (col, responseId, params) {
+  const list = params.answers !== undefined
+    ? params.answers
+    : [{ section: params.section, question: params.question, value: params.value }]
+  if (!Array.isArray(list) || !list.length || list.length > MAX_ANSWERS) {
+    return reply(400, { ok: false, error: `answers must list 1 to ${MAX_ANSWERS} answers` })
+  }
+  const errors = {}
+  const bySection = new Map() // sectionId -> { questionId: [values] }
+  list.forEach((a, i) => {
+    const sectionId = a && sectionIdOf(a.section)
+    if (!sectionId) { errors[`answers.${i}.section`] = 'unknown section'; return }
+    if (!QUESTION_ID_RE.test((a && a.question) || '')) { errors[`answers.${i}.question`] = 'invalid question id'; return }
+    const v = a.value
+    const values = v === null || v === undefined ? [] : (Array.isArray(v) ? v : [v])
+    if (!bySection.has(sectionId)) bySection.set(sectionId, {})
+    bySection.get(sectionId)[a.question] = values
+  })
+  if (hasErrors(errors)) return reply(400, { ok: false, errors })
+
+  const doc = await findOneOrNull(col, { responseId })
+  if (!doc) return reply(404, { ok: false, error: 'not found' })
+
+  const now = new Date().toISOString()
+  const set = { updatedAt: now }
+  const sections = { ...(doc.sections || {}) }
+  const revs = {}
+  for (const [sectionId, patch] of bySection) {
+    const content = await structuredDoc(doc.assessment, sectionId, params.contentEnv)
+    if (content && content.missing) { errors[sectionId] = 'unknown section'; continue }
+    const current = (sections[sectionId] || {}).answers || {}
+    // validate the section as it will be stored, so per-item answers are checked against their items
+    const merged = { ...current }
+    Object.entries(patch).forEach(([qid, values]) => {
+      if (values.length) merged[qid] = values
+      else delete merged[qid]
+    })
+    const v = validateStructured(sectionId, { answers: merged }, content && content.data)
+    if (hasErrors(v.errors)) { Object.assign(errors, v.errors); continue }
+    const rev = ((sections[sectionId] || {}).rev || 0) + 1
+    const entry = { answers: v.data.answers, rev, savedAt: now, contentHash: content ? content.hash : null }
+    sections[sectionId] = entry
+    set[`sections.${sectionId}`] = entry
+    revs[sectionId] = rev
+  }
+  if (hasErrors(errors)) return reply(400, { ok: false, errors })
+
+  if (doc.status === 'completed') {
+    const result = await scoredResult(doc.assessment, sections, params.contentEnv)
+    if (result) set.result = { ...result, computedAt: now }
+  } else {
+    set.status = 'in_progress'
+  }
+  await col.updateOne({ responseId }, { $set: set })
+  const saved = [...bySection].flatMap(([section, patch]) => Object.keys(patch).map((question) => ({ section, question })))
+  return reply(200, { ok: true, saved, revs, savedAt: now })
 }
 
 async function complete (col, responseId, params) {
