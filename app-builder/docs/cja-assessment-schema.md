@@ -10,8 +10,8 @@ The database has no server-side validation, so the action enforces the schema.
 ```jsonc
 {
   "_id": "<db generated>",
-  "submissionId": "uuid",
-  "userId": "uuid",                    // stable per person (cja_users), same across submissions            // public token, unique index; returned to the frontend
+  "submissionId": "uuid",              // public token, unique index; returned to the frontend
+  "userId": "uuid",                    // stable per person (cja_users), same across submissions
   "schemaVersion": 1,
   "status": "started | in_progress | completed",
   "profile": {                       // Qualtrics QID in brackets
