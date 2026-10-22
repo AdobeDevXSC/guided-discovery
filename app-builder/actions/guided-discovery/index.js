@@ -82,10 +82,12 @@ function readBody (params) {
 //   POST {op:'link', responseId, leadRef}                    -> 200 {linked} (only if not yet linked)
 //   POST {op:'save', responseId, section, rev, data, progress?} -> 200 {rev, savedAt}; 409 if rev is stale
 //   POST {op:'save', responseId, progress}                   -> 200 (progress only)
-//   POST {op:'answer', responseId, section, question, value, contentEnv?}  -> 200 {saved, revs, savedAt}
-//   POST {op:'answer', responseId, answers:[{section, question, value}, ...]} (up to 50, all or nothing)
+//   POST {op:'answer', responseId, userId?, section, question, value, contentEnv?}
+//        -> 200 {userId, saved, revs, savedAt}; 403 if the response isn't linked to a user
+//   POST {op:'answer', responseId, userId?, answers:[{section, question, value}, ...]} (up to 50, all or nothing)
 //        Each answer replaces that one question; the section's other answers are kept. value is a
-//        string or an array of strings; null or [] clears the question.
+//        string or an array of strings; null or [] clears the question. Only responses with a userId
+//        (started with leadRef, or linked) take answers; userId, if sent, must be theirs (else 404)
 //   POST {op:'complete', responseId, contentEnv?}            -> 200 {result}; 503 if content is unreachable
 //   GET  ?responseId=...                                     -> 200 {response}
 //   GET  ?op=questions&assessment=self-guided                -> 200 {sections:[{section, title, questions}]}
@@ -300,6 +302,23 @@ async function save (client, col, responseId, params) {
 const MAX_ANSWERS = 50
 const QUESTION_ID_RE = /^[a-z0-9][a-z0-9-]{0,63}$/
 
+// answer only stores answers it can attribute to a person: the response must carry a userId (it
+// was started with leadRef, or linked). An optional userId must be that person's; a different one
+// reads as not found, so it doesn't reveal whose response it is. Returns null when allowed.
+function answerOwnerError (doc, params) {
+  const given = params.userId !== undefined && params.userId !== null
+  if (given && !UUID_RE.test(String(params.userId))) return reply(400, { ok: false, error: 'invalid userId' })
+  if (!doc.userId) {
+    return reply(403, {
+      ok: false,
+      error: 'response is not linked to a user',
+      hint: 'start the response with leadRef, or link it with op "link", first'
+    })
+  }
+  if (given && params.userId !== doc.userId) return reply(404, { ok: false, error: 'not found' })
+  return null
+}
+
 // Answers to individual questions, for callers that post as they go (one question or a batch)
 // instead of saving whole sections. Every answer is checked first; nothing is stored on error.
 async function answer (client, col, responseId, params) {
@@ -324,6 +343,8 @@ async function answer (client, col, responseId, params) {
 
   const doc = await findOneOrNull(col, { responseId })
   if (!doc) return reply(404, { ok: false, error: 'not found' })
+  const denied = answerOwnerError(doc, params)
+  if (denied) return denied
 
   const now = new Date().toISOString()
   const set = { updatedAt: now }
@@ -357,7 +378,7 @@ async function answer (client, col, responseId, params) {
   }
   await col.updateOne({ responseId }, { $set: set })
   const saved = [...bySection].flatMap(([section, patch]) => Object.keys(patch).map((question) => ({ section, question })))
-  return reply(200, { ok: true, saved, revs, savedAt: now })
+  return reply(200, { ok: true, userId: doc.userId, saved, revs, savedAt: now })
 }
 
 async function complete (client, col, responseId, params) {
