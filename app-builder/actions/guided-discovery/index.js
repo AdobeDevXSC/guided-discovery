@@ -89,6 +89,9 @@ function readBody (params) {
 //   POST {op:'complete', responseId, contentEnv?}            -> 200 {result}; 503 if content is unreachable
 //   GET  ?responseId=...                                     -> 200 {response}
 //   GET  ?op=questions&assessment=self-guided                -> 200 {sections:[{section, title, questions}]}
+//   GET  ?op=answers&userId=...&responseId=...&assessment=?  -> 200 {userId, responses:[...]} every run of
+//        that person, answers labelled with the question text; responseId must be one of their own
+//        responses (the secret), otherwise 404
 // Clients from before the rename send sessionId (and read sessionId / session back); both are
 // accepted and answered, and "sc-<sectionId>" section keys are accepted as <sectionId>.
 async function handle (raw) {
@@ -101,6 +104,7 @@ async function handle (raw) {
     return reply(400, { ok: false, error: 'op must be start, save, answer, link or complete' })
   }
   if (method === 'get' && params.op === 'questions') return listQuestions(params)
+  if (method === 'get' && params.op === 'answers') return listAnswers(params)
   const responseId = params.responseId || params.sessionId
   if ((method === 'get' || params.op !== 'start') && !UUID_RE.test(responseId || '')) {
     return reply(400, { ok: false, error: 'invalid responseId' })
@@ -135,6 +139,83 @@ async function listQuestions (params) {
     })
   } catch (e) {
     console.error('guided-discovery questions failed:', e.name, e.httpStatusCode, e.message)
+    return reply(500, { ok: false, error: 'internal error' })
+  }
+}
+
+// One stored value with its labels: option keys, "item:choice", "option=owner" and free text.
+function labelValue (q, value, questionsOfSection) {
+  const label = (list, id) => ((list || []).find((o) => o.id === id) || {}).label || id
+  if (!q) return { value }
+  if (q.display === 'text') return { value, label: value }
+  const owner = /^([a-z0-9][a-z0-9-]*)=(.*)$/.exec(value)
+  if (owner) return { value, option: owner[1], optionLabel: label(q.options, owner[1]), text: owner[2] }
+  const pair = /^([a-z0-9][a-z0-9-]*):([a-z0-9][a-z0-9-]*)$/.exec(value)
+  if (pair) {
+    // per-item answers are about the options of the itemsFrom question
+    const items = q.itemsFrom ? ((questionsOfSection.find((x) => x.id === q.itemsFrom) || {}).options) : q.options
+    if (pair[2] === 'follow-up') return { value, option: pair[1], optionLabel: label(items, pair[1]), followUp: true }
+    return { value, option: pair[1], optionLabel: label(items, pair[1]), choice: pair[2], choiceLabel: label(q.choices, pair[2]) }
+  }
+  return { value, label: label(q.options, value) }
+}
+
+// Every response of one person, with each answer labelled from the question bank. The caller must
+// hold one of that person's responseIds (the resume token kept by the browser that answered), so a
+// userId alone, which is not secret, reads nothing. Other runs' responseIds are not returned: they
+// are write tokens.
+async function listAnswers (params) {
+  const { userId, responseId } = params
+  if (!UUID_RE.test(userId || '') || !UUID_RE.test(responseId || '')) {
+    return reply(400, { ok: false, error: 'userId and responseId are required' })
+  }
+  if (params.assessment && !CONTENT[params.assessment]) return reply(400, { ok: false, error: 'unknown assessment' })
+  try {
+    return await withDb(params, async (client) => {
+      const col = client.collection(COLLECTION)
+      const proof = await findOneOrNull(col, { responseId })
+      if (!proof || proof.userId !== userId) return reply(404, { ok: false, error: 'not found' })
+      const filter = { userId, ...(params.assessment ? { assessment: params.assessment } : {}) }
+      const docs = await col.find(filter).limit(100).toArray()
+      docs.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))
+      const banks = new Map()
+      const responses = []
+      for (const d of docs) {
+        if (!banks.has(d.assessment)) banks.set(d.assessment, await questions.sectionsOf(client, d.assessment))
+        const bank = banks.get(d.assessment)
+        const sections = Object.entries(d.sections || {}).map(([sectionId, entry]) => {
+          const qs = bank.has(sectionId) ? bank.get(sectionId).data.questions : []
+          return {
+            section: sectionId,
+            title: bank.has(sectionId) ? bank.get(sectionId).data.eyebrow || sectionId : sectionId,
+            savedAt: entry.savedAt,
+            answers: Object.entries(entry.answers || {}).map(([qid, values]) => {
+              const q = qs.find((x) => x.id === qid)
+              return {
+                question: qid,
+                text: q ? q.title || '' : '',
+                values: (values || []).map((v) => labelValue(q, v, qs))
+              }
+            })
+          }
+        })
+        responses.push({
+          ...(d.responseId === responseId ? { responseId } : {}),
+          assessment: d.assessment,
+          submissionId: d.submissionId || null,
+          status: d.status,
+          progress: d.progress || { completed: [] },
+          sections,
+          result: d.result || null,
+          createdAt: d.createdAt,
+          updatedAt: d.updatedAt,
+          completedAt: d.completedAt || null
+        })
+      }
+      return reply(200, { ok: true, userId, count: responses.length, responses })
+    })
+  } catch (e) {
+    console.error('guided-discovery answers failed:', e.name, e.httpStatusCode, e.message)
     return reply(500, { ok: false, error: 'internal error' })
   }
 }

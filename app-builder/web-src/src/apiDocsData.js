@@ -469,6 +469,67 @@ const responsesApi = {
       curl: curlGet('guided-discovery', 'responseId=<responseId>'),
       fetch: fetchGetExpr("BASE + '/guided-discovery?responseId=' + encodeURIComponent(responseId)"),
     },
+    {
+      id: 'responses-by-user',
+      title: 'All answers for a person',
+      method: 'GET',
+      summary: '`?op=answers&userId=<uuid>&responseId=<uuid>`. Every response (run) of one person, newest first, with each answer labelled from the question bank, plus status and result. The `responseId` is the secret: it must be one of that person\u2019s own responses, so a `userId` alone reads nothing.',
+      fieldsLabel: 'Query parameters',
+      fields: [
+        ['op', '"answers"', 'yes', ''],
+        ['userId', 'uuid', 'yes', 'From the profile `create` response.'],
+        ['responseId', 'uuid', 'yes', 'Any response of this person (the resume token their browser keeps). Proves the caller is that person.'],
+        ['assessment', 'string', 'no', 'Only runs of this assessment, e.g. `self-guided`.'],
+      ],
+      success: {
+        status: 200,
+        body: json({
+          ok: true,
+          userId: '<userId>',
+          count: 2,
+          responses: [
+            {
+              responseId: '<responseId>',
+              assessment: 'self-guided',
+              submissionId: '<submissionId>',
+              status: 'in_progress',
+              progress: { completed: ['discovery'] },
+              sections: [
+                {
+                  section: 'discovery',
+                  title: 'Start here · Technology-agnostic',
+                  savedAt: NOW,
+                  answers: [{ question: 'focus', text: "Where's your focus?", values: [{ value: 'activation', label: 'Acting on what you know' }] }],
+                },
+                {
+                  section: 'governance',
+                  title: 'Governance & Access',
+                  savedAt: NOW,
+                  answers: [{ question: 'status', text: 'Sort each control', values: [{ value: 'consent:gap', option: 'consent', optionLabel: 'Consent & Identity Governance', choice: 'gap', choiceLabel: 'Gap for us' }] }],
+                },
+              ],
+              result: null,
+              createdAt: NOW,
+              updatedAt: NOW,
+              completedAt: null,
+            },
+            { assessment: 'self-guided', status: 'completed', '...': 'another run (no responseId)' },
+          ],
+        }),
+      },
+      errors: [
+        { status: 400, when: 'Missing or malformed userId / responseId', body: json({ ok: false, error: 'userId and responseId are required' }) },
+        { status: 400, when: 'Unknown assessment', body: json({ ok: false, error: 'unknown assessment' }) },
+        { status: 404, when: 'The responseId does not exist, is not linked to a person, or belongs to someone else (one message for all, so it reveals nothing)', body: json({ ok: false, error: 'not found' }) },
+      ],
+      curl: curlGet('guided-discovery', 'op=answers&userId=<userId>&responseId=<responseId>'),
+      fetch: fetchGetExpr("BASE + '/guided-discovery?op=answers&userId=' + encodeURIComponent(userId) + '&responseId=' + encodeURIComponent(responseId)"),
+      notes: [
+        'Only the `responseId` you sent is echoed back. Other runs are listed without theirs, because a `responseId` also lets you write answers.',
+        'Each value keeps the stored `value` and adds labels by question type: `label` (option or free text); `option`/`optionLabel` + `choice`/`choiceLabel` (choice per option or item); `option`/`optionLabel` + `text` (owner) or `followUp: true`.',
+        'Only responses linked to a profile (started with `leadRef`, or linked later) have a `userId`, so unlinked runs never appear. Up to 100 runs are returned.',
+      ],
+    },
   ],
 };
 
