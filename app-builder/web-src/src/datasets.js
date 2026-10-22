@@ -10,6 +10,9 @@ const country = (p) => (p.country === 'Other' ? p.countryOther : p.country);
 const profile = (r) => r.profile || {};
 const fullName = (r) => `${profile(r).firstName || ''} ${profile(r).lastName || ''}`.trim() || '—';
 
+const LABELS = { 'self-guided': 'Self-guided assessment' };
+export const assessmentLabel = (r) => LABELS[r.assessment] || r.assessment || '—';
+
 function ProfileBody({ item }) {
   const p = profile(item);
   const s = item.source || {};
@@ -26,6 +29,7 @@ function ProfileBody({ item }) {
       ]} />
       <h3>Submission</h3>
       <Fields rows={[
+        ['Assessment', assessmentLabel(item)],
         ['Submitted', fmt(item.createdAt)],
         ['User ID', item.userId], ['Submission ID', item.submissionId],
         ['Consent', item.consent ? `${item.consent.version} at ${fmt(item.consent.acceptedAt)}` : '—'],
@@ -38,8 +42,9 @@ function ProfileBody({ item }) {
 
 export const ASSESSMENTS = {
   'self-guided': {
-    label: 'Self-guided assessment',
+    label: LABELS['self-guided'],
     dataset: 'assessments',
+    assessment: 'self-guided',
     file: 'self-guided-assessment-profiles',
     id: (r) => r.submissionId,
     name: fullName,
@@ -52,6 +57,7 @@ export const ASSESSMENTS = {
     },
     table: [
       ['Submitted', (r) => when(r.createdAt)],
+      ['Assessment', (r) => <span className="pill assessment">{assessmentLabel(r)}</span>],
       ['Name', fullName],
       ['Email', (r) => profile(r).email],
       ['Phone', (r) => profile(r).phone],
@@ -66,6 +72,7 @@ export const ASSESSMENTS = {
     ],
     csv: [
       { label: 'Submitted', value: (r) => r.createdAt },
+      { label: 'Assessment', value: assessmentLabel },
       { label: 'First name', value: (r) => profile(r).firstName },
       { label: 'Last name', value: (r) => profile(r).lastName },
       { label: 'Email', value: (r) => profile(r).email },

@@ -18,8 +18,11 @@ async function call(url, init) {
 
 const authHeaders = (token, org) => ({ Authorization: `Bearer ${token}`, 'x-gw-ims-org-id': org });
 
-export async function fetchRecords({ token, org, dataset, status, limit = 500 }) {
+export async function fetchRecords({
+  token, org, dataset, assessment, status, limit = 500,
+}) {
   const qs = new URLSearchParams({ limit: String(limit), dataset });
+  if (assessment) qs.set('assessment', assessment);
   if (status) qs.set('status', status);
   return call(`${ENDPOINT}?${qs}`, { headers: authHeaders(token, org) });
 }
@@ -29,5 +32,16 @@ export async function deleteRecord({ token, org, dataset, id }) {
     method: 'POST',
     headers: { ...authHeaders(token, org), 'Content-Type': 'application/json' },
     body: JSON.stringify({ op: 'delete', dataset, id }),
+  });
+}
+
+/** Deletes several records in one call; resolves to { deleted, notFound }. */
+export async function deleteRecords({
+  token, org, dataset, ids,
+}) {
+  return call(ENDPOINT, {
+    method: 'POST',
+    headers: { ...authHeaders(token, org), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ op: 'delete', dataset, ids }),
   });
 }

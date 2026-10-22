@@ -1,6 +1,6 @@
 const crypto = require('crypto')
 const {
-  COLLECTION, USERS_COLLECTION, SCHEMA_VERSION, CONSENT_VERSION, INDEXES, USER_INDEXES,
+  COLLECTION, USERS_COLLECTION, ASSESSMENT_IDS, DEFAULT_ASSESSMENT, SCHEMA_VERSION, CONSENT_VERSION, INDEXES, USER_INDEXES,
   validateProfile, cleanSource, validateSection
 } = require('./schema')
 const { withCors } = require('../lib/cors')
@@ -13,7 +13,8 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 const findBySubmissionId = (col, submissionId) => findOneOrNull(col, { submissionId })
 
 // Public, token-gated by `submissionId` (a random UUID handed back on create).
-//   POST {op:'create', profile, consent:true, source}        -> 201 {submissionId, userId}
+//   POST {op:'create', profile, consent:true, source, assessment?} -> 201 {submissionId, userId}
+//        assessment defaults to 'self-guided'
 //        userId is stable per person (keyed on the lowercased email); submissionId is per submission
 //   POST {op:'section', submissionId, section, answers}      -> 200 (upserts that section)
 //   POST {op:'complete', submissionId, summary?}             -> 200
@@ -65,6 +66,8 @@ async function userIdFor (users, email, now) {
 async function create (col, users, params) {
   const { profile, errors } = validateProfile(params.profile)
   if (params.consent !== true) errors.consent = 'consent required'
+  const assessment = params.assessment || DEFAULT_ASSESSMENT
+  if (!ASSESSMENT_IDS.includes(assessment)) errors.assessment = 'unknown assessment'
   if (Object.keys(errors).length) return reply(400, { ok: false, errors })
 
   const now = new Date().toISOString()
@@ -73,6 +76,7 @@ async function create (col, users, params) {
   await col.insertOne({
     submissionId,
     userId,
+    assessment,
     schemaVersion: SCHEMA_VERSION,
     status: 'started',
     profile,
