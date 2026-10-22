@@ -30,12 +30,12 @@ export default function Detail({ id, title, onClose, onDelete, children }) {
     try {
       await onDelete();
     } catch (e) {
-      setErr(e.status === 401 || e.status === 403 ? 'Your Adobe account is not authorized to delete submissions.' : e.message);
+      setErr(e.status === 401 || e.status === 403 ? 'Your Adobe account is not authorized to delete profiles.' : e.message);
       setBusy(false);
     }
   };
   return (
-    <aside className="detail" aria-label="Submission detail">
+    <aside className="detail" aria-label="Profile detail">
       <div className="detail-head">
         <h2>{title}</h2>
         <button type="button" className="ghost no-print" onClick={onClose}>Close</button>
@@ -44,10 +44,10 @@ export default function Detail({ id, title, onClose, onDelete, children }) {
 
       <div className="delete-zone no-print">
         {!confirming ? (
-          <button type="button" className="danger" onClick={() => setConfirming(true)}>Delete submission</button>
+          <button type="button" className="danger" onClick={() => setConfirming(true)}>Delete profile</button>
         ) : (
           <>
-            <p role="alert">Permanently delete this submission? This cannot be undone.</p>
+            <p role="alert">Permanently delete this profile? This cannot be undone.</p>
             <button type="button" className="danger solid" onClick={doDelete} disabled={busy}>{busy ? 'Deleting…' : 'Yes, delete'}</button>
             <button type="button" className="ghost" onClick={() => setConfirming(false)} disabled={busy}>Cancel</button>
           </>

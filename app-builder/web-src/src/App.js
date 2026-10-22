@@ -3,17 +3,10 @@ import useShellAuth from './useShellAuth';
 import { fetchRecords, deleteRecord } from './api';
 import { toCsv, download } from './csv';
 import Detail from './Detail';
-import { DATASETS } from './datasets';
+import { ASSESSMENTS } from './datasets';
 import './App.css';
 
-const STATUS_OPTIONS = [
-  ['', 'All statuses'],
-  ['started', 'Started'],
-  ['in_progress', 'In progress'],
-  ['completed', 'Completed'],
-];
-
-const DATASET_KEYS = Object.keys(DATASETS);
+const ASSESSMENT_KEYS = Object.keys(ASSESSMENTS);
 
 function Notice({ title, children }) {
   return (
@@ -26,9 +19,9 @@ function Notice({ title, children }) {
 
 export default function App() {
   const auth = useShellAuth();
-  const [dataset, setDataset] = useState(DATASET_KEYS[0]);
-  const ds = DATASETS[dataset];
-  const [status, setStatus] = useState('');
+  const [assessment, setAssessment] = useState(ASSESSMENT_KEYS[0]);
+  const ds = ASSESSMENTS[assessment];
+  const { dataset } = ds;
   const [query, setQuery] = useState('');
   const [data, setData] = useState({ items: [], total: 0 });
   const [loading, setLoading] = useState(false);
@@ -40,13 +33,13 @@ export default function App() {
     setLoading(true);
     setError(null);
     try {
-      setData(await fetchRecords({ token, org, dataset, status }));
+      setData(await fetchRecords({ token, org, dataset }));
     } catch (e) {
       setError(e);
     } finally {
       setLoading(false);
     }
-  }, [token, org, dataset, status]);
+  }, [token, org, dataset]);
 
   useEffect(() => {
     if (auth.status === 'ready') load();
@@ -59,11 +52,11 @@ export default function App() {
     setData((d) => ({ items: d.items.filter((r) => ds.id(r) !== id), total: Math.max(0, d.total - 1) }));
   }, [token, org, dataset, ds]);
 
-  const switchDataset = (key) => {
+  const switchAssessment = (key) => {
     setSelected(null);
     setQuery('');
     setData({ items: [], total: 0 });
-    setDataset(key);
+    setAssessment(key);
   };
 
   const rows = useMemo(() => {
@@ -71,7 +64,8 @@ export default function App() {
     return q ? data.items.filter((r) => ds.haystack(r).includes(q)) : data.items;
   }, [data.items, query, ds]);
 
-  const counts = useMemo(() => data.items.reduce((c, r) => ({ ...c, [r.status]: (c[r.status] || 0) + 1 }), {}), [data.items]);
+  // the same person can submit more than once; userId (or email for older records) groups them
+  const people = useMemo(() => new Set(data.items.map((r) => ds.person(r)).filter(Boolean)).size, [data.items, ds]);
 
   if (auth.status === 'waiting') {
     return <Notice title="Connecting to Experience Cloud…"><p>Waiting for your Adobe sign-in.</p></Notice>;
@@ -81,7 +75,7 @@ export default function App() {
     return (
       <Notice title="Open this app in Experience Cloud Shell">
         <p>
-          Submissions contain personal data, so this page only works when it is signed in through
+          Profiles contain personal data, so this page only works when it is signed in through
           Experience Cloud Shell.
         </p>
         <p><a className="button" href={shell}>Open in Experience Cloud Shell</a></p>
@@ -98,9 +92,9 @@ export default function App() {
     <div className="viewer">
       <header className="top no-print">
         <div>
-          <h1>{ds.title}</h1>
+          <h1>{ds.label}</h1>
           <p className="muted">
-            {data.total} {status ? STATUS_OPTIONS.find((o) => o[0] === status)[1].toLowerCase() : 'total'}
+            {data.total} {data.total === 1 ? 'profile' : 'profiles'}
             {data.total > data.items.length ? ` · showing newest ${data.items.length}` : ''}
           </p>
         </div>
@@ -118,34 +112,28 @@ export default function App() {
         </div>
       </header>
 
-      <nav className="tabs no-print" aria-label="Dataset">
-        {DATASET_KEYS.map((key) => (
-          <button
-            key={key}
-            type="button"
-            className={key === dataset ? 'tab on' : 'tab'}
-            aria-current={key === dataset ? 'page' : undefined}
-            onClick={() => switchDataset(key)}
-          >
-            {DATASETS[key].label}
-          </button>
-        ))}
-      </nav>
+      {ASSESSMENT_KEYS.length > 1 && (
+        <nav className="tabs no-print" aria-label="Assessment">
+          {ASSESSMENT_KEYS.map((key) => (
+            <button
+              key={key}
+              type="button"
+              className={key === assessment ? 'tab on' : 'tab'}
+              aria-current={key === assessment ? 'page' : undefined}
+              onClick={() => switchAssessment(key)}
+            >
+              {ASSESSMENTS[key].label}
+            </button>
+          ))}
+        </nav>
+      )}
 
       <section className="stats no-print" aria-label="Summary">
-        <div><strong>{data.items.length}</strong><span>Loaded</span></div>
-        <div><strong>{counts.completed || 0}</strong><span>Completed</span></div>
-        <div><strong>{counts.in_progress || 0}</strong><span>In progress</span></div>
-        <div><strong>{counts.started || 0}</strong><span>Started</span></div>
+        <div><strong>{data.items.length}</strong><span>Profiles</span></div>
+        <div><strong>{people}</strong><span>People</span></div>
       </section>
 
       <section className="filters no-print">
-        <label>
-          Status
-          <select value={status} onChange={(e) => setStatus(e.target.value)}>
-            {STATUS_OPTIONS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-          </select>
-        </label>
         <label className="grow">
           Search
           <input type="search" placeholder="Name, email, organization, product…" value={query} onChange={(e) => setQuery(e.target.value)} />
@@ -155,8 +143,8 @@ export default function App() {
       {error && (
         <p role="alert" className="error">
           {denied
-            ? 'Your Adobe account is not authorized to read these submissions.'
-            : `Could not load submissions: ${error.message}`}
+            ? 'Your Adobe account is not authorized to read these profiles.'
+            : `Could not load profiles: ${error.message}`}
         </p>
       )}
 
@@ -166,7 +154,6 @@ export default function App() {
             <thead>
               <tr>
                 {ds.table.map(([label]) => <th key={label}>{label}</th>)}
-                <th>Status</th>
               </tr>
             </thead>
             <tbody>
@@ -179,11 +166,10 @@ export default function App() {
                   tabIndex={0}
                 >
                   {ds.table.map(([label, cell]) => <td key={label}>{cell(r)}</td>)}
-                  <td><span className={`pill ${r.status}`}>{r.status.replace('_', ' ')}</span></td>
                 </tr>
               ))}
               {!rows.length && !loading && (
-                <tr><td colSpan={ds.table.length + 1} className="empty">{data.items.length ? 'No submissions match your search.' : 'No submissions yet.'}</td></tr>
+                <tr><td colSpan={ds.table.length} className="empty">{data.items.length ? 'No profiles match your search.' : 'No profiles yet.'}</td></tr>
               )}
             </tbody>
           </table>
