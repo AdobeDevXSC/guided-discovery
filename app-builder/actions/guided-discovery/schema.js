@@ -69,13 +69,20 @@ function validateStructured (key, value, doc) {
   const out = {}
   for (const [qid, picked] of Object.entries(answers)) {
     if (!/^[a-z0-9][a-z0-9-]{0,63}$/.test(qid)) { c.fail(`answers.${qid}`, 'invalid question id'); continue }
-    if (!Array.isArray(picked) || picked.length > 100 || picked.some((v) => typeof v !== 'string' || v.length > 130)) {
+    if (!Array.isArray(picked) || picked.length > 100 || picked.some((v) => typeof v !== 'string' || v.length > 500)) {
       c.fail(`answers.${qid}`, 'must be an array of option ids'); continue
     }
     const ids = [...new Set(picked)]
     if (questions) {
       const q = questions.find((x) => x.id === qid)
       if (!q) { c.fail(`answers.${qid}`, 'unknown question'); continue }
+      if (q.display === 'text') {
+        // free text: one value, up to 500 characters
+        const text = ids.map((v) => v.trim()).filter(Boolean)
+        if (text.length > 1) { c.fail(`answers.${qid}`, 'at most 1'); continue }
+        if (text.length) out[qid] = text
+        continue
+      }
       if (q.display === 'sort') {
         // "optionId:choiceId", one per option
         const opts = (q.options || []).map((o) => o.id)

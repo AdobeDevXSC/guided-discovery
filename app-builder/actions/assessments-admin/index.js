@@ -1,6 +1,7 @@
 const assessments = require('../assessments/schema')
 const responses = require('../guided-discovery/schema')
-const { withDb, isNotFound } = require('../lib/db')
+const { withDb, isNotFound, findOneOrNull, ensureIndexes } = require('../lib/db')
+const questions = require('../lib/questions')
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
@@ -23,11 +24,17 @@ const DATASETS = {
 // belongs to this project's org (sent as Authorization + x-gw-ims-org-id by the UI).
 //   GET ?dataset=assessments|responses &status=started|in_progress|completed &limit=1..500 &skip=0
 //   -> { ok, dataset, total, count, items } newest first
-//        &assessment=self-guided (assessments only)
+//        &assessment=self-guided filters either dataset
 //   POST {op:'delete', dataset, id} -> { ok, deleted: 1 } permanently removes one record (404 if absent)
 //   POST {op:'delete', dataset, ids:[...]} -> { ok, deleted, notFound } removes up to 100 records
 //        (legacy body {op:'delete', submissionId} deletes from assessments)
+//   GET ?dataset=questions&assessment=self-guided -> { ok, items } the question bank, in page order
+//   POST {op:'question-save', assessment, question:{questionId, section, sectionTitle, title, help,
+//         type, required, options:[{key, label}]}, editor?} -> { ok, question, created }
+//        creates a question, or updates one with question.update:true; keys are fixed once saved
+//        (see lib/questions.js)
 async function main (params) {
+  if (params.op === 'question-save' || params.dataset === 'questions') return questionBank(params)
   const dataset = params.dataset || 'assessments'
   const ds = DATASETS[dataset]
   if (!ds) return reply(400, { ok: false, error: 'invalid dataset' })
@@ -70,6 +77,81 @@ async function attachProfiles (client, items) {
   items.forEach((i) => {
     if (byId.has(i.submissionId)) i.profile = byId.get(i.submissionId)
   })
+}
+
+// The question bank: list in page order, or create/update one question.
+async function questionBank (params) {
+  const assessment = params.assessment || assessments.DEFAULT_ASSESSMENT
+  if (!assessments.ASSESSMENT_IDS.includes(assessment)) return reply(400, { ok: false, error: 'invalid assessment' })
+  const method = (params.__ow_method || 'get').toLowerCase()
+  try {
+    return await withDb(params, async (client) => {
+      const col = client.collection(questions.COLLECTION)
+      await ensureIndexes(col, questions.INDEXES)
+      if (method === 'get') {
+        const items = await col.find({ assessment }).limit(1000).toArray()
+        items.sort((a, b) => (a.sectionOrder - b.sectionOrder) || (a.order - b.order))
+        return reply(200, { ok: true, dataset: 'questions', total: items.length, count: items.length, items })
+      }
+      if (method !== 'post' || params.op !== 'question-save') return reply(400, { ok: false, error: 'op must be question-save' })
+      return saveQuestion(col, assessment, params)
+    })
+  } catch (e) {
+    console.error('assessments-admin questions failed:', e.name, e.httpStatusCode, e.message)
+    return reply(500, { ok: false, error: 'internal error' })
+  }
+}
+
+// Who saved it, for the record: the editor's email from the Shell profile, else the token's user id.
+function editorOf (params) {
+  const email = String(params.editor || '').trim().slice(0, 200)
+  if (email) return email
+  try {
+    const auth = String(((params.__ow_headers || {}).authorization) || '')
+    const payload = JSON.parse(Buffer.from(auth.split('.')[1] || '', 'base64url').toString('utf8'))
+    return String(payload.user_id || '')
+  } catch (e) {
+    return ''
+  }
+}
+
+async function saveQuestion (col, assessment, params) {
+  const input = params.question || {}
+  const key = String(input.questionId || '').trim()
+  const existing = key ? await findOneOrNull(col, { assessment, questionId: key }) : null
+  // updates must name a saved question, and a new question can't reuse a saved key
+  if (input.update === true && !existing) return reply(404, { ok: false, errors: { questionId: 'not found' } })
+  if (input.update !== true && existing) return reply(400, { ok: false, errors: { questionId: 'this key is already used' } })
+  const now = new Date().toISOString()
+  const { doc, errors } = questions.validateEdit(input, existing, now, editorOf(params))
+
+  // a new question goes last in its section; a new section goes after the others
+  let placement = {}
+  if (!existing && !Object.keys(errors).length) {
+    const all = await col.find({ assessment }).limit(1000).toArray()
+    const inSection = all.filter((q) => q.section === doc.section)
+    if (inSection.length) {
+      placement = {
+        sectionOrder: inSection[0].sectionOrder,
+        sectionTitle: doc.sectionTitle || inSection[0].sectionTitle,
+        order: Math.max(...inSection.map((q) => q.order)) + 1
+      }
+    } else {
+      if (!doc.sectionTitle) errors.sectionTitle = 'required for a new section'
+      placement = { sectionOrder: all.length ? Math.max(...all.map((q) => q.sectionOrder)) + 1 : 0, order: 0 }
+    }
+  }
+  if (Object.keys(errors).length) return reply(400, { ok: false, errors })
+
+  if (existing) {
+    await col.updateOne({ assessment, questionId: key }, { $set: doc })
+  } else {
+    await col.insertOne({ assessment, ...doc, ...placement })
+  }
+  questions.forget(assessment)
+  const saved = await findOneOrNull(col, { assessment, questionId: doc.questionId })
+  console.log('assessments-admin', existing ? 'updated' : 'created', 'question', assessment, doc.questionId)
+  return reply(existing ? 200 : 201, { ok: true, created: !existing, question: saved })
 }
 
 const MAX_DELETE = 100

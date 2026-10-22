@@ -7,14 +7,16 @@ const {
 const assessments = require('../assessments/schema')
 const { withCors } = require('../lib/cors')
 const { withDb, findOneOrNull, ensureIndexes } = require('../lib/db')
+const questions = require('../lib/questions')
 
 const headers = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
 const reply = (statusCode, body) => ({ statusCode, headers, body })
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 const hasErrors = (errors) => Object.keys(errors).length > 0
 
-// Where each assessment's questions are authored (DA structured content, one document per
-// section plus a summary), as published through the structured content delivery service.
+// Questions come from the question bank (collection assessment_questions, edited in the admin
+// viewer). Each assessment's summary document (scoring thresholds, capability copy) is still
+// authored in DA structured content and read through the delivery service.
 const SC_BASE = 'https://da-sc.adobeaem.workers.dev'
 const CONTENT = {
   'self-guided': 'adobedevxsc/guided-discovery/forms/guided-discovery'
@@ -44,16 +46,21 @@ async function structuredDoc (assessment, id, env) {
   }
 }
 
-// The recommendation, scored from the published summary and section documents (same module as the
-// gd-summary block). Returns null when the content can't be fetched right now.
-async function scoredResult (assessment, sections, env) {
+// The recommendation, scored from the DA summary document and the bank's questions (same module as
+// the gd-summary block). Returns null when the summary can't be fetched right now.
+async function scoredResult (client, assessment, sections, env) {
   const summary = await structuredDoc(assessment, 'summary', env)
   if (!summary || summary.missing) return null
+  const bank = await questions.sectionsOf(client, assessment)
   const ids = Array.isArray(summary.data.sections) ? summary.data.sections : []
-  const loaded = await Promise.all(ids.map((id) => structuredDoc(assessment, id, env)))
-  if (loaded.some((d) => !d)) return null
-  const docs = Object.fromEntries(ids.map((id, i) => [id, loaded[i].missing ? {} : loaded[i].data]))
+  const docs = Object.fromEntries(ids.map((id) => [id, bank.has(id) ? bank.get(id).data : {}]))
   return computeSummary(summary.data, docs, sections || {})
+}
+
+// The bank's version of one section, or { missing: true } if it has no questions.
+async function sectionContent (client, assessment, sectionId) {
+  const bank = await questions.sectionsOf(client, assessment)
+  return bank.get(sectionId) || { missing: true }
 }
 
 // The browser's tab-close save is sent as text/plain (a CORS-safelisted type, so no preflight);
@@ -81,6 +88,7 @@ function readBody (params) {
 //        string or an array of strings; null or [] clears the question.
 //   POST {op:'complete', responseId, contentEnv?}            -> 200 {result}; 503 if content is unreachable
 //   GET  ?responseId=...                                     -> 200 {response}
+//   GET  ?op=questions&assessment=self-guided                -> 200 {sections:[{section, title, questions}]}
 // Clients from before the rename send sessionId (and read sessionId / session back); both are
 // accepted and answered, and "sc-<sectionId>" section keys are accepted as <sectionId>.
 async function handle (raw) {
@@ -92,6 +100,7 @@ async function handle (raw) {
   if (method === 'post' && !['start', 'save', 'answer', 'complete', 'link'].includes(params.op)) {
     return reply(400, { ok: false, error: 'op must be start, save, answer, link or complete' })
   }
+  if (method === 'get' && params.op === 'questions') return listQuestions(params)
   const responseId = params.responseId || params.sessionId
   if ((method === 'get' || params.op !== 'start') && !UUID_RE.test(responseId || '')) {
     return reply(400, { ok: false, error: 'invalid responseId' })
@@ -103,13 +112,29 @@ async function handle (raw) {
       await ensureIndexes(col, INDEXES)
       if (method === 'get') return resume(col, responseId)
       if (params.op === 'start') return start(client, col, params)
-      if (params.op === 'save') return save(col, responseId, params)
+      if (params.op === 'save') return save(client, col, responseId, params)
       if (params.op === 'link') return link(client, col, responseId, params)
-      if (params.op === 'answer') return answer(col, responseId, params)
-      return complete(col, responseId, params)
+      if (params.op === 'answer') return answer(client, col, responseId, params)
+      return complete(client, col, responseId, params)
     })
   } catch (e) {
     console.error('guided-discovery failed:', e.name, e.httpStatusCode, e.message)
+    return reply(500, { ok: false, error: 'internal error' })
+  }
+}
+
+// Every question of an assessment: text, keys, answer type and options, for front ends that show
+// the questions themselves. Public: the bank holds no personal data.
+async function listQuestions (params) {
+  const assessment = params.assessment || assessments.DEFAULT_ASSESSMENT
+  if (!CONTENT[assessment]) return reply(400, { ok: false, error: 'unknown assessment' })
+  try {
+    return await withDb(params, async (client) => {
+      const bank = await questions.sectionsOf(client, assessment)
+      return reply(200, { ok: true, assessment, sections: questions.publicSections(bank) })
+    })
+  } catch (e) {
+    console.error('guided-discovery questions failed:', e.name, e.httpStatusCode, e.message)
     return reply(500, { ok: false, error: 'internal error' })
   }
 }
@@ -160,7 +185,7 @@ async function link (client, col, responseId, params) {
   return reply(200, { ok: true, linked: true, changed: true })
 }
 
-async function save (col, responseId, params) {
+async function save (client, col, responseId, params) {
   const hasSection = params.section !== undefined
   if (!hasSection && params.progress === undefined) {
     return reply(400, { ok: false, error: 'section or progress required' })
@@ -177,11 +202,11 @@ async function save (col, responseId, params) {
   const errors = {}
   let entry
   if (hasSection) {
-    const content = await structuredDoc(doc.assessment, sectionId, params.contentEnv)
-    if (content && content.missing) return reply(400, { ok: false, errors: { section: 'unknown section' } })
-    const v = validateStructured(sectionId, params.data, content && content.data)
+    const content = await sectionContent(client, doc.assessment, sectionId)
+    if (content.missing) return reply(400, { ok: false, errors: { section: 'unknown section' } })
+    const v = validateStructured(sectionId, params.data, content.data)
     Object.assign(errors, v.errors)
-    entry = { answers: v.data.answers, rev, contentHash: content ? content.hash : null }
+    entry = { answers: v.data.answers, rev, contentHash: content.hash }
   }
   const p = validateProgress(params.progress)
   Object.assign(errors, p.errors)
@@ -199,7 +224,7 @@ async function save (col, responseId, params) {
   if (doc.status === 'completed') {
     // edits after completion keep the server-side recommendation current
     const sections = hasSection ? { ...(doc.sections || {}), [sectionId]: entry } : doc.sections
-    const result = await scoredResult(doc.assessment, sections, params.contentEnv)
+    const result = await scoredResult(client, doc.assessment, sections, params.contentEnv)
     if (result) set.result = { ...result, computedAt: now }
   } else {
     set.status = 'in_progress'
@@ -213,7 +238,7 @@ const QUESTION_ID_RE = /^[a-z0-9][a-z0-9-]{0,63}$/
 
 // Answers to individual questions, for callers that post as they go (one question or a batch)
 // instead of saving whole sections. Every answer is checked first; nothing is stored on error.
-async function answer (col, responseId, params) {
+async function answer (client, col, responseId, params) {
   const list = params.answers !== undefined
     ? params.answers
     : [{ section: params.section, question: params.question, value: params.value }]
@@ -241,8 +266,8 @@ async function answer (col, responseId, params) {
   const sections = { ...(doc.sections || {}) }
   const revs = {}
   for (const [sectionId, patch] of bySection) {
-    const content = await structuredDoc(doc.assessment, sectionId, params.contentEnv)
-    if (content && content.missing) { errors[sectionId] = 'unknown section'; continue }
+    const content = await sectionContent(client, doc.assessment, sectionId)
+    if (content.missing) { errors[sectionId] = 'unknown section'; continue }
     const current = (sections[sectionId] || {}).answers || {}
     // validate the section as it will be stored, so per-item answers are checked against their items
     const merged = { ...current }
@@ -250,10 +275,10 @@ async function answer (col, responseId, params) {
       if (values.length) merged[qid] = values
       else delete merged[qid]
     })
-    const v = validateStructured(sectionId, { answers: merged }, content && content.data)
+    const v = validateStructured(sectionId, { answers: merged }, content.data)
     if (hasErrors(v.errors)) { Object.assign(errors, v.errors); continue }
     const rev = ((sections[sectionId] || {}).rev || 0) + 1
-    const entry = { answers: v.data.answers, rev, savedAt: now, contentHash: content ? content.hash : null }
+    const entry = { answers: v.data.answers, rev, savedAt: now, contentHash: content.hash }
     sections[sectionId] = entry
     set[`sections.${sectionId}`] = entry
     revs[sectionId] = rev
@@ -261,7 +286,7 @@ async function answer (col, responseId, params) {
   if (hasErrors(errors)) return reply(400, { ok: false, errors })
 
   if (doc.status === 'completed') {
-    const result = await scoredResult(doc.assessment, sections, params.contentEnv)
+    const result = await scoredResult(client, doc.assessment, sections, params.contentEnv)
     if (result) set.result = { ...result, computedAt: now }
   } else {
     set.status = 'in_progress'
@@ -271,11 +296,11 @@ async function answer (col, responseId, params) {
   return reply(200, { ok: true, saved, revs, savedAt: now })
 }
 
-async function complete (col, responseId, params) {
+async function complete (client, col, responseId, params) {
   const doc = await findOneOrNull(col, { responseId })
   if (!doc) return reply(404, { ok: false, error: 'not found' })
   const now = new Date().toISOString()
-  const scored = await scoredResult(doc.assessment, doc.sections, params.contentEnv)
+  const scored = await scoredResult(client, doc.assessment, doc.sections, params.contentEnv)
   if (!scored) return reply(503, { ok: false, error: 'content unavailable, try again' })
   const result = { ...scored, computedAt: now }
   await col.updateOne(

@@ -9,8 +9,9 @@ async function call(url, init) {
   let body = null;
   try { body = await res.json(); } catch (e) { /* non-JSON error page */ }
   if (!res.ok || !body || body.ok === false) {
-    const err = new Error((body && (body.error || body.message)) || `Request failed (${res.status})`);
+    const err = new Error((body && (body.error || body.message)) || (body && body.errors ? 'Please fix the highlighted fields.' : `Request failed (${res.status})`));
     err.status = res.status;
+    err.errors = (body && body.errors) || null;
     throw err;
   }
   return body;
@@ -43,5 +44,24 @@ export async function deleteRecords({
     method: 'POST',
     headers: { ...authHeaders(token, org), 'Content-Type': 'application/json' },
     body: JSON.stringify({ op: 'delete', dataset, ids }),
+  });
+}
+
+/** The question bank for an assessment, in page order. */
+export async function fetchQuestions({ token, org, assessment }) {
+  const qs = new URLSearchParams({ dataset: 'questions', assessment });
+  return call(`${ENDPOINT}?${qs}`, { headers: authHeaders(token, org) });
+}
+
+/** Creates or updates one question; resolves to { question, created } or rejects with field errors. */
+export async function saveQuestion({
+  token, org, assessment, question, editor,
+}) {
+  return call(ENDPOINT, {
+    method: 'POST',
+    headers: { ...authHeaders(token, org), 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      op: 'question-save', assessment, question, editor,
+    }),
   });
 }

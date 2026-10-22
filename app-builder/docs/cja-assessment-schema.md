@@ -42,7 +42,7 @@ Indexes: `submissionId` (unique), `profile.email`, `userId`, `assessment + creat
 
 `assessment` names the assessment the submission came from. Today the only value is `self-guided`, the default when `create` omits it; unknown values are rejected. The admin viewer lists one assessment per tab.
 
-Each submission also stores `userId`, the person's stable ID. It lives in collection `cja_users` as `{ userId, email, createdAt }`, with unique indexes on `email` and `userId`. The first submission for an email (lowercased) creates it, and later submissions reuse it. Guided Discovery sessions linked to a submission copy it into `leadRef.userId`.
+Each submission also stores `userId`, the person's stable ID. It lives in collection `cja_users` as `{ userId, email, createdAt }`, with unique indexes on `email` and `userId`. The first submission for an email (lowercased) creates it, and later submissions reuse it. Assessment responses linked to a submission store it as `userId`, next to `submissionId` (see `assessment-responses-schema.md`).
 Enum values live in `actions/assessments/options.json` (generated from the survey definition).
 
 ## Action: `POST/GET /api/v1/web/marketingprototype/assessments`

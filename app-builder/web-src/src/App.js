@@ -3,10 +3,38 @@ import useShellAuth from './useShellAuth';
 import { fetchRecords, deleteRecord, deleteRecords } from './api';
 import { toCsv, download } from './csv';
 import Detail from './Detail';
+import QuestionsPage from './QuestionsPage';
+import ApiDocs from './ApiDocs';
 import { ASSESSMENTS } from './datasets';
 import './App.css';
 
 const ASSESSMENT_KEYS = Object.keys(ASSESSMENTS);
+
+// Pages of the viewer, addressable by hash (#questions) so they can be linked to.
+const VIEWS = [['profiles', 'Profiles'], ['questions', 'Questions'], ['api', 'API reference']];
+const viewFromHash = () => {
+  const h = window.location.hash.replace(/^#\/?/, '');
+  return VIEWS.some(([k]) => k === h) ? h : 'profiles';
+};
+function useView() {
+  const [view, setView] = useState(viewFromHash);
+  useEffect(() => {
+    const onHash = () => setView(viewFromHash());
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  }, []);
+  return view;
+}
+
+function Nav({ view }) {
+  return (
+    <nav className="views no-print" aria-label="Viewer">
+      {VIEWS.map(([key, label]) => (
+        <a key={key} href={`#${key}`} className={key === view ? 'on' : ''} aria-current={key === view ? 'page' : undefined}>{label}</a>
+      ))}
+    </nav>
+  );
+}
 const DELETE_BATCH = 100; // the admin action's per-request limit
 
 function BulkDelete({ count, onDelete, onClear }) {
@@ -57,6 +85,7 @@ function Notice({ title, children }) {
 
 export default function App() {
   const auth = useShellAuth();
+  const view = useView();
   const [assessment, setAssessment] = useState(ASSESSMENT_KEYS[0]);
   const ds = ASSESSMENTS[assessment];
   const { dataset } = ds;
@@ -84,8 +113,8 @@ export default function App() {
   }, [token, org, dataset, ds.assessment]);
 
   useEffect(() => {
-    if (auth.status === 'ready') load();
-  }, [auth.status, load]);
+    if (auth.status === 'ready' && view === 'profiles') load();
+  }, [auth.status, load, view]);
 
   const handleDelete = useCallback(async (item) => {
     const id = ds.id(item);
@@ -168,8 +197,27 @@ export default function App() {
 
   const denied = error && (error.status === 401 || error.status === 403);
 
+  if (view === 'api') {
+    return (
+      <div className="viewer">
+        <Nav view={view} />
+        <ApiDocs />
+      </div>
+    );
+  }
+
+  if (view === 'questions') {
+    return (
+      <div className="viewer">
+        <Nav view={view} />
+        <QuestionsPage token={token} org={org} profile={auth.profile} assessment={ds.assessment} assessmentLabel={ds.label} />
+      </div>
+    );
+  }
+
   return (
     <div className="viewer">
+      <Nav view={view} />
       <header className="top no-print">
         <div>
           <h1>{ds.label}</h1>
