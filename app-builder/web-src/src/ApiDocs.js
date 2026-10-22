@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   BASE_URL, OVERVIEW, SECTIONS, WALKTHROUGH, ANSWER_FORMATS,
 } from './apiDocsData';
@@ -108,7 +108,27 @@ const TOC = [
   { id: 'answer-formats', title: 'Answer value formats' },
 ];
 
+// The viewer routes by hash (#api), so in-page links are #api/<id>: clicking scrolls without
+// changing the page, and opening a shared #api/<id> link scrolls to that part on load.
+const scrollToPart = (id) => {
+  const el = id && document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  return Boolean(el);
+};
+
+function PartLink({ id, children }) {
+  const go = (e) => {
+    e.preventDefault();
+    if (scrollToPart(id)) window.history.replaceState(null, '', `#api/${id}`);
+  };
+  return <a href={`#api/${id}`} onClick={go}>{children}</a>;
+}
+
 export default function ApiDocs() {
+  useEffect(() => {
+    const id = window.location.hash.replace(/^#\/?api\/?/, '');
+    if (id) scrollToPart(id);
+  }, []);
   return (
     <div className="api-docs">
       <header>
@@ -121,10 +141,10 @@ export default function ApiDocs() {
         <ol>
           {TOC.map((t) => (
             <li key={t.id}>
-              <a href={`#${t.id}`}>{t.title}</a>
+              <PartLink id={t.id}>{t.title}</PartLink>
               {t.children && t.children.length > 0 && (
                 <ol>
-                  {t.children.map((c) => <li key={c.id}><a href={`#${c.id}`}>{c.title}</a></li>)}
+                  {t.children.map((c) => <li key={c.id}><PartLink id={c.id}>{c.title}</PartLink></li>)}
                 </ol>
               )}
             </li>
