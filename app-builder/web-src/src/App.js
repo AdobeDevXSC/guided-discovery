@@ -327,7 +327,7 @@ export default function App() {
         </div>
         {selected && (
           <Detail id={ds.id(selected)} title={ds.name(selected)} onClose={() => setSelected(null)} onDelete={() => handleDelete(selected)}>
-            <ds.Body item={selected} />
+            <ds.Body item={selected} auth={{ token, org }} />
           </Detail>
         )}
       </div>

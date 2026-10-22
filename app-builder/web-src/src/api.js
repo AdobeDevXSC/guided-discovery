@@ -65,3 +65,9 @@ export async function saveQuestion({
     }),
   });
 }
+
+/** The responses linked to one profile, each laid out against the whole question bank. */
+export async function fetchProfileAnswers({ token, org, submissionId }) {
+  const qs = new URLSearchParams({ dataset: 'profile-answers', submissionId });
+  return call(`${ENDPOINT}?${qs}`, { headers: authHeaders(token, org) });
+}

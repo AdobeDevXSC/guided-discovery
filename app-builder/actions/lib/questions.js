@@ -152,6 +152,55 @@ function validateEdit (input, existing, now, user) {
   return { doc, errors }
 }
 
+// One stored value with its labels: option keys, "item:choice", "option=owner" and free text.
+function labelValue (q, value, questionsOfSection) {
+  const label = (list, id) => ((list || []).find((o) => o.id === id) || {}).label || id
+  if (!q) return { value }
+  if (q.display === 'text') return { value, label: value }
+  const owner = /^([a-z0-9][a-z0-9-]*)=(.*)$/.exec(value)
+  if (owner) return { value, option: owner[1], optionLabel: label(q.options, owner[1]), text: owner[2] }
+  const pair = /^([a-z0-9][a-z0-9-]*):([a-z0-9][a-z0-9-]*)$/.exec(value)
+  if (pair) {
+    // per-item answers are about the options of the itemsFrom question
+    const items = q.itemsFrom ? ((questionsOfSection.find((x) => x.id === q.itemsFrom) || {}).options) : q.options
+    if (pair[2] === 'follow-up') return { value, option: pair[1], optionLabel: label(items, pair[1]), followUp: true }
+    return { value, option: pair[1], optionLabel: label(items, pair[1]), choice: pair[2], choiceLabel: label(q.choices, pair[2]) }
+  }
+  return { value, label: label(q.options, value) }
+}
+
+/**
+ * One response's answers laid out against the whole bank: every section and question in page order,
+ * with its labelled values (empty when unanswered), plus answers to questions no longer in the bank.
+ */
+function answerSheet (sections, responseSections) {
+  const out = []
+  for (const [sectionId, { data }] of sections) {
+    const given = ((responseSections || {})[sectionId] || {}).answers || {}
+    out.push({
+      section: sectionId,
+      title: data.eyebrow || sectionId,
+      savedAt: ((responseSections || {})[sectionId] || {}).savedAt || null,
+      questions: data.questions.map((q) => ({
+        question: q.id,
+        text: q.title || '',
+        type: TYPE_OF_DISPLAY[q.display] || q.display,
+        values: (given[q.id] || []).map((v) => labelValue(q, v, data.questions))
+      }))
+    })
+  }
+  // answers saved for sections or questions the bank doesn't have (kept, shown as-is)
+  for (const [sectionId, entry] of Object.entries(responseSections || {})) {
+    const known = sections.get(sectionId)
+    const extra = Object.entries(entry.answers || {})
+      .filter(([qid]) => !known || !known.data.questions.some((q) => q.id === qid))
+      .map(([qid, values]) => ({ question: qid, text: '', type: '', values: values.map((v) => ({ value: v })) }))
+    if (extra.length) out.push({ section: sectionId, title: sectionId, savedAt: entry.savedAt || null, questions: extra, unknown: true })
+  }
+  return out
+}
+
 module.exports = {
-  COLLECTION, INDEXES, NEW_TYPES, TYPE_OF_DISPLAY, sectionsOf, publicSections, validateEdit, forget, asQuestion
+  COLLECTION, INDEXES, NEW_TYPES, TYPE_OF_DISPLAY, sectionsOf, publicSections, validateEdit, forget, asQuestion,
+  labelValue, answerSheet
 }

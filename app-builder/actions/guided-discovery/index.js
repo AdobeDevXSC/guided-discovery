@@ -143,23 +143,6 @@ async function listQuestions (params) {
   }
 }
 
-// One stored value with its labels: option keys, "item:choice", "option=owner" and free text.
-function labelValue (q, value, questionsOfSection) {
-  const label = (list, id) => ((list || []).find((o) => o.id === id) || {}).label || id
-  if (!q) return { value }
-  if (q.display === 'text') return { value, label: value }
-  const owner = /^([a-z0-9][a-z0-9-]*)=(.*)$/.exec(value)
-  if (owner) return { value, option: owner[1], optionLabel: label(q.options, owner[1]), text: owner[2] }
-  const pair = /^([a-z0-9][a-z0-9-]*):([a-z0-9][a-z0-9-]*)$/.exec(value)
-  if (pair) {
-    // per-item answers are about the options of the itemsFrom question
-    const items = q.itemsFrom ? ((questionsOfSection.find((x) => x.id === q.itemsFrom) || {}).options) : q.options
-    if (pair[2] === 'follow-up') return { value, option: pair[1], optionLabel: label(items, pair[1]), followUp: true }
-    return { value, option: pair[1], optionLabel: label(items, pair[1]), choice: pair[2], choiceLabel: label(q.choices, pair[2]) }
-  }
-  return { value, label: label(q.options, value) }
-}
-
 // Every response of one person, with each answer labelled from the question bank. The caller must
 // hold one of that person's responseIds (the resume token kept by the browser that answered), so a
 // userId alone, which is not secret, reads nothing. Other runs' responseIds are not returned: they
@@ -194,7 +177,7 @@ async function listAnswers (params) {
               return {
                 question: qid,
                 text: q ? q.title || '' : '',
-                values: (values || []).map((v) => labelValue(q, v, qs))
+                values: (values || []).map((v) => questions.labelValue(q, v, qs))
               }
             })
           }

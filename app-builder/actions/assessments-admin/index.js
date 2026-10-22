@@ -29,12 +29,15 @@ const DATASETS = {
 //   POST {op:'delete', dataset, ids:[...]} -> { ok, deleted, notFound } removes up to 100 records
 //        (legacy body {op:'delete', submissionId} deletes from assessments)
 //   GET ?dataset=questions&assessment=self-guided -> { ok, items } the question bank, in page order
+//   GET ?dataset=profile-answers&submissionId=... -> { ok, runs } every response linked to that profile,
+//        each laid out against the whole question bank (answered or not), newest first
 //   POST {op:'question-save', assessment, question:{questionId, section, sectionTitle, title, help,
 //         type, required, options:[{key, label}]}, editor?} -> { ok, question, created }
 //        creates a question, or updates one with question.update:true; keys are fixed once saved
 //        (see lib/questions.js)
 async function main (params) {
   if (params.op === 'question-save' || params.dataset === 'questions') return questionBank(params)
+  if (params.dataset === 'profile-answers') return profileAnswers(params)
   const dataset = params.dataset || 'assessments'
   const ds = DATASETS[dataset]
   if (!ds) return reply(400, { ok: false, error: 'invalid dataset' })
@@ -98,6 +101,38 @@ async function questionBank (params) {
     })
   } catch (e) {
     console.error('assessments-admin questions failed:', e.name, e.httpStatusCode, e.message)
+    return reply(500, { ok: false, error: 'internal error' })
+  }
+}
+
+// The answers behind one profile: its linked responses, each as a full question-by-question sheet.
+async function profileAnswers (params) {
+  if (!UUID_RE.test(params.submissionId || '')) return reply(400, { ok: false, error: 'invalid submissionId' })
+  try {
+    return await withDb(params, async (client) => {
+      const runs = await client.collection(responses.COLLECTION)
+        .find({ submissionId: params.submissionId }).limit(50).toArray()
+      runs.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))
+      const banks = new Map()
+      const out = []
+      for (const r of runs) {
+        if (!banks.has(r.assessment)) banks.set(r.assessment, await questions.sectionsOf(client, r.assessment))
+        out.push({
+          responseId: r.responseId,
+          assessment: r.assessment,
+          status: r.status,
+          progress: r.progress || { completed: [] },
+          result: r.result || null,
+          createdAt: r.createdAt,
+          updatedAt: r.updatedAt,
+          completedAt: r.completedAt || null,
+          sections: questions.answerSheet(banks.get(r.assessment), r.sections)
+        })
+      }
+      return reply(200, { ok: true, submissionId: params.submissionId, count: out.length, runs: out })
+    })
+  } catch (e) {
+    console.error('assessments-admin profile-answers failed:', e.name, e.httpStatusCode, e.message)
     return reply(500, { ok: false, error: 'internal error' })
   }
 }
