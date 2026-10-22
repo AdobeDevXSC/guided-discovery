@@ -10,7 +10,8 @@ The database has no server-side validation, so the action enforces the schema.
 ```jsonc
 {
   "_id": "<db generated>",
-  "submissionId": "uuid",            // public token, unique index; returned to the frontend
+  "submissionId": "uuid",
+  "userId": "uuid",                    // stable per person (cja_users), same across submissions            // public token, unique index; returned to the frontend
   "schemaVersion": 1,
   "status": "started | in_progress | completed",
   "profile": {                       // Qualtrics QID in brackets
@@ -36,14 +37,16 @@ The database has no server-side validation, so the action enforces the schema.
 }
 ```
 
-Indexes: `submissionId` (unique), `profile.email`, `status + createdAt`, `source.source`.
+Indexes: `submissionId` (unique), `profile.email`, `userId`, `status + createdAt`, `source.source`.
+
+Each submission also stores `userId`, the person's stable ID. It lives in collection `cja_users` as `{ userId, email, createdAt }`, with unique indexes on `email` and `userId`. The first submission for an email (lowercased) creates it, and later submissions reuse it. Guided Discovery sessions linked to a submission copy it into `leadRef.userId`.
 Enum values live in `actions/assessments/options.json` (generated from the survey definition).
 
 ## Action: `POST/GET /api/v1/web/marketingprototype/assessments`
 
 | Call | Body / query | Result |
 |---|---|---|
-| Create | `POST {op:"create", profile:{...}, consent:true, source:{source,pageUrl,referrer,utm}}` | `201 {submissionId}` or `400 {errors:{field:reason}}` |
+| Create | `POST {op:"create", profile:{...}, consent:true, source:{source,pageUrl,referrer,utm}}` | `201 {submissionId, userId}` or `400 {errors:{field:reason}}`. `submissionId` is per submission; `userId` is the same for every submission with that email |
 | Save a section | `POST {op:"section", submissionId, section, answers:{...}}` | `200`, `404` unknown id, `409` already completed |
 | Complete | `POST {op:"complete", submissionId, summary?:{...}}` | `200` or `404` |
 | Fetch | `GET ?submissionId=<uuid>` | `200 {assessment}` (print, save or share the summary) |
