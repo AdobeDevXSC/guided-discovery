@@ -76,6 +76,7 @@ Each question stores a list of strings. What a value looks like depends on how t
 | Answer | `POST {op:"answer", responseId, section, question, value, contentEnv?}` or `POST {op:"answer", responseId, answers:[{section, question, value}, …]}` | `200 {saved:[{section, question}], revs:{section: rev}, savedAt}`, `400 {errors}`, `404` |
 | Complete | `POST {op:"complete", responseId, contentEnv?}` | `200 {result}`, `503` if the content can't be fetched |
 | Questions | `GET ?op=questions&assessment=` | `200 {sections:[{section, title, questions:[{question, text, help?, type, display, required, options:[{key, label}], choices?, itemsFrom?}]}]}` |
+| Answers for a person | `GET ?op=answers&userId=&responseId=&assessment=?` | `200 {userId, count, responses:[{assessment, status, sections:[{section, title, answers:[{question, text, values:[{value, label…}]}]}], result, …}]}`. `responseId` must be one of that person's responses (otherwise `404`); only that one is echoed back |
 | Resume | `GET ?responseId=` | `200 {response}`: answers, revisions, progress, result. No profile data |
 
 ### Answering individual questions
