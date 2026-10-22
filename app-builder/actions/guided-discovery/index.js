@@ -106,7 +106,8 @@ async function verifiedLeadRef (client, input) {
   const submissionId = leadRefId(input)
   if (!submissionId) return null
   const found = await findOneOrNull(client.collection(assessments.COLLECTION), { submissionId })
-  return found ? { kind: 'cja-assessment', submissionId } : null
+  if (!found) return null
+  return { kind: 'cja-assessment', submissionId, ...(found.userId ? { userId: found.userId } : {}) }
 }
 
 async function start (client, col, params) {

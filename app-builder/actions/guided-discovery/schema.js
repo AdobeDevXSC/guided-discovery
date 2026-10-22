@@ -145,6 +145,7 @@ function validateProgress (input) {
 const INDEXES = [
   { spec: { sessionId: 1 }, options: { unique: true } },
   { spec: { 'leadRef.submissionId': 1 }, options: {} },
+  { spec: { 'leadRef.userId': 1 }, options: {} },
   { spec: { status: 1, createdAt: -1 }, options: {} },
   { spec: { 'source.source': 1 }, options: {} }
 ]

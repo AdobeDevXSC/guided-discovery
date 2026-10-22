@@ -1,6 +1,8 @@
 const options = require('./options.json')
 
 const COLLECTION = 'cja_assessments'
+// one document per person ({ userId, email }), so repeat submissions share a stable userId
+const USERS_COLLECTION = 'cja_users'
 const SCHEMA_VERSION = 1
 const CONSENT_VERSION = '2026-adobe-marketing-v1'
 const STATUSES = ['started', 'in_progress', 'completed']
@@ -95,11 +97,17 @@ function validateSection (section, answers) {
 const INDEXES = [
   { spec: { submissionId: 1 }, options: { unique: true } },
   { spec: { 'profile.email': 1 }, options: {} },
+  { spec: { userId: 1 }, options: {} },
   { spec: { status: 1, createdAt: -1 }, options: {} },
   { spec: { 'source.source': 1 }, options: {} }
 ]
 
+const USER_INDEXES = [
+  { spec: { email: 1 }, options: { unique: true } },
+  { spec: { userId: 1 }, options: { unique: true } }
+]
+
 module.exports = {
-  COLLECTION, SCHEMA_VERSION, CONSENT_VERSION, STATUSES, PROFILE_FIELDS, INDEXES,
+  COLLECTION, USERS_COLLECTION, SCHEMA_VERSION, CONSENT_VERSION, STATUSES, PROFILE_FIELDS, INDEXES, USER_INDEXES,
   validateProfile, cleanSource, validateSection
 }

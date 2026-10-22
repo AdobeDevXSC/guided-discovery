@@ -1,6 +1,6 @@
 const crypto = require('crypto')
 const {
-  COLLECTION, SCHEMA_VERSION, CONSENT_VERSION, INDEXES,
+  COLLECTION, USERS_COLLECTION, SCHEMA_VERSION, CONSENT_VERSION, INDEXES, USER_INDEXES,
   validateProfile, cleanSource, validateSection
 } = require('./schema')
 const { withCors } = require('../lib/cors')
@@ -13,7 +13,8 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 const findBySubmissionId = (col, submissionId) => findOneOrNull(col, { submissionId })
 
 // Public, token-gated by `submissionId` (a random UUID handed back on create).
-//   POST {op:'create', profile, consent:true, source}        -> 201 {submissionId}
+//   POST {op:'create', profile, consent:true, source}        -> 201 {submissionId, userId}
+//        userId is stable per person (keyed on the lowercased email); submissionId is per submission
 //   POST {op:'section', submissionId, section, answers}      -> 200 (upserts that section)
 //   POST {op:'complete', submissionId, summary?}             -> 200
 //   GET  ?submissionId=...                                   -> 200 {assessment}
@@ -25,12 +26,14 @@ async function handle (params) {
     return await withDb(params, async (client) => {
       const col = client.collection(COLLECTION)
       await ensureIndexes(col, INDEXES)
+      const users = client.collection(USERS_COLLECTION)
+      await ensureIndexes(users, USER_INDEXES)
 
       if (method === 'get') return get(col, params)
       if (method !== 'post') return reply(405, { ok: false, error: 'method not allowed' })
 
       switch (params.op) {
-        case 'create': return create(col, params)
+        case 'create': return create(col, users, params)
         case 'section': return saveSection(col, params)
         case 'complete': return complete(col, params)
         default: return reply(400, { ok: false, error: 'op must be create, section or complete' })
@@ -43,15 +46,33 @@ async function handle (params) {
   }
 }
 
-async function create (col, params) {
+// The person's userId, created on their first submission. The unique email index settles a
+// race between two first submissions: the loser's insert fails and it reads the winner's id.
+async function userIdFor (users, email, now) {
+  const existing = await findOneOrNull(users, { email })
+  if (existing) return existing.userId
+  const userId = crypto.randomUUID()
+  try {
+    await users.insertOne({ userId, email, createdAt: now })
+    return userId
+  } catch (e) {
+    const winner = await findOneOrNull(users, { email })
+    if (winner) return winner.userId
+    throw e
+  }
+}
+
+async function create (col, users, params) {
   const { profile, errors } = validateProfile(params.profile)
   if (params.consent !== true) errors.consent = 'consent required'
   if (Object.keys(errors).length) return reply(400, { ok: false, errors })
 
   const now = new Date().toISOString()
   const submissionId = crypto.randomUUID()
+  const userId = await userIdFor(users, profile.email, now)
   await col.insertOne({
     submissionId,
+    userId,
     schemaVersion: SCHEMA_VERSION,
     status: 'started',
     profile,
@@ -64,7 +85,7 @@ async function create (col, params) {
     updatedAt: now,
     completedAt: null
   })
-  return reply(201, { ok: true, submissionId })
+  return reply(201, { ok: true, submissionId, userId })
 }
 
 async function saveSection (col, params) {
