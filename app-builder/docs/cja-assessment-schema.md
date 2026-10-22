@@ -12,6 +12,7 @@ The database has no server-side validation, so the action enforces the schema.
   "_id": "<db generated>",
   "submissionId": "uuid",              // public token, unique index; returned to the frontend
   "userId": "uuid",                    // stable per person (cja_users), same across submissions
+  "assessment": "self-guided",         // which assessment this submission belongs to
   "schemaVersion": 1,
   "status": "started | in_progress | completed",
   "profile": {                       // Qualtrics QID in brackets
@@ -37,7 +38,9 @@ The database has no server-side validation, so the action enforces the schema.
 }
 ```
 
-Indexes: `submissionId` (unique), `profile.email`, `userId`, `status + createdAt`, `source.source`.
+Indexes: `submissionId` (unique), `profile.email`, `userId`, `assessment + createdAt`, `status + createdAt`, `source.source`.
+
+`assessment` names the assessment the submission came from. Today the only value is `self-guided`, the default when `create` omits it; unknown values are rejected. The admin viewer lists one assessment per tab.
 
 Each submission also stores `userId`, the person's stable ID. It lives in collection `cja_users` as `{ userId, email, createdAt }`, with unique indexes on `email` and `userId`. The first submission for an email (lowercased) creates it, and later submissions reuse it. Guided Discovery sessions linked to a submission copy it into `leadRef.userId`.
 Enum values live in `actions/assessments/options.json` (generated from the survey definition).

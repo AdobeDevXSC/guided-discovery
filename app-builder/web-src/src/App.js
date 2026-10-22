@@ -1,12 +1,50 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import useShellAuth from './useShellAuth';
-import { fetchRecords, deleteRecord } from './api';
+import { fetchRecords, deleteRecord, deleteRecords } from './api';
 import { toCsv, download } from './csv';
 import Detail from './Detail';
 import { ASSESSMENTS } from './datasets';
 import './App.css';
 
 const ASSESSMENT_KEYS = Object.keys(ASSESSMENTS);
+const DELETE_BATCH = 100; // the admin action's per-request limit
+
+function BulkDelete({ count, onDelete, onClear }) {
+  const [confirming, setConfirming] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState(null);
+  useEffect(() => { setConfirming(false); setErr(null); }, [count]);
+  const run = async () => {
+    setBusy(true);
+    setErr(null);
+    try {
+      await onDelete(); // on success the selection clears and this bar unmounts
+    } catch (e) {
+      setErr(e.status === 401 || e.status === 403 ? 'Your Adobe account is not authorized to delete profiles.' : e.message);
+      setBusy(false);
+      setConfirming(false);
+    }
+  };
+  const noun = count === 1 ? 'profile' : 'profiles';
+  return (
+    <div className="bulk no-print" role="region" aria-label="Selected profiles">
+      <strong>{count} selected</strong>
+      {!confirming ? (
+        <>
+          <button type="button" className="danger" onClick={() => setConfirming(true)}>Delete selected</button>
+          <button type="button" className="ghost" onClick={onClear}>Clear selection</button>
+        </>
+      ) : (
+        <>
+          <span role="alert">Permanently delete {count} {noun}? This cannot be undone.</span>
+          <button type="button" className="danger solid" onClick={run} disabled={busy}>{busy ? 'Deleting…' : `Yes, delete ${count}`}</button>
+          <button type="button" className="ghost" onClick={() => setConfirming(false)} disabled={busy}>Cancel</button>
+        </>
+      )}
+      {err && <span role="alert" className="error">{err}</span>}
+    </div>
+  );
+}
 
 function Notice({ title, children }) {
   return (
@@ -22,6 +60,7 @@ export default function App() {
   const [assessment, setAssessment] = useState(ASSESSMENT_KEYS[0]);
   const ds = ASSESSMENTS[assessment];
   const { dataset } = ds;
+  const [checked, setChecked] = useState(() => new Set());
   const [query, setQuery] = useState('');
   const [data, setData] = useState({ items: [], total: 0 });
   const [loading, setLoading] = useState(false);
@@ -33,13 +72,16 @@ export default function App() {
     setLoading(true);
     setError(null);
     try {
-      setData(await fetchRecords({ token, org, dataset }));
+      setData(await fetchRecords({
+        token, org, dataset, assessment: ds.assessment,
+      }));
+      setChecked(new Set());
     } catch (e) {
       setError(e);
     } finally {
       setLoading(false);
     }
-  }, [token, org, dataset]);
+  }, [token, org, dataset, ds.assessment]);
 
   useEffect(() => {
     if (auth.status === 'ready') load();
@@ -50,11 +92,39 @@ export default function App() {
     await deleteRecord({ token, org, dataset, id });
     setSelected(null);
     setData((d) => ({ items: d.items.filter((r) => ds.id(r) !== id), total: Math.max(0, d.total - 1) }));
+    setChecked((c) => { const n = new Set(c); n.delete(id); return n; });
   }, [token, org, dataset, ds]);
+
+  const handleBulkDelete = useCallback(async () => {
+    const ids = [...checked];
+    const gone = new Set();
+    for (let i = 0; i < ids.length; i += DELETE_BATCH) {
+      const batch = ids.slice(i, i + DELETE_BATCH);
+      // eslint-disable-next-line no-await-in-loop
+      await deleteRecords({
+        token, org, dataset, ids: batch,
+      });
+      // already-deleted ids (notFound) are gone either way
+      batch.forEach((id) => gone.add(id));
+    }
+    setData((d) => {
+      const items = d.items.filter((r) => !gone.has(ds.id(r)));
+      return { items, total: Math.max(0, d.total - (d.items.length - items.length)) };
+    });
+    setChecked(new Set());
+    if (selected && gone.has(ds.id(selected))) setSelected(null);
+  }, [checked, token, org, dataset, ds, selected]);
+
+  const toggle = (id) => setChecked((c) => {
+    const n = new Set(c);
+    if (n.has(id)) n.delete(id); else n.add(id);
+    return n;
+  });
 
   const switchAssessment = (key) => {
     setSelected(null);
     setQuery('');
+    setChecked(new Set());
     setData({ items: [], total: 0 });
     setAssessment(key);
   };
@@ -63,6 +133,16 @@ export default function App() {
     const q = query.trim().toLowerCase();
     return q ? data.items.filter((r) => ds.haystack(r).includes(q)) : data.items;
   }, [data.items, query, ds]);
+
+  const visibleIds = rows.map((r) => ds.id(r));
+  const allVisibleChecked = visibleIds.length > 0 && visibleIds.every((id) => checked.has(id));
+  const someVisibleChecked = visibleIds.some((id) => checked.has(id));
+  const toggleAllVisible = () => setChecked((c) => {
+    const n = new Set(c);
+    if (allVisibleChecked) visibleIds.forEach((id) => n.delete(id));
+    else visibleIds.forEach((id) => n.add(id));
+    return n;
+  });
 
   // the same person can submit more than once; userId (or email for older records) groups them
   const people = useMemo(() => new Set(data.items.map((r) => ds.person(r)).filter(Boolean)).size, [data.items, ds]);
@@ -140,6 +220,10 @@ export default function App() {
         </label>
       </section>
 
+      {checked.size > 0 && (
+        <BulkDelete count={checked.size} onDelete={handleBulkDelete} onClear={() => setChecked(new Set())} />
+      )}
+
       {error && (
         <p role="alert" className="error">
           {denied
@@ -153,6 +237,16 @@ export default function App() {
           <table>
             <thead>
               <tr>
+                <th className="pick no-print">
+                  <input
+                    type="checkbox"
+                    aria-label="Select all shown profiles"
+                    checked={allVisibleChecked}
+                    ref={(el) => { if (el) el.indeterminate = someVisibleChecked && !allVisibleChecked; }}
+                    onChange={toggleAllVisible}
+                    disabled={!rows.length}
+                  />
+                </th>
                 {ds.table.map(([label]) => <th key={label}>{label}</th>)}
               </tr>
             </thead>
@@ -165,11 +259,20 @@ export default function App() {
                   onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setSelected(r)}
                   tabIndex={0}
                 >
+                  {/* the checkbox selects for bulk delete; clicking elsewhere on the row opens the detail */}
+                  <td className="pick no-print" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      aria-label={`Select ${ds.name(r)}`}
+                      checked={checked.has(ds.id(r))}
+                      onChange={() => toggle(ds.id(r))}
+                    />
+                  </td>
                   {ds.table.map(([label, cell]) => <td key={label}>{cell(r)}</td>)}
                 </tr>
               ))}
               {!rows.length && !loading && (
-                <tr><td colSpan={ds.table.length} className="empty">{data.items.length ? 'No profiles match your search.' : 'No profiles yet.'}</td></tr>
+                <tr><td colSpan={ds.table.length + 1} className="empty">{data.items.length ? 'No profiles match your search.' : 'No profiles yet.'}</td></tr>
               )}
             </tbody>
           </table>

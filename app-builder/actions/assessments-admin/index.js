@@ -20,7 +20,9 @@ const DATASETS = {
 // belongs to this project's org (sent as Authorization + x-gw-ims-org-id by the UI).
 //   GET ?dataset=assessments|guided-discovery &status=started|in_progress|completed &limit=1..500 &skip=0
 //   -> { ok, dataset, total, count, items } newest first
+//        &assessment=self-guided (assessments only)
 //   POST {op:'delete', dataset, id} -> { ok, deleted: 1 } permanently removes one record (404 if absent)
+//   POST {op:'delete', dataset, ids:[...]} -> { ok, deleted, notFound } removes up to 100 records
 //        (legacy body {op:'delete', submissionId} deletes from assessments)
 async function main (params) {
   const dataset = params.dataset || 'assessments'
@@ -34,6 +36,12 @@ async function main (params) {
   if (params.status) {
     if (!ds.statuses.includes(params.status)) return reply(400, { ok: false, error: 'invalid status' })
     filter.status = params.status
+  }
+  if (params.assessment) {
+    if (dataset !== 'assessments' || !assessments.ASSESSMENT_IDS.includes(params.assessment)) {
+      return reply(400, { ok: false, error: 'invalid assessment' })
+    }
+    filter.assessment = params.assessment
   }
   const limit = Math.min(Math.max(parseInt(params.limit, 10) || 200, 1), MAX_LIMIT)
   const skip = Math.max(parseInt(params.skip, 10) || 0, 0)
@@ -61,14 +69,34 @@ async function attachLeads (client, items) {
   })
 }
 
+const MAX_DELETE = 100
+
 async function remove (col, ds, params) {
   if (params.op !== 'delete') return reply(400, { ok: false, error: 'op must be delete' })
+  if (params.ids !== undefined) return removeMany(col, ds, params.ids)
   const id = params.id || params[ds.idField]
   if (!UUID_RE.test(id || '')) return reply(400, { ok: false, error: 'invalid id' })
   const res = await col.deleteOne({ [ds.idField]: id })
   if (!res || !res.deletedCount) return reply(404, { ok: false, error: 'not found' })
   console.log('assessments-admin deleted', ds.collection, id)
   return reply(200, { ok: true, deleted: res.deletedCount })
+}
+
+// Deletes each listed record; ids that are already gone are reported, not treated as errors.
+async function removeMany (col, ds, input) {
+  const ids = Array.isArray(input) ? [...new Set(input)] : []
+  if (!ids.length || ids.length > MAX_DELETE) return reply(400, { ok: false, error: `ids must list 1 to ${MAX_DELETE} records` })
+  if (!ids.every((id) => UUID_RE.test(String(id)))) return reply(400, { ok: false, error: 'invalid id' })
+  let deleted = 0
+  const notFound = []
+  for (const id of ids) {
+    let res = null
+    try { res = await col.deleteOne({ [ds.idField]: id }) } catch (e) { if (!isNotFound(e)) throw e }
+    if (res && res.deletedCount) deleted += res.deletedCount
+    else notFound.push(id)
+  }
+  console.log('assessments-admin deleted', ds.collection, deleted, 'of', ids.length)
+  return reply(200, { ok: true, deleted, notFound })
 }
 
 async function run (params, ds, fn) {

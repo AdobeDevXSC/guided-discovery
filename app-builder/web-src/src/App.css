@@ -79,3 +79,10 @@ button.danger.solid { background: var(--danger); color: #fff; }
 .tab { border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none; padding: 8px 12px; color: var(--muted); }
 .tab.on { border-bottom-color: var(--accent); color: var(--text); font-weight: 600; }
 .tab:hover:not(.on) { color: var(--text); }
+
+/* bulk selection */
+th.pick, td.pick { width: 32px; padding-right: 0; }
+.pick input { width: 16px; height: 16px; cursor: pointer; }
+.bulk { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 8px 0 12px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.bulk .error { margin: 0; }
+.pill.assessment { text-transform: none; background: var(--ok-bg); color: var(--ok); white-space: nowrap; }
