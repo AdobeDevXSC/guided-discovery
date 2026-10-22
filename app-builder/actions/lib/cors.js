@@ -1,6 +1,8 @@
 // EDS sites are served at https://<branch>--<repo>--<org>.aem.page (preview) and .aem.live (production).
 const ALLOWED_ORIGIN_PATTERNS = [
   /^https:\/\/[a-z0-9-]+--guided-discovery--adobedevxsc\.aem\.(page|live)$/,
+  // the Adobe landing-page host, for testing the front end outside EDS
+  /^https:\/\/landing\.adobe\.com$/,
   // local development with `aem up` (Origin is spoofable by non-browsers anyway, so this adds no exposure)
   /^http:\/\/localhost:\d{2,5}$/
 ]
