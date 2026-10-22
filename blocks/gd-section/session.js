@@ -65,9 +65,9 @@ export default function getSession(endpoint) {
   });
 
   const ready = (async () => {
-    if (!store.state.sessionId) return;
+    if (!store.state.responseId) return;
     try {
-      let resumed = await api.resume(store.state.sessionId);
+      let resumed = await api.resume(store.state.responseId);
       // a different lead than the stored session's (e.g. a shared computer): start fresh
       if (resumed && leadRef && resumed.leadSubmissionId && resumed.leadSubmissionId !== leadRef) {
         store.forget();

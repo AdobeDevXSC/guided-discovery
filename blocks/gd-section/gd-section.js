@@ -8,7 +8,7 @@
  *
  * As in the live app, the section is fully answerable inline, and a Start card launches the guided
  * flow over the page (picker, swipe cards, one question per screen, sliders). Answers are saved as
- * sections["sc-<sectionId>"] = { answers: { questionId: [optionId...] } } through the page's
+ * sections["<sectionId>"] = { answers: { questionId: [optionId...] } } through the page's
  * shared session (./session.js).
  */
 import { readBlockConfig } from '../../scripts/aem.js';
@@ -60,7 +60,7 @@ export default async function decorate(block) {
   }
   section.labels = { ...DEFAULT_LABELS, ...(section.labels || {}) };
   const { labels } = section;
-  const key = `sc-${section.sectionId}`;
+  const key = section.sectionId;
   const questions = Array.isArray(section.questions) ? section.questions : [];
   const focusQuestion = questions.find((q) => q.display === 'cards-single');
 
@@ -107,7 +107,7 @@ export default async function decorate(block) {
   const focusOf = () => (focusQuestion ? (answersOf()[focusQuestion.id] || [])[0] : null);
 
   // "questionId" in this section, or "sectionId.questionId" in another section on the page
-  const refKey = (ref) => (ref && ref.includes('.') ? `sc-${ref.split('.')[0]}` : key);
+  const refKey = (ref) => (ref && ref.includes('.') ? ref.split('.')[0] : key);
   const answerFor = (ref) => {
     if (!ref) return [];
     const qid = ref.includes('.') ? ref.split('.')[1] : ref;

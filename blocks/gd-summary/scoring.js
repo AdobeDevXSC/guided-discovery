@@ -5,7 +5,7 @@
  *
  *   summary  - the "guided-discovery-summary" document (thresholds, sizes, capabilities)
  *   docs     - { sectionId: "guided-discovery-section" document } for summary.sections
- *   sections - the session's sections: { "sc-<sectionId>": { answers: { questionId: [...] } } }
+ *   sections - the response's sections: { "<sectionId>": { answers: { questionId: [...] } } }
  *
  * Capabilities come from the content: an answered option or choice unlocks its `capabilities`,
  * and a question with `upgradeFrom` unlocks `upgradeCapabilities` when its pick sits further along
@@ -18,7 +18,7 @@ const optionsOf = (q) => list(q && q.options);
 /** The stored answer list for "sectionId.questionId". */
 export function answersFor(sections, ref) {
   const [sectionId, questionId] = String(ref || '').split('.');
-  return list((((sections || {})[`sc-${sectionId}`] || {}).answers || {})[questionId]);
+  return list((((sections || {})[sectionId] || {}).answers || {})[questionId]);
 }
 
 const questionFor = (docs, ref) => {

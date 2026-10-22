@@ -1,6 +1,6 @@
 /*
- * Session state for Guided Discovery, shared by the gd-section and gd-summary blocks on a page.
- * Sections are "sc-<sectionId>": { answers } and are created on first use. Every section change
+ * Assessment response state, shared by the gd-overview, gd-section and gd-summary blocks on a page.
+ * Sections are keyed by sectionId ({ answers }) and are created on first use. Every section change
  * bumps that section's revision and notifies the autosave queue.
  */
 const RESUME_KEY = 'gd:session';
@@ -14,7 +14,7 @@ const safeStorage = {
 export default function createStore() {
   const listeners = new Set();
   const state = {
-    sessionId: safeStorage.get(),
+    responseId: safeStorage.get(),
     status: null,
     sections: {},
     revs: {},
@@ -28,15 +28,15 @@ export default function createStore() {
     subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
 
     /** Records the server session created lazily on the first answer; keeps answers made so far. */
-    startSession(sessionId) {
-      state.sessionId = sessionId;
+    startSession(responseId) {
+      state.responseId = responseId;
       if (!state.status) state.status = 'in_progress';
-      safeStorage.set(sessionId);
+      safeStorage.set(responseId);
     },
 
     hydrate(session) {
       Object.assign(state, {
-        sessionId: session.sessionId,
+        responseId: session.responseId,
         status: session.status,
         sections: { ...(session.sections || {}) },
         revs: { ...(session.revs || {}) },
@@ -47,7 +47,7 @@ export default function createStore() {
 
     forget() {
       safeStorage.clear();
-      state.sessionId = null;
+      state.responseId = null;
     },
 
     /** Mutates one section; render:false for text inputs that must keep focus. */

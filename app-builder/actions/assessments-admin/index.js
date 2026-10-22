@@ -1,5 +1,5 @@
 const assessments = require('../assessments/schema')
-const guidedDiscovery = require('../guided-discovery/schema')
+const responses = require('../guided-discovery/schema')
 const { withDb, isNotFound } = require('../lib/db')
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
@@ -9,16 +9,19 @@ const reply = (statusCode, body) => ({ statusCode, headers, body })
 
 const MAX_LIMIT = 500
 
-// Datasets the viewer can read. Both use the same status values.
+// Datasets the viewer can read: profiles (the initial form) and responses (the answers). Both
+// carry `assessment` and use the same status values. 'guided-discovery' is the old name for responses.
+const RESPONSES = { collection: responses.COLLECTION, idField: 'responseId', statuses: responses.STATUSES }
 const DATASETS = {
   assessments: { collection: assessments.COLLECTION, idField: 'submissionId', statuses: assessments.STATUSES },
-  'guided-discovery': { collection: guidedDiscovery.COLLECTION, idField: 'sessionId', statuses: guidedDiscovery.STATUSES }
+  responses: RESPONSES,
+  'guided-discovery': RESPONSES
 }
 
 // Admin read API for the submissions viewer. Contains PII, so the action is deployed with
 // `require-adobe-auth: true`: the gateway only lets through a valid Adobe IMS user token that
 // belongs to this project's org (sent as Authorization + x-gw-ims-org-id by the UI).
-//   GET ?dataset=assessments|guided-discovery &status=started|in_progress|completed &limit=1..500 &skip=0
+//   GET ?dataset=assessments|responses &status=started|in_progress|completed &limit=1..500 &skip=0
 //   -> { ok, dataset, total, count, items } newest first
 //        &assessment=self-guided (assessments only)
 //   POST {op:'delete', dataset, id} -> { ok, deleted: 1 } permanently removes one record (404 if absent)
@@ -38,7 +41,7 @@ async function main (params) {
     filter.status = params.status
   }
   if (params.assessment) {
-    if (dataset !== 'assessments' || !assessments.ASSESSMENT_IDS.includes(params.assessment)) {
+    if (!assessments.ASSESSMENT_IDS.includes(params.assessment)) {
       return reply(400, { ok: false, error: 'invalid assessment' })
     }
     filter.assessment = params.assessment
@@ -51,21 +54,21 @@ async function main (params) {
     const items = total
       ? await col.find(filter).sort('createdAt', -1).skip(skip).limit(limit).toArray()
       : []
-    if (dataset === 'guided-discovery') await attachLeads(client, items)
+    if (ds === RESPONSES) await attachProfiles(client, items)
     return reply(200, { ok: true, dataset, total, count: items.length, items })
   })
 }
 
-// Guided Discovery sessions only reference their lead (leadRef.submissionId, captured by the CJA
-// assessment form); attach that profile so the viewer can show who the session belongs to.
-async function attachLeads (client, items) {
-  const ids = [...new Set(items.map((i) => i.leadRef && i.leadRef.submissionId).filter(Boolean))]
+// Responses only reference the profile (submissionId, captured by the assessment's initial form);
+// attach it so the viewer can show whose answers they are.
+async function attachProfiles (client, items) {
+  const ids = [...new Set(items.map((i) => i.submissionId).filter(Boolean))]
   if (!ids.length) return
-  const leads = await client.collection(assessments.COLLECTION)
+  const profiles = await client.collection(assessments.COLLECTION)
     .find({ submissionId: { $in: ids } }).limit(ids.length).toArray()
-  const byId = new Map(leads.map((l) => [l.submissionId, l.profile]))
+  const byId = new Map(profiles.map((l) => [l.submissionId, l.profile]))
   items.forEach((i) => {
-    if (i.leadRef && byId.has(i.leadRef.submissionId)) i.leadProfile = byId.get(i.leadRef.submissionId)
+    if (byId.has(i.submissionId)) i.profile = byId.get(i.submissionId)
   })
 }
 

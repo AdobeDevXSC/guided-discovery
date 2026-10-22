@@ -75,7 +75,7 @@ function snapshotValue(row, docs, sections, labels, names) {
     }
     case 'answered-count': {
       const questions = list((docs[sectionId] || {}).questions);
-      const given = ((sections[`sc-${sectionId}`] || {}).answers) || {};
+      const given = ((sections[sectionId] || {}).answers) || {};
       const n = questions.filter((x) => list(given[x.id]).length).length;
       return fmt(row.template || '{n} of {total}', { n, total: questions.length });
     }
@@ -151,8 +151,8 @@ export default async function decorate(block) {
     const completed = store.state.status === 'completed';
     // same scoring as the server, so this stays in step with the stored result after edits too
     const result = computeSummary(summary, docs, sections);
-    const answered = Object.keys(sections).some((k) => k.startsWith('sc-')
-      && Object.keys((sections[k] || {}).answers || {}).length);
+    const answered = list(summary.sections)
+      .some((id) => Object.keys((sections[id] || {}).answers || {}).length);
     const headline = list(summary.headlines).find((x) => x.id === result.headline) || {};
     const size = list(summary.sizes).find((x) => x.id === result.engagement) || {};
     const caps = Object.fromEntries(list(summary.capabilities).map((c) => [c.id, c]));
