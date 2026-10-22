@@ -6,13 +6,17 @@ The answers someone gives in an assessment: one document per person per assessme
 
 ## Where the questions come from
 
-Questions are authored in DA as structured content: one document per section (schema `guided-discovery-section`) plus a summary document (schema `guided-discovery-summary`). Each assessment has a content folder, mapped in `CONTENT` in `actions/guided-discovery/index.js`:
+Questions live in the **question bank**, collection `assessment_questions`. There's one document per question, in `actions/lib/questions.js`: `{ assessment, questionId, section, sectionTitle, sectionOrder, order, title, help, display, required, options:[{id, label, ...}], choices?, itemsFrom?, ..., createdAt, updatedAt, updatedBy }`.
+- **Editing:** the admin viewer's Questions page (admin op `question-save`). Keys are fixed once saved; saved options can be relabelled but not removed, and the answer type can't change.
+- **Reading:** `GET ?op=questions` on this action (public).
+- **Seeding:** `scripts/seed-questions.js` loaded the bank from the original DA section documents (23 questions, 2026-10-22). It skips questions already in the bank.
+- **What still comes from DA:** each assessment's summary document (schema `guided-discovery-summary`: scoring thresholds and capability copy). The EDS page also still renders from its DA section documents. Each assessment has a content folder, mapped in `CONTENT` in `actions/guided-discovery/index.js`:
 
 | Assessment | Content |
 |---|---|
 | `self-guided` | `/forms/guided-discovery/` (discovery, data-foundations, segmentation, identity, governance, roles, strategy-adoption, summary) |
 
-Answers are checked against the published version of those documents. Option and question IDs are the stable keys: authors can reword labels freely, but shouldn't change or reuse an ID after launch.
+Answers are checked against the bank. Option and question IDs are the stable keys: authors can reword labels freely, but shouldn't change or reuse an ID after launch.
 
 ## Document
 
@@ -32,7 +36,7 @@ Answers are checked against the published version of those documents. Option and
       "answers": { "<questionId>": ["<value>", "..."] },
       "rev": 7,                       // client revision; a save with rev <= stored is rejected (409)
       "savedAt": "ISO-8601",
-      "contentHash": "16 hex chars"   // fingerprint of the published section the answers were checked against
+      "contentHash": "16 hex chars"   // fingerprint of the bank's section the answers were checked against
     }
   },
   "progress": { "completed": ["<sectionId>", "..."] },
@@ -55,6 +59,7 @@ Each question stores a list of strings. What a value looks like depends on how t
 | Display | Value | Example |
 |---|---|---|
 | cards, chips, swipe, inventory, slider | option ID | `"activation"` |
+| text (free text) | the text, up to 500 characters | `"We migrate in Q3"` |
 | per-item (a choice about each picked item) | `itemId:choiceId` | `"evar-product:multiple"` |
 | sort (a choice about every option) | `optionId:choiceId` | `"consent:gap"` |
 | owner-cards | `optionId=free text` (up to 120 characters), `optionId:follow-up` | `"analyst=Pat Lee"` |
@@ -70,6 +75,7 @@ Each question stores a list of strings. What a value looks like depends on how t
 | Save | `POST {op:"save", responseId, section, rev, data:{answers}, progress?, contentEnv?}` | `200 {rev, savedAt}`, `409` if `rev` is stale, `400 {errors}` |
 | Answer | `POST {op:"answer", responseId, section, question, value, contentEnv?}` or `POST {op:"answer", responseId, answers:[{section, question, value}, …]}` | `200 {saved:[{section, question}], revs:{section: rev}, savedAt}`, `400 {errors}`, `404` |
 | Complete | `POST {op:"complete", responseId, contentEnv?}` | `200 {result}`, `503` if the content can't be fetched |
+| Questions | `GET ?op=questions&assessment=` | `200 {sections:[{section, title, questions:[{question, text, help?, type, display, required, options:[{key, label}], choices?, itemsFrom?}]}]}` |
 | Resume | `GET ?responseId=` | `200 {response}`: answers, revisions, progress, result. No profile data |
 
 ### Answering individual questions
