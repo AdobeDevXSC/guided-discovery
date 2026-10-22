@@ -267,6 +267,7 @@ const answerOne = {
 const answerBatch = {
   op: 'answer',
   responseId: '<responseId>',
+  userId: '<userId>',
   answers: [
     { section: 'identity', question: 'identity-current', value: 'deterministic-login' },
     { section: 'identity', question: 'identity-target', value: 'unified-graph' },
@@ -342,10 +343,11 @@ const responsesApi = {
       id: 'responses-answer',
       title: 'Answer questions',
       method: 'POST',
-      summary: '`op: "answer"`. Sets one question, or a batch of up to 50 across any sections. Each answer replaces that question only and keeps the section\'s other answers. Use this when you post as you go, from another front end or an integration.',
+      summary: '`op: "answer"`. Sets one question, or a batch of up to 50 across any sections. Each answer replaces that question only and keeps the section\'s other answers. Use this when you post as you go, from another front end or an integration. Only responses linked to a user take answers: start the response with `leadRef`, or link it, first.',
       fields: [
         ['op', '"answer"', 'yes', ''],
-        ['responseId', 'uuid', 'yes', ''],
+        ['responseId', 'uuid', 'yes', 'Must be linked to a user (started with `leadRef`, or linked with `op: "link"`).'],
+        ['userId', 'uuid', 'no', 'The person you expect the response to belong to. If sent, it must match the response\'s `userId`; otherwise the reply is `404`.'],
         ['section', 'string', 'single', 'Section ID, e.g. `discovery`. Not `summary` or `overview`.'],
         ['question', 'string', 'single', 'Question ID, e.g. `focus`: lowercase letters, digits and `-`, up to 64 characters.'],
         ['value', 'string | string[] | null', 'single', 'In the format for that question\'s display. `null`, `[]` or a missing value clears the question.'],
@@ -356,6 +358,7 @@ const responsesApi = {
         status: 200,
         body: json({
           ok: true,
+          userId: '<userId>',
           saved: [
             { section: 'identity', question: 'identity-current' },
             { section: 'identity', question: 'identity-target' },
@@ -369,11 +372,14 @@ const responsesApi = {
         { status: 400, when: 'Empty batch or more than 50', body: json({ ok: false, error: 'answers must list 1 to 50 answers' }) },
         { status: 400, when: 'Bad section or question ID (keyed by position in the batch)', body: json({ ok: false, errors: { 'answers.0.section': 'unknown section', 'answers.2.question': 'invalid question id' } }) },
         { status: 400, when: 'Value not valid for the published question (keyed by section)', body: json({ ok: false, errors: { 'discovery.answers.focus': 'unknown option growth', 'identity.answers.identity-target': 'at most 1' } }) },
-        { status: 404, when: 'No such response', body: json({ ok: false, error: 'not found' }) },
+        { status: 400, when: 'userId is not a UUID', body: json({ ok: false, error: 'invalid userId' }) },
+        { status: 400, when: 'Response not linked to a user (nothing stored)', body: json({ ok: false, error: 'response is not linked to a user', hint: 'start the response with leadRef, or link it with op "link", first' }) },
+        { status: 404, when: 'No such response, or userId is not the response\'s', body: json({ ok: false, error: 'not found' }) },
       ],
       curl: [curlPost('guided-discovery', answerOne), '', '# batch', curlPost('guided-discovery', answerBatch), '', '# clear a question', curlPost('guided-discovery', answerClear)].join('\n'),
       fetch: [fetchPost('guided-discovery', answerBatch)].join('\n'),
       notes: [
+        'Only answers that can be attributed to a person are stored: a response started without `leadRef` (and never linked) gets `400`. The assessment page\'s own `save` autosave still works for unlinked visitors.',
         'All or nothing: every answer is checked first, and if any is invalid nothing is stored and `errors` lists each problem.',
         'The server bumps the `rev` of each section it touched and returns them in `revs`; you don\'t send a `rev`. Answering a completed response recalculates its `result`; otherwise the status becomes `in_progress`.',
         'One writer per section: if the assessment page has the same response open, its next autosave of that section re-sends its own copy of the whole section and overwrites answers posted here.',
@@ -778,7 +784,7 @@ export const WALKTHROUGH = {
     },
     {
       title: 'Answer one question',
-      text: 'Discovery focus is a single-choice question: `analysis`, `activation` or `both`.',
+      text: 'Only linked responses take answers (unlinked ones get `400`). Discovery focus is a single-choice question: `analysis`, `activation` or `both`.',
       code: "await post('guided-discovery', {\n  op: 'answer', responseId, section: 'discovery', question: 'focus', value: 'activation',\n});",
     },
     {
