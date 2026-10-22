@@ -17,8 +17,9 @@ EDS code sync (`.hlxignore`) and from the root lint (`.eslintignore`).
 - Node 20.12+ (22 recommended). Parcel plugins are pinned to 2.10.3 to match aio-cli 9.x; bump them to the
   Parcel version bundled with your aio-cli if the web build reports a version mismatch.
 - `actions/guided-discovery`: autosave backend for the Guided Discovery `gd-section` / `gd-summary` EDS blocks
-  (collection `gd_sessions`; ops `start`, `save`, `complete`, GET resume). It validates answers against the published DA
-  structured content documents and scores with `../blocks/gd-summary/scoring.js` (webpack bundles it). The platform does not apply `include-ims-credentials` to it, so it also takes the `ADMIN_IMS_*`
+  (collection `assessment_responses`, see [docs/assessment-responses-schema.md](docs/assessment-responses-schema.md); ops
+  `start`, `save`, `link`, `complete`, GET resume). It validates answers against the published DA structured content
+  documents and scores with `../blocks/gd-summary/scoring.js` (webpack bundles it). The platform does not apply `include-ims-credentials` to it, so it also takes the `ADMIN_IMS_*`
   inputs below.
 - `assessments-admin` is wrapped by the `require-adobe-auth` validator, which does not forward `include-ims-credentials`, so its
   database credentials come from `inputs` in `app.config.yaml`, read from `.env`: `ADMIN_IMS_CLIENT_ID`, `ADMIN_IMS_CLIENT_SECRET`,

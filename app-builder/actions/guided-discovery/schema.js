@@ -1,7 +1,9 @@
-// Validation for the self-guided AA -> CJA Guided Discovery (collection gd_sessions). Answers are
-// checked against the published DA structured content documents they were authored in.
-const COLLECTION = 'gd_sessions'
-const SCHEMA_VERSION = 1
+// Validation for assessment responses (collection assessment_responses): one document per person
+// per assessment run. Answers are checked against the published DA structured content documents
+// they were authored in. See docs/assessment-responses-schema.md.
+const COLLECTION = 'assessment_responses'
+const LEGACY_COLLECTION = 'gd_sessions' // pre-rename sessions; copied by scripts/migrate-gd-sessions.js
+const SCHEMA_VERSION = 2
 const STATUSES = ['started', 'in_progress', 'completed']
 
 const SOURCE_RE = /^[\w.:/\- ]{0,100}$/
@@ -11,8 +13,8 @@ const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v)
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
-// The lead is captured by the CJA migration assessment form (collection cja_assessments), which
-// hands its submissionId to this page as ?lead=. A session stores only that reference.
+// The profile is captured by the assessment's initial form (collection cja_assessments), which
+// hands its submissionId to the page as ?lead=. A response stores only that reference.
 function leadRefId (input) {
   const id = typeof input === 'string' ? input : (isObj(input) ? input.submissionId : '')
   return UUID_RE.test(id || '') ? id : null
@@ -46,9 +48,13 @@ function checker (section) {
   return { errors, fail, known }
 }
 
-// Sections are stored as "sc-<sectionId>", authored in DA (schema guided-discovery-section).
-const STRUCTURED_KEY_RE = /^sc-[a-z0-9][a-z0-9-]{0,62}$/
-const isStructuredKey = (key) => STRUCTURED_KEY_RE.test(key || '')
+// Sections are stored by their authored sectionId (schema guided-discovery-section). Clients from
+// before the rename sent "sc-<sectionId>"; the prefix is accepted and dropped.
+const SECTION_ID_RE = /^[a-z0-9][a-z0-9-]{0,62}$/
+function sectionIdOf (key) {
+  const id = typeof key === 'string' ? key.replace(/^sc-/, '') : ''
+  return SECTION_ID_RE.test(id) && id !== 'summary' && id !== 'overview' ? id : null
+}
 
 /**
  * Validates { answers: { questionId: [optionId...] } } against the section's published structured
@@ -143,14 +149,14 @@ function validateProgress (input) {
 }
 
 const INDEXES = [
-  { spec: { sessionId: 1 }, options: { unique: true } },
-  { spec: { 'leadRef.submissionId': 1 }, options: {} },
-  { spec: { 'leadRef.userId': 1 }, options: {} },
-  { spec: { status: 1, createdAt: -1 }, options: {} },
+  { spec: { responseId: 1 }, options: { unique: true } },
+  { spec: { userId: 1, assessment: 1 }, options: {} },
+  { spec: { submissionId: 1 }, options: {} },
+  { spec: { assessment: 1, status: 1, createdAt: -1 }, options: {} },
   { spec: { 'source.source': 1 }, options: {} }
 ]
 
 module.exports = {
-  COLLECTION, SCHEMA_VERSION, STATUSES, INDEXES,
-  leadRefId, cleanSource, validateProgress, isStructuredKey, validateStructured
+  COLLECTION, LEGACY_COLLECTION, SCHEMA_VERSION, STATUSES, INDEXES,
+  leadRefId, cleanSource, validateProgress, sectionIdOf, validateStructured
 }

@@ -51,7 +51,7 @@ export default function createApi(
     const { state } = store;
     return {
       op: 'save',
-      sessionId: state.sessionId,
+      responseId: state.responseId,
       section: key,
       rev: state.revs[key] || 1,
       data: state.sections[key],
@@ -78,16 +78,16 @@ export default function createApi(
   }
 
   async function ensureSession() {
-    if (store.state.sessionId) return;
+    if (store.state.responseId) return;
     const res = await request('POST', { op: 'start', ...startInfo() });
-    store.startSession(res.sessionId);
+    store.startSession(res.responseId);
   }
 
   function flush() {
     clearTimeout(timer);
     timer = null;
     // navigation alone (progress) never creates a session; the first answer does
-    if (!store.state.sessionId && !dirty.size) return chain;
+    if (!store.state.responseId && !dirty.size) return chain;
     if (!dirty.size && !progressDirty) return chain;
     const keys = [...dirty];
     dirty.clear();
@@ -100,7 +100,7 @@ export default function createApi(
         const bodies = keys.map(payloadFor);
         if (withProgress) {
           if (bodies.length) bodies[0].progress = store.state.progress;
-          else bodies.push({ op: 'save', sessionId: store.state.sessionId, progress: store.state.progress });
+          else bodies.push({ op: 'save', responseId: store.state.responseId, progress: store.state.progress });
         }
         // eslint-disable-next-line no-restricted-syntax
         for (const body of bodies) {
@@ -127,11 +127,11 @@ export default function createApi(
 
   // last-chance save when the tab is hidden or closed
   function beacon() {
-    if (!store.state.sessionId || (!dirty.size && !progressDirty)) return;
+    if (!store.state.responseId || (!dirty.size && !progressDirty)) return;
     const bodies = [...dirty].map(payloadFor);
     if (progressDirty) {
       if (bodies.length) bodies[0].progress = store.state.progress;
-      else bodies.push({ op: 'save', sessionId: store.state.sessionId, progress: store.state.progress });
+      else bodies.push({ op: 'save', responseId: store.state.responseId, progress: store.state.progress });
     }
     bodies.forEach((body) => {
       fetch(endpoint, {
@@ -152,19 +152,19 @@ export default function createApi(
 
     /** Links an existing session to a CJA assessment lead (no-op if already linked). */
     async link(leadRef) {
-      if (!store.state.sessionId || !leadRef) return null;
-      return request('POST', { op: 'link', sessionId: store.state.sessionId, leadRef });
+      if (!store.state.responseId || !leadRef) return null;
+      return request('POST', { op: 'link', responseId: store.state.responseId, leadRef });
     },
 
     async complete() {
       await flush();
       await ensureSession();
-      return request('POST', { op: 'complete', sessionId: store.state.sessionId, ...saveExtra() });
+      return request('POST', { op: 'complete', responseId: store.state.responseId, ...saveExtra() });
     },
 
-    async resume(sessionId) {
+    async resume(responseId) {
       try {
-        return (await request('GET', null, `?sessionId=${encodeURIComponent(sessionId)}`)).session;
+        return (await request('GET', null, `?responseId=${encodeURIComponent(responseId)}`)).response;
       } catch (e) {
         if (e instanceof HttpError && (e.status === 404 || e.status === 400)) return null;
         throw e;

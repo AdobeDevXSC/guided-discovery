@@ -30,11 +30,11 @@ function respondent({
   needs = [], tracked = [], current, target, gov = {}, ai, picks = [],
 }) {
   const sc = {
-    'sc-discovery': { answers: { needs } },
-    'sc-data-foundations': { answers: { tracked } },
-    'sc-identity': { answers: { ...(current ? { 'identity-current': [current] } : {}), ...(target ? { 'identity-target': [target] } : {}) } },
-    'sc-governance': { answers: { status: Object.entries(gov).map(([k, v]) => `${k}:${v}`) } },
-    'sc-strategy-adoption': { answers: { ...(ai ? { 'strategy-ai': [ai] } : {}), 'ai-picks': picks } },
+    discovery: { answers: { needs } },
+    'data-foundations': { answers: { tracked } },
+    identity: { answers: { ...(current ? { 'identity-current': [current] } : {}), ...(target ? { 'identity-target': [target] } : {}) } },
+    governance: { answers: { status: Object.entries(gov).map(([k, v]) => `${k}:${v}`) } },
+    'strategy-adoption': { answers: { ...(ai ? { 'strategy-ai': [ai] } : {}), 'ai-picks': picks } },
   };
   const legacy = {
     discovery: { needs },
