@@ -170,3 +170,16 @@ table.questions code, .question-editor code { font-size: 12px; }
   .api-docs code { background: none; }
   .api-docs a { color: inherit; text-decoration: none; }
 }
+
+/* ---------- profile answers ---------- */
+.run { margin: 8px 0 18px; }
+.run h4 { margin: 0 0 2px; font-size: 14px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.qa-section { border: 1px solid var(--line); border-radius: 8px; margin: 6px 0; background: var(--surface); }
+.qa-section summary { cursor: pointer; padding: 8px 10px; }
+.qa { margin: 0; padding: 0 10px 10px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; }
+.qa dt { margin-top: 8px; font-size: 13px; }
+.qa dd { margin: 0; font-weight: 600; }
+.qa dd.muted { font-weight: 400; }
+.qa dd ul { margin: 0; padding-left: 18px; }
+.qa code { font-size: 11px; }
+@media print { .qa-section { break-inside: avoid; } .qa-section:not([open]) .qa { display: block; } }

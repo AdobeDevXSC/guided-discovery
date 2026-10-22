@@ -1,5 +1,6 @@
 import React from 'react';
 import { Fields, fmt } from './Detail';
+import ProfileAnswers from './ProfileAnswers';
 
 // Assessments shown in the viewer, one tab each (the tab bar only appears once there are two).
 // Each entry reads one admin-action dataset and lists the profile collected on that
@@ -13,7 +14,7 @@ const fullName = (r) => `${profile(r).firstName || ''} ${profile(r).lastName || 
 const LABELS = { 'self-guided': 'Self-guided assessment' };
 export const assessmentLabel = (r) => LABELS[r.assessment] || r.assessment || '—';
 
-function ProfileBody({ item }) {
+function ProfileBody({ item, auth }) {
   const p = profile(item);
   const s = item.source || {};
   return (
@@ -36,6 +37,7 @@ function ProfileBody({ item }) {
         ['Source', s.source], ['Page', s.pageUrl], ['Referrer', s.referrer],
         ['UTM', s.utm ? JSON.stringify(s.utm) : '—'],
       ]} />
+      {auth && <ProfileAnswers submissionId={item.submissionId} token={auth.token} org={auth.org} />}
     </>
   );
 }
