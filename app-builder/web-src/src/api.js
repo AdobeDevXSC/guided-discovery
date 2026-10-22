@@ -71,3 +71,9 @@ export async function fetchProfileAnswers({ token, org, submissionId }) {
   const qs = new URLSearchParams({ dataset: 'profile-answers', submissionId });
   return call(`${ENDPOINT}?${qs}`, { headers: authHeaders(token, org) });
 }
+
+/** Latest-run answers for every profile of an assessment, for the CSV export. */
+export async function fetchAnswersExport({ token, org, assessment }) {
+  const qs = new URLSearchParams({ dataset: 'answers-export', assessment });
+  return call(`${ENDPOINT}?${qs}`, { headers: authHeaders(token, org) });
+}

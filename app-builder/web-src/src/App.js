@@ -1,11 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import useShellAuth from './useShellAuth';
-import { fetchRecords, deleteRecord, deleteRecords } from './api';
+import {
+  fetchRecords, deleteRecord, deleteRecords, fetchAnswersExport,
+} from './api';
 import { toCsv, download } from './csv';
 import Detail from './Detail';
 import QuestionsPage from './QuestionsPage';
 import ApiDocs from './ApiDocs';
-import { ASSESSMENTS } from './datasets';
+import { ASSESSMENTS, answerColumns } from './datasets';
 import './App.css';
 
 const ASSESSMENT_KEYS = Object.keys(ASSESSMENTS);
@@ -90,6 +92,8 @@ export default function App() {
   const ds = ASSESSMENTS[assessment];
   const { dataset } = ds;
   const [checked, setChecked] = useState(() => new Set());
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState(null);
   const [query, setQuery] = useState('');
   const [data, setData] = useState({ items: [], total: 0 });
   const [loading, setLoading] = useState(false);
@@ -163,6 +167,22 @@ export default function App() {
     return q ? data.items.filter((r) => ds.haystack(r).includes(q)) : data.items;
   }, [data.items, query, ds]);
 
+  // the profile columns, plus each profile's latest answers when the assessment has them
+  const exportCsv = useCallback(async () => {
+    setExporting(true);
+    setExportError(null);
+    try {
+      let columns = ds.csv;
+      if (ds.exportAnswers) {
+        columns = answerColumns(ds, await fetchAnswersExport({ token, org, assessment: ds.assessment }));
+      }
+      download(`${ds.file}-${new Date().toISOString().slice(0, 10)}.csv`, toCsv(columns, rows));
+    } catch (e) {
+      setExportError(e.message);
+    }
+    setExporting(false);
+  }, [ds, token, org, rows]);
+
   const visibleIds = rows.map((r) => ds.id(r));
   const allVisibleChecked = visibleIds.length > 0 && visibleIds.every((id) => checked.has(id));
   const someVisibleChecked = visibleIds.some((id) => checked.has(id));
@@ -232,10 +252,10 @@ export default function App() {
           <button
             type="button"
             className="primary"
-            disabled={!rows.length}
-            onClick={() => download(`${ds.file}-${new Date().toISOString().slice(0, 10)}.csv`, toCsv(ds.csv, rows))}
+            disabled={!rows.length || exporting}
+            onClick={exportCsv}
           >
-            Export CSV
+            {exporting ? 'Exporting…' : 'Export CSV'}
           </button>
         </div>
       </header>
@@ -267,6 +287,8 @@ export default function App() {
           <input type="search" placeholder="Name, email, organization, product…" value={query} onChange={(e) => setQuery(e.target.value)} />
         </label>
       </section>
+
+      {exportError && <p role="alert" className="error">Could not export: {exportError}</p>}
 
       {checked.size > 0 && (
         <BulkDelete count={checked.size} onDelete={handleBulkDelete} onClear={() => setChecked(new Set())} />

@@ -31,6 +31,9 @@ const DATASETS = {
 //   GET ?dataset=questions&assessment=self-guided -> { ok, items } the question bank, in page order
 //   GET ?dataset=profile-answers&submissionId=... -> { ok, runs } every response linked to that profile,
 //        each laid out against the whole question bank (answered or not), newest first
+//   GET ?dataset=answers-export&assessment=self-guided -> { ok, columns, rows } for the CSV export:
+//        columns = every bank question in page order; rows = { submissionId: latest run's status,
+//        result and answers as text } for every profile with a linked response
 //   POST {op:'question-save', assessment, question:{questionId, section, sectionTitle, title, help,
 //         type, required, options:[{key, label}]}, editor?} -> { ok, question, created }
 //        creates a question, or updates one with question.update:true; keys are fixed once saved
@@ -38,6 +41,7 @@ const DATASETS = {
 async function main (params) {
   if (params.op === 'question-save' || params.dataset === 'questions') return questionBank(params)
   if (params.dataset === 'profile-answers') return profileAnswers(params)
+  if (params.dataset === 'answers-export') return answersExport(params)
   const dataset = params.dataset || 'assessments'
   const ds = DATASETS[dataset]
   if (!ds) return reply(400, { ok: false, error: 'invalid dataset' })
@@ -133,6 +137,61 @@ async function profileAnswers (params) {
     })
   } catch (e) {
     console.error('assessments-admin profile-answers failed:', e.name, e.httpStatusCode, e.message)
+    return reply(500, { ok: false, error: 'internal error' })
+  }
+}
+
+// Answers for the profile list's CSV export: one entry per profile, from its latest linked run.
+async function answersExport (params) {
+  const assessment = params.assessment || assessments.DEFAULT_ASSESSMENT
+  if (!assessments.ASSESSMENT_IDS.includes(assessment)) return reply(400, { ok: false, error: 'invalid assessment' })
+  try {
+    return await withDb(params, async (client) => {
+      const bank = await questions.sectionsOf(client, assessment)
+      const columns = [...bank.values()].flatMap(({ data }) => data.questions.map((q) => ({
+        key: `${data.sectionId}.${q.id}`, section: data.sectionId, sectionTitle: data.eyebrow || data.sectionId, question: q.id, text: q.title || q.id
+      })))
+      // capability names: options that stand for a capability (e.g. the AI-readiness picks) carry them
+      const capabilityNames = {}
+      for (const { data } of bank.values()) {
+        for (const q of data.questions) {
+          for (const o of q.options || []) {
+            if (Array.isArray(o.capabilities) && o.capabilities.length === 1 && o.capabilities[0] === o.id) capabilityNames[o.id] = o.label
+          }
+        }
+      }
+      const runs = await client.collection(responses.COLLECTION)
+        .find({ assessment, submissionId: { $ne: null } }).limit(5000).toArray()
+      runs.sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)))
+      const rows = {}
+      for (const r of runs) {
+        if (!r.submissionId) continue
+        if (rows[r.submissionId]) { rows[r.submissionId].runs += 1; continue }
+        const answers = {}
+        for (const s of questions.answerSheet(bank, r.sections)) {
+          for (const q of s.questions) {
+            if (q.values.length) answers[`${s.section}.${q.question}`] = q.values.map(questions.valueText).join('; ')
+          }
+        }
+        const res = r.result || {}
+        rows[r.submissionId] = {
+          runs: 1,
+          status: r.status,
+          startedAt: r.createdAt,
+          updatedAt: r.updatedAt,
+          completedAt: r.completedAt || null,
+          completedSections: ((r.progress || {}).completed || []).length,
+          readinessPct: typeof res.readinessPct === 'number' ? res.readinessPct : null,
+          headline: res.headline || null,
+          engagement: res.engagement || null,
+          capabilities: (res.matchedCapabilities || []).map((c) => capabilityNames[c.id] || c.id),
+          answers
+        }
+      }
+      return reply(200, { ok: true, assessment, columns, rows })
+    })
+  } catch (e) {
+    console.error('assessments-admin answers-export failed:', e.name, e.httpStatusCode, e.message)
     return reply(500, { ok: false, error: 'internal error' })
   }
 }
