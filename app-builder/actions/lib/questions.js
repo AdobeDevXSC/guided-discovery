@@ -200,7 +200,15 @@ function answerSheet (sections, responseSections) {
   return out
 }
 
+/** A labelled value as plain text, e.g. "Consent & Identity Governance: Gap for us". */
+function valueText (v) {
+  if (v.followUp) return `${v.optionLabel || v.option}: needs a follow-up`
+  if (v.choice) return `${v.optionLabel || v.option}: ${v.choiceLabel || v.choice}`
+  if (v.text !== undefined) return `${v.optionLabel || v.option}: ${v.text}`
+  return v.label || v.value
+}
+
 module.exports = {
   COLLECTION, INDEXES, NEW_TYPES, TYPE_OF_DISPLAY, sectionsOf, publicSections, validateEdit, forget, asQuestion,
-  labelValue, answerSheet
+  labelValue, answerSheet, valueText
 }

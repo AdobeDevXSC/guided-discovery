@@ -731,6 +731,87 @@ const adminApi = {
       notes: ['`total` counts every match; `count` is the size of this page. Items are the stored documents, including `_id` and `client`.'],
     },
     {
+      id: 'admin-profile-answers',
+      title: 'Answers for one profile',
+      method: 'GET',
+      summary: '`?dataset=profile-answers&submissionId=<uuid>`. Every response linked to that profile, newest first, each laid out against the whole question bank: all sections and questions in page order, with labelled values (empty when unanswered). Used by the profile panel.',
+      fieldsLabel: 'Query parameters',
+      fields: [
+        ['dataset', '"profile-answers"', 'yes', ''],
+        ['submissionId', 'uuid', 'yes', 'The profile.'],
+      ],
+      success: {
+        status: 200,
+        body: json({
+          ok: true,
+          submissionId: '<submissionId>',
+          count: 1,
+          runs: [{
+            responseId: '<responseId>',
+            assessment: 'self-guided',
+            status: 'in_progress',
+            result: null,
+            createdAt: NOW,
+            sections: [{
+              section: 'discovery',
+              title: 'Start here · Technology-agnostic',
+              questions: [
+                { question: 'focus', text: "Where's your focus?", type: 'single', values: [{ value: 'activation', label: 'Acting on what you know' }] },
+                { question: 'success', text: 'What does success look like…', type: 'multiple', values: [] },
+              ],
+            }],
+          }],
+        }),
+      },
+      errors: [
+        { status: 400, when: 'Missing or malformed submissionId', body: json({ ok: false, error: 'invalid submissionId' }) },
+        { status: 401, when: 'Missing or invalid IMS token (gateway error body)', body: '{ "error": "<gateway message>" }' },
+      ],
+      curl: curlGet('assessments-admin', 'dataset=profile-answers&submissionId=<submissionId>', ADMIN_CURL_HEADERS),
+      fetch: fetchGet('assessments-admin', 'dataset=profile-answers&submissionId=<submissionId>', ADMIN_FETCH_HEADERS),
+    },
+    {
+      id: 'admin-answers-export',
+      title: 'Answers for the CSV export',
+      method: 'GET',
+      summary: '`?dataset=answers-export&assessment=self-guided`. One entry per profile with a linked response, from its most recently saved run: status, dates, result and every answer as text. `columns` lists the bank questions in page order. The viewer joins it to the profile list for Export CSV.',
+      fieldsLabel: 'Query parameters',
+      fields: [
+        ['dataset', '"answers-export"', 'yes', ''],
+        ['assessment', 'string', 'no', 'Defaults to `self-guided`.'],
+      ],
+      success: {
+        status: 200,
+        body: json({
+          ok: true,
+          assessment: 'self-guided',
+          columns: [{ key: 'discovery.focus', section: 'discovery', sectionTitle: 'Start here · Technology-agnostic', question: 'focus', text: "Where's your focus?" }, { '...': 'one per question' }],
+          rows: {
+            '<submissionId>': {
+              runs: 2,
+              status: 'completed',
+              startedAt: NOW,
+              updatedAt: NOW,
+              completedAt: NOW,
+              completedSections: 3,
+              readinessPct: 0.25,
+              headline: 'building-your-case',
+              engagement: 'medium',
+              capabilities: ['Graph-Based Stitching', 'AI Capabilities'],
+              answers: { 'discovery.focus': 'Acting on what you know', 'governance.status': 'Consent & Identity Governance: Gap for us' },
+            },
+          },
+        }),
+      },
+      errors: [
+        { status: 400, when: 'Unknown assessment', body: json({ ok: false, error: 'invalid assessment' }) },
+        { status: 401, when: 'Missing or invalid IMS token (gateway error body)', body: '{ "error": "<gateway message>" }' },
+      ],
+      curl: curlGet('assessments-admin', 'dataset=answers-export&assessment=self-guided', ADMIN_CURL_HEADERS),
+      fetch: fetchGet('assessments-admin', 'dataset=answers-export&assessment=self-guided', ADMIN_FETCH_HEADERS),
+      notes: ['`runs` counts every linked run of the profile; the values come from the most recently saved one. Several values for one question are joined with "; ".'],
+    },
+    {
       id: 'admin-delete',
       title: 'Delete records',
       method: 'POST',

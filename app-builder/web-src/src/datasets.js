@@ -92,5 +92,34 @@ export const ASSESSMENTS = {
       { label: 'Submission ID', value: (r) => r.submissionId },
     ],
     Body: ProfileBody,
+    exportAnswers: true,
   },
 };
+
+const words = (id) => (id ? String(id).replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase()) : '');
+
+/**
+ * The profile columns followed by the latest linked run's status, result and one column per
+ * question (page order). `exported` is the admin answers-export payload { columns, rows }.
+ */
+export function answerColumns(ds, exported) {
+  const run = (r) => (exported.rows || {})[r.submissionId] || null;
+  const pick = (fn) => (r) => { const x = run(r); return x ? fn(x) : ''; };
+  return [
+    ...ds.csv,
+    { label: 'Answers: status', value: pick((x) => x.status.replace('_', ' ')) },
+    { label: 'Answers: runs', value: pick((x) => x.runs) },
+    { label: 'Answers: started', value: pick((x) => x.startedAt) },
+    { label: 'Answers: last saved', value: pick((x) => x.updatedAt) },
+    { label: 'Answers: completed', value: pick((x) => x.completedAt || '') },
+    { label: 'Sections complete', value: pick((x) => x.completedSections) },
+    { label: 'Readiness %', value: pick((x) => (x.readinessPct === null ? '' : Math.round(x.readinessPct * 100))) },
+    { label: 'Headline', value: pick((x) => words(x.headline)) },
+    { label: 'Engagement', value: pick((x) => words(x.engagement)) },
+    { label: 'Capabilities', value: pick((x) => x.capabilities.join('; ')) },
+    ...(exported.columns || []).map((c) => ({
+      label: `${c.sectionTitle}: ${c.text} [${c.key}]`,
+      value: pick((x) => x.answers[c.key] || ''),
+    })),
+  ];
+}
