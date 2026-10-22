@@ -68,8 +68,31 @@ Each question stores a list of strings. What a value looks like depends on how t
 | Start | `POST {op:"start", assessment?, leadRef?, source, contentVersion, contentEnv?}` | `201 {responseId, linked}`. `assessment` defaults to `self-guided`; `leadRef` is the profile's `submissionId` |
 | Link | `POST {op:"link", responseId, leadRef}` | `200 {linked}` (only if not linked yet) |
 | Save | `POST {op:"save", responseId, section, rev, data:{answers}, progress?, contentEnv?}` | `200 {rev, savedAt}`, `409` if `rev` is stale, `400 {errors}` |
+| Answer | `POST {op:"answer", responseId, section, question, value, contentEnv?}` or `POST {op:"answer", responseId, answers:[{section, question, value}, …]}` | `200 {saved:[{section, question}], revs:{section: rev}, savedAt}`, `400 {errors}`, `404` |
 | Complete | `POST {op:"complete", responseId, contentEnv?}` | `200 {result}`, `503` if the content can't be fetched |
 | Resume | `GET ?responseId=` | `200 {response}`: answers, revisions, progress, result. No profile data |
+
+### Answering individual questions
+
+`answer` is for callers that post as they go, outside the page's own autosave: a front end on another site, or an integration.
+
+- **One answer or several.** Send one answer at the top level, or up to 50 in `answers`, across any sections.
+- **Merges, doesn't replace.** Each answer sets one question and keeps the section's other answers. `save` replaces the whole section.
+- **Values:** `value` is a string or an array of strings, in the formats above. `null` or `[]` clears the question.
+- **All or nothing.** Every answer is checked against the published questions first. If any is invalid, nothing is stored and the response lists each error.
+- **No revisions to track.** The server bumps each touched section's `rev`. Editing a completed response recalculates `result`.
+- **One writer per section.** If the page has the same response open, its next autosave of that section sees the newer revision, then re-sends its own copy of the whole section. Answers posted through `answer` for that section are then overwritten. Use one writer per section at a time.
+
+```bash
+curl -X POST "$ENDPOINT" -H 'Content-Type: application/json' -d '{
+  "op": "answer", "responseId": "<responseId>",
+  "answers": [
+    { "section": "discovery", "question": "focus", "value": "activation" },
+    { "section": "identity", "question": "identity-target", "value": "unified-graph" },
+    { "section": "governance", "question": "status", "value": ["consent:gap", "data-labels:in-place"] }
+  ]
+}'
+```
 
 Clients from before the rename still work. They send `sessionId` and `sc-<sectionId>` section keys and read `sessionId` / `session`; the action accepts and returns both.
 
