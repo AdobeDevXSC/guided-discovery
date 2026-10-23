@@ -3529,7 +3529,9 @@ function maybeAutoOpenModal(pageId){
         openFocusMode('A few questions to start', getOrderedOpenPrompts(), 'renderDiscovery', null, () => {
           openFocusMode('Digging a bit deeper', DISCOVERY_PROMPTS_POKE, 'renderDiscovery', null, () => {
             if(isHubProfile()){
-              showPage('hub');
+              // finish Discovery the same way its Continue button does, so it counts as complete
+              if(pageRequirementsMet('discovery')) markComplete('discovery');
+              else showPage('hub');
             } else {
               runGuidedChainFrom(0);
             }
