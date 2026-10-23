@@ -4835,13 +4835,24 @@ if(!GATE_PASSED){
 #ab-sync summary{cursor:pointer;font-weight:bold}
 #ab-sync .warn{color:#9b5400}
 #ab-sync #ab-log{white-space:pre-wrap;max-height:140px;overflow:auto;font:11px/1.4 Consolas,monospace;margin-top:8px}
+#ab-veil{position:fixed;inset:0;z-index:1300;display:none;align-items:center;justify-content:center;background:rgb(0 0 0 / 35%)}
+#ab-veil.open{display:flex}
+#ab-veil .ab-veil-box{background:#fff;border-radius:12px;padding:22px 26px;max-width:420px;text-align:center;box-shadow:0 12px 32px rgb(0 0 0 / 25%);font:15px/1.45 Arial,sans-serif;color:#182233}
+#ab-veil .ab-veil-spin{width:30px;height:30px;margin:0 auto 10px;border:3px solid #dde2ea;border-top-color:#1473e6;border-radius:50%;animation:ab-spin .8s linear infinite}
+#ab-veil.failed .ab-veil-spin{display:none}
+#ab-veil #ab-veil-err{color:#9b1c00;font-size:13px;margin:6px 0 0;word-break:break-word}
+#ab-veil .ab-veil-actions{display:none;gap:8px;justify-content:center;margin-top:14px}
+#ab-veil.failed .ab-veil-actions{display:flex}
+#ab-veil button{border:0;border-radius:999px;padding:8px 16px;cursor:pointer;font:inherit;font-weight:600;background:#1473e6;color:#fff}
+#ab-veil #ab-veil-stay{background:#eef1f5;color:#182233}
+@keyframes ab-spin{to{transform:rotate(360deg)}}
 </style>
 <div id="ab-sync"><details open><summary>App Builder sync · STAGING</summary>
 <div id="ab-status" role="status">Waiting for profile submission.</div>
 <button id="ab-save" type="button" disabled>Save answers now</button>
 <button id="ab-check" type="button" disabled>Verify saved answers</button>
 <div id="ab-log"></div>
-<small>STAGING ONLY. Answers save automatically a moment after each change; the assessment is marked complete when you reach the summary.</small>
+<small>STAGING ONLY. Answers save automatically; Continue and the summary wait until the server confirms.</small>
 </details></div>
 <script>
 /* APP BUILDER STAGING INTEGRATION. No API secrets in browser.
@@ -4971,48 +4982,52 @@ window.submitGate=function(){
  originalGate();
 };
 
-/* ---- saving: only what changed, one batch; a question that's now empty is cleared ---- */
+/* ---- saving: only what changed, one batch; a question that's now empty is cleared.
+   Saves are queued and run one at a time; save() resolves once the server has confirmed every
+   answer (or rejects with the reason), so Continue and the summary can wait for it. ---- */
 const sig=a=>a.section+'.'+a.question;
-async function save(opts){
+let queue=Promise.resolve();
+let pending=0;
+function save(opts){
+ pending++;
+ const run=queue.then(()=>doSave(opts));
+ queue=run.catch(()=>{});
+ return run.finally(()=>{pending--;});
+}
+async function doSave(opts){
  const keepalive=Boolean(opts&&opts.keepalive);
  if(!state.responseId||!state.catalog)return;
- if(state.busy){state.again=true;return;}
- state.busy=true;
- try{
-  const {answers,problems}=collect();
-  const changed=answers.filter(a=>{
-   const prev=state.sent.get(sig(a));const now=JSON.stringify(a.value);
-   return prev===undefined?a.value.length>0:prev!==now;
-  });
-  let failed=[];
-  if(changed.length){
-   status('Saving '+changed.length+' answer'+(changed.length===1?'':'s')+'…');
-   const body=a=>({section:a.section,question:a.question,value:a.value.length?a.value:null});
-   try{
-    for(let i=0;i<changed.length;i+=50){
-     await api('/guided-discovery','POST',{op:'answer',responseId:state.responseId,userId:state.userId,answers:changed.slice(i,i+50).map(body)},keepalive);
-    }
-    changed.forEach(a=>state.sent.set(sig(a),JSON.stringify(a.value)));
-   }catch(e){
-    // a batch is all or nothing: retry one by one so one bad answer doesn't block the rest
-    if(e.status!==400)throw e;
-    for(const a of changed){
-     try{await api('/guided-discovery','POST',{op:'answer',responseId:state.responseId,userId:state.userId,...body(a)},keepalive);state.sent.set(sig(a),JSON.stringify(a.value));}
-     catch(err){failed.push(sig(a)+': '+err.message);}
-    }
+ const {answers,problems}=collect();
+ const changed=answers.filter(a=>{
+  const prev=state.sent.get(sig(a));const now=JSON.stringify(a.value);
+  return prev===undefined?a.value.length>0:prev!==now;
+ });
+ const failed=[];
+ if(changed.length){
+  status('Saving '+changed.length+' answer'+(changed.length===1?'':'s')+'…');
+  const body=a=>({section:a.section,question:a.question,value:a.value.length?a.value:null});
+  try{
+   for(let i=0;i<changed.length;i+=50){
+    await api('/guided-discovery','POST',{op:'answer',responseId:state.responseId,userId:state.userId,answers:changed.slice(i,i+50).map(body)},keepalive);
+   }
+   changed.forEach(a=>state.sent.set(sig(a),JSON.stringify(a.value)));
+  }catch(e){
+   // a batch is all or nothing: retry one by one so one bad answer doesn't block the rest
+   if(e.status!==400)throw e;
+   for(const a of changed){
+    try{await api('/guided-discovery','POST',{op:'answer',responseId:state.responseId,userId:state.userId,...body(a)},keepalive);state.sent.set(sig(a),JSON.stringify(a.value));}
+    catch(err){failed.push(sig(a)+': '+err.message);}
    }
   }
-  await saveProgress(keepalive);
-  const notes=[...problems,...failed];
-  status(failed.length?'Saved, but '+failed.length+' answer'+(failed.length===1?'':'s')+' could not be stored.':'All changes saved.',failed.length>0);
-  if(notes.length)log('Needs review:\n'+notes.join('\n'));
- }catch(e){
-  console.error('App Builder save',e);status('Save failed, will retry: '+e.message,true);
-  setTimeout(()=>save(),5000);
- }finally{
-  state.busy=false;
-  if(state.again){state.again=false;save();}
  }
+ await saveProgress(keepalive);
+ const notes=[...problems,...failed];
+ if(notes.length)log('Needs review:\n'+notes.join('\n'));
+ if(failed.length){
+  status(failed.length+' answer'+(failed.length===1?'':'s')+' could not be stored.',true);
+  throw Error(failed.length+' answer'+(failed.length===1?' was':'s were')+' not accepted by the server: '+failed.map(f=>f.split(':')[0]).join(', '));
+ }
+ status('All changes saved.');
 }
 // section progress: the API section ids the page has marked complete
 async function saveProgress(keepalive){
@@ -5022,35 +5037,94 @@ async function saveProgress(keepalive){
  await api('/guided-discovery','POST',{op:'save',responseId:state.responseId,progress:{completed:done}},keepalive);
  state.progressSent=key;
 }
+// background saves (edits within a section) report failures and try again shortly
+function backgroundSave(opts){
+ return save(opts).catch(e=>{
+  console.error('App Builder save',e);status('Save failed, will retry: '+e.message,true);
+  setTimeout(()=>{lastSnapshot='';},5000);
+ });
+}
 
 /* ---- autosave: the page changes state from many handlers (clicks, swipes, sliders, drag and
    drop, typing), so poll for changes instead of hooking each one ---- */
 let lastSnapshot='';
 setInterval(()=>{
- if(!state.responseId||!state.catalog||state.busy)return;
+ if(!state.responseId||!state.catalog||pending)return;
  const snap=JSON.stringify(collect().answers.map(a=>a.value))+'|'+SECTIONS.filter(s=>COMPLETED.has(s)).join(',');
- if(snap!==lastSnapshot){lastSnapshot=snap;save();}
+ if(snap!==lastSnapshot){lastSnapshot=snap;backgroundSave();}
 },1500);
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')save({keepalive:true});});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&state.responseId)backgroundSave({keepalive:true});});
 
-/* ---- completion: the summary marks the response complete (status, completedAt, result) ---- */
+/* ---- waiting: while Continue or the summary waits for the server, a veil blocks the page;
+   on failure it shows the reason with Try again, and the person stays where they are ---- */
+const veil=document.createElement('div');
+veil.id='ab-veil';
+veil.setAttribute('role','alertdialog');
+veil.setAttribute('aria-modal','true');
+veil.setAttribute('aria-labelledby','ab-veil-msg');
+veil.innerHTML='<div class="ab-veil-box"><div class="ab-veil-spin" aria-hidden="true"></div><p id="ab-veil-msg">Saving your answers…</p><p id="ab-veil-err"></p><div class="ab-veil-actions"><button type="button" id="ab-veil-retry">Try again</button><button type="button" id="ab-veil-stay">Stay on this page</button></div></div>';
+document.body.appendChild(veil);
+let veilTask=null;
+async function whileSaving(message,task){
+ // a wait can start another (the last Continue leads to the summary): only the newest one
+ // decides what the veil shows
+ const mine={message,task};veilTask=mine;
+ $('ab-veil-msg').textContent=message;$('ab-veil-err').textContent='';
+ veil.className='open busy';
+ try{await task();if(veilTask===mine){veil.className='';veilTask=null;}return true;}
+ catch(e){
+  console.error('App Builder',e);
+  if(veilTask!==mine)return false;
+  $('ab-veil-msg').textContent='Your answers could not be saved yet.';
+  $('ab-veil-err').textContent=e.message;
+  veil.className='open failed';$('ab-veil-retry').focus();
+  return false;
+ }
+}
+$('ab-veil-retry').addEventListener('click',()=>{if(veilTask)whileSaving(veilTask.message,veilTask.task);});
+$('ab-veil-stay').addEventListener('click',()=>{veil.className='';veilTask=null;});
+
+/* ---- completion: marks the response complete (status, completedAt, result) ---- */
 async function complete(){
  if(!state.responseId||state.completed)return;
- try{
-  await save();
-  const res=await api('/guided-discovery','POST',{op:'complete',responseId:state.responseId});
-  state.completed=true;
-  const r=res.result||{};
-  status('Assessment complete and saved.');
-  log('Result: '+(r.headline||'')+' · '+(r.engagement||'')+' engagement · '+((r.matchedCapabilities||[]).length)+' capabilities');
- }catch(e){console.error('App Builder complete',e);status('Could not mark complete, will retry: '+e.message,true);setTimeout(complete,5000);}
+ await save();
+ const res=await api('/guided-discovery','POST',{op:'complete',responseId:state.responseId});
+ state.completed=true;
+ const r=res.result||{};
+ status('Assessment complete and saved.');
+ log('Result: '+(r.headline||'')+' · '+(r.engagement||'')+' engagement · '+((r.matchedCapabilities||[]).length)+' capabilities');
 }
-const originalAutoSubmit=window.autoSubmitOnCompletion;
-window.autoSubmitOnCompletion=function(){complete();return originalAutoSubmit&&originalAutoSubmit.apply(this,arguments);};
-const originalShowPage=window.showPage;
-window.showPage=function(id){const out=originalShowPage.apply(this,arguments);if(id==='onepager'&&state.responseId)complete();return out;};
 
-$('ab-save').addEventListener('click',()=>save());
+// Continue: save this section's answers and progress, then move on once the server confirms
+const originalMarkComplete=window.markComplete;
+window.markComplete=function(pageId){
+ const self=this,args=arguments;
+ if(!state.responseId||(typeof pageRequirementsMet==='function'&&!pageRequirementsMet(pageId))){
+  return originalMarkComplete.apply(self,args); // not connected, or the page shows what's missing
+ }
+ whileSaving('Saving your answers…',async()=>{
+  const was=COMPLETED.has(pageId);
+  if(SECTIONS.includes(pageId))COMPLETED.add(pageId);
+  try{await save();}
+  catch(e){if(!was)COMPLETED.delete(pageId);throw e;}
+  originalMarkComplete.apply(self,args);
+ });
+};
+// The summary: only shown once the response is saved and marked complete
+const originalShowPage=window.showPage;
+window.showPage=function(id){
+ const self=this,args=arguments;
+ if(id==='onepager'&&state.responseId&&!state.completed){
+  whileSaving('Saving your answers and preparing your summary…',async()=>{
+   await complete();
+   originalShowPage.apply(self,args);
+  });
+  return;
+ }
+ return originalShowPage.apply(self,args);
+};
+
+$('ab-save').addEventListener('click',()=>backgroundSave());
 $('ab-check').addEventListener('click',async()=>{
  if(!state.responseId)return;
  try{
@@ -5063,7 +5137,7 @@ $('ab-check').addEventListener('click',async()=>{
   status('Verified: '+keys.length+' of '+all.length+' answers stored, status '+response.status+'.');
  }catch(e){status('Read-back failed: '+e.message,true);}
 });
-window.addEventListener('beforeunload',()=>{if(state.responseId)save({keepalive:true});});
+window.addEventListener('beforeunload',e=>{if(state.responseId&&pending){e.preventDefault();e.returnValue='';}if(state.responseId)backgroundSave({keepalive:true});});
 })();
 </script>
 </body>
