@@ -32,7 +32,8 @@ withDb({
   // 1. profiles without a userId
   const all = await (await profiles.find({})).toArray()
   const missing = all.filter((p) => !p.userId)
-  const created = new Map() // email -> userId made in this run (dry run included)
+  const created = new Map() // email -> userId used for that email in this run
+  const newIds = new Set() // userIds generated in this run (placeholders in a dry run)
   let profilesSet = 0
   let usersCreated = 0
   let skipped = 0
@@ -44,7 +45,7 @@ withDb({
     if (!userId) {
       const existing = await findOneOrNull(users, { email })
       if (existing) userId = existing.userId
-      else { userId = crypto.randomUUID(); isNew = true }
+      else { userId = crypto.randomUUID(); isNew = true; newIds.add(userId) }
       created.set(email, userId)
     }
     // a new person's id is only generated for real on --write, so a dry run doesn't print one
@@ -70,8 +71,7 @@ withDb({
   for (const r of orphans) {
     const userId = userOf.get(r.submissionId)
     if (!userId) { runsNoProfile += 1; console.log('skip response (profile not found)', r.responseId); continue }
-    const shown = !write && ![...created.entries()].some(([, id]) => id === userId && all.some((p) => p.userId === id)) && [...created.values()].includes(userId)
-      ? '<profile\'s new id>' : userId
+    const shown = !write && newIds.has(userId) ? '<profile\'s new id>' : userId
     console.log(write ? 'set' : 'would set', 'response', r.responseId, '->', shown)
     if (write) await runs.updateOne({ responseId: r.responseId }, { $set: { userId } })
     runsSet += 1
