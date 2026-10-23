@@ -13,21 +13,21 @@
   --gd-line: #dde2ea;
   --gd-line-strong: #c4cbd6;
   --gd-text: #182233;
-  --gd-text-soft: #5b6474;
+  --gd-text-soft: #2c2c2c;
   --gd-text-faint: #6b7280;
 }
 
 /* the live app's page background, behind the whole overview section */
 main > .section.gd-overview-container {
-  background: #f7f8fa;
+  background: #f8f8f8;
 }
 
 .gd-overview .gd-ov-eyebrow {
   margin: 0 0 10px;
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 700;
   letter-spacing: -0.01em;
-  color: var(--gd-red);
+  color: var(--gd-text-soft);
 }
 
 .gd-overview .gd-ov-heading {
@@ -99,7 +99,7 @@ main > .section.gd-overview-container {
 
 .gd-overview .gd-ov-card p {
   margin: 0;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.5;
   color: var(--gd-text-soft);
 }
@@ -127,9 +127,18 @@ main > .section.gd-overview-container {
 }
 
 .gd-overview .gd-ov-outputs li::before {
-  content: '✓';
+  /* content: '✓';
   font-weight: 700;
-  color: var(--gd-select);
+  color: var(--gd-select); */
+  content: "";
+  display: inline-block;
+  background-image: url("media_1bf056de9b03ed097b28d275fb935fa7bea38427e.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  width: 10px;
+  height: 10px;
+  margin-left: 16px;
+  vertical-align: middle;
 }
 
 .gd-overview .gd-ov-progress {

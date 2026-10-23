@@ -9,7 +9,7 @@
   --brand-black: #000;
   --brand-white: #fff;
   --brand-red: #eb1000;
-  --brand-blue: #3b63fb;
+  --brand-blue: #1473E6;
   --brand-blue-hover: #274dea;
   --brand-grey-bg: #f5f5f5;
   --brand-page-bg-subtle: #f7f8fa;
@@ -33,6 +33,7 @@
 @media (width > 600px) {
   :root {
     --content-padding-inline: 40px;
-    --section-padding: 80px;
+    --section-padding: 60px;
+ 
   }
 }

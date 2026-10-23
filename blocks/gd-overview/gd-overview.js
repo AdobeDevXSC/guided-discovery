@@ -55,7 +55,21 @@ async function openSummary() {
   const root = await whenRendered('#gd-summary');
   if (root) root.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+// start code added for picture tag to be loaded from the overview content, so that the benefits cards can have images.
+async function getBenefitPictures(contentLink) {
+  const url = new URL(contentLink, window.location.href);
+  url.pathname = url.pathname.replace(/\.(json|html)$/, '');
+  url.pathname += '.plain.html';
 
+  const response = await fetch(url.href);
+  if (!response.ok) return [];
+
+  const html = await response.text();
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+
+  return [...doc.querySelectorAll('.benefits picture')];
+}
+// end code
 export default async function decorate(block) {
   const cfg = readBlockConfig(block);
   const contentLink = first(cfg.content);
@@ -74,7 +88,7 @@ export default async function decorate(block) {
   }
   const labels = { ...DEFAULT_LABELS, ...(overview.labels || {}) };
   const sections = list(overview.sections);
-
+  const benefitPictures = await getBenefitPictures(contentLink);
   const progress = h('div', { class: 'gd-ov-progress', 'aria-live': 'polite' });
   const root = h(
     'div',
@@ -86,9 +100,10 @@ export default async function decorate(block) {
       'div',
       { class: 'gd-ov-benefits' },
       overview.benefitsHeading && h('h2', { text: overview.benefitsHeading }),
-      h('ul', { class: 'gd-ov-cards' }, overview.benefits.map((b) => h(
+      h('ul', { class: 'gd-ov-cards' }, overview.benefits.map((b, index) => h(
         'li',
         { class: `gd-ov-card gd-ov-accent-${b.accent || 'analysis'}` },
+        benefitPictures[index]?.cloneNode(true),
         h('h3', { text: b.title }),
         b.text && h('p', { text: b.text }),
       ))),
