@@ -3,6 +3,8 @@ const ALLOWED_ORIGIN_PATTERNS = [
   /^https:\/\/[a-z0-9-]+--guided-discovery--adobedevxsc\.aem\.(page|live)$/,
   // the Adobe landing-page host, for testing the front end outside EDS
   /^https:\/\/landing\.adobe\.com$/,
+  // this app's own static host (Stage), which serves the public self-guided.html page
+  /^https:\/\/20409-157ochretakin-stage\.adobeio-static\.net$/,
   // local development with `aem up` on localhost or 127.0.0.1 (Origin is spoofable by non-browsers anyway, so this adds no exposure)
   /^http:\/\/localhost:\d{2,5}$/,
   /^http:\/\/127\.0\.0\.1:\d{2,5}$/

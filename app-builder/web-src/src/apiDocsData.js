@@ -95,6 +95,7 @@ export const OVERVIEW = {
     origins: [
       '`https://<branch>--guided-discovery--adobedevxsc.aem.page` and `.aem.live` (EDS preview and live)',
       '`https://landing.adobe.com`',
+      '`https://20409-157ochretakin-stage.adobeio-static.net` (this app, e.g. the public `self-guided.html` page)',
       '`http://localhost:<port>` (local `aem up`)',
       '`http://127.0.0.1:<port>` (local `aem up`)',
     ],
