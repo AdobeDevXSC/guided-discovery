@@ -47,7 +47,9 @@ withDb({
       else { userId = crypto.randomUUID(); isNew = true }
       created.set(email, userId)
     }
-    console.log(write ? 'set' : 'would set', 'profile', p.submissionId, email, '->', userId, isNew ? '(new user)' : '(existing user)')
+    // a new person's id is only generated for real on --write, so a dry run doesn't print one
+    const shown = isNew && !write ? '<new id, assigned on write>' : userId
+    console.log(write ? 'set' : 'would set', 'profile', p.submissionId, email, '->', shown, isNew ? '(new user)' : '(existing user)')
     if (write) {
       if (isNew) await users.insertOne({ userId, email, createdAt: now, backfilled: true })
       await profiles.updateOne({ submissionId: p.submissionId }, { $set: { userId } })
@@ -68,7 +70,9 @@ withDb({
   for (const r of orphans) {
     const userId = userOf.get(r.submissionId)
     if (!userId) { runsNoProfile += 1; console.log('skip response (profile not found)', r.responseId); continue }
-    console.log(write ? 'set' : 'would set', 'response', r.responseId, '->', userId)
+    const shown = !write && ![...created.entries()].some(([, id]) => id === userId && all.some((p) => p.userId === id)) && [...created.values()].includes(userId)
+      ? '<profile\'s new id>' : userId
+    console.log(write ? 'set' : 'would set', 'response', r.responseId, '->', shown)
     if (write) await runs.updateOne({ responseId: r.responseId }, { $set: { userId } })
     runsSet += 1
   }
