@@ -12,6 +12,21 @@ const profile = (r) => r.profile || {};
 const fullName = (r) => `${profile(r).firstName || ''} ${profile(r).lastName || ''}`.trim() || '—';
 
 const LABELS = { 'self-guided': 'Self-guided assessment' };
+
+// The profile's latest linked run (attached by the admin action): started or in progress = in process.
+const isInProgress = (r) => Boolean(r.run && (r.run.status === 'started' || r.run.status === 'in_progress'));
+function Progress({ r }) {
+  if (!r.run) return <span className="pill progress">No answers</span>;
+  if (r.run.status === 'completed') return <span className="pill progress completed">Completed</span>;
+  return (
+    <span
+      className="pill progress in_progress"
+      title={`${r.run.completedSections} of ${r.run.totalSections} sections complete · last saved ${when(r.run.updatedAt)}`}
+    >
+      {`In progress · ${r.run.answered}/${r.run.totalQuestions} answered`}
+    </span>
+  );
+}
 export const assessmentLabel = (r) => LABELS[r.assessment] || r.assessment || '—';
 
 function ProfileBody({ item, auth }) {
@@ -51,6 +66,7 @@ export const ASSESSMENTS = {
     id: (r) => r.submissionId,
     name: fullName,
     person: (r) => r.userId || profile(r).email,
+    inProgress: isInProgress,
     haystack: (r) => {
       const p = profile(r);
       return [p.firstName, p.lastName, p.email, p.phone, p.jobTitle, p.department, p.organization,
@@ -60,6 +76,7 @@ export const ASSESSMENTS = {
     table: [
       ['Submitted', (r) => when(r.createdAt)],
       ['Assessment', (r) => <span className="pill assessment">{assessmentLabel(r)}</span>],
+      ['Progress', (r) => <Progress r={r} />],
       ['Name', fullName],
       ['Email', (r) => profile(r).email],
       ['Phone', (r) => profile(r).phone],

@@ -85,6 +85,12 @@ th.pick, td.pick { width: 32px; padding-right: 0; }
 .pick input { width: 16px; height: 16px; cursor: pointer; }
 .bulk { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 8px 0 12px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
 .bulk .error { margin: 0; }
+/* profiles whose latest assessment run is still in progress */
+tbody tr.in-progress { background: color-mix(in srgb, var(--warn) 10%, var(--surface)); }
+tbody tr.in-progress td:first-child { box-shadow: inset 3px 0 0 var(--warn); }
+tbody tr.in-progress:hover, tbody tr.in-progress.on { background: color-mix(in srgb, var(--warn) 18%, var(--surface)); }
+.stat-in-progress strong { color: var(--warn); }
+.pill.progress { text-transform: none; white-space: nowrap; }
 .pill.assessment { text-transform: none; background: var(--ok-bg); color: var(--ok); white-space: nowrap; }
 
 /* ---------- viewer pages ---------- */
