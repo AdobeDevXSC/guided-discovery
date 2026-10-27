@@ -1,9 +1,6 @@
-.hlx/*
-coverage/*
-logs/*
-node_modules/*
-
-helix-importer-ui
+node_modules/
+coverage/
+logs/
 .DS_Store
 *.bak
 .idea
@@ -11,5 +8,3 @@ helix-importer-ui
 # Ensure these files are tracked
 !CLAUDE.md
 !AGENTS.md
-migration-work/navigation-validation/
-migration-work/footer-validation/

@@ -1,33 +1,35 @@
-# App Builder backend (guided-discovery)
+# Guided Discovery app (Adobe App Builder)
 
-Adobe I/O App Builder project that backs the EDS site in this repo: actions plus an App Builder database.
-Everything here is self-contained; run all commands from `app-builder/`. The folder is excluded from
-EDS code sync (`.hlxignore`) and from the root lint (`.eslintignore`).
+The AA to CJA Guided Discovery assessment: a public assessment page, the APIs it saves to, and an admin viewer, all on Adobe App Builder with the App Builder database. Run every command from this folder.
 
-- Actions: `actions/assessments` (CJA migration assessment capture, CORS-locked to this site's `*.aem.page` / `*.aem.live`),
-  `actions/items` (smoke-test endpoint), `actions/assessments-admin` (list and delete for either dataset via `?dataset=assessments|guided-discovery`;
-  `require-adobe-auth: true`, so only signed-in users of this org with workspace product-profile access can call it)
-- Submissions viewer: `web-src/` is a React page with two datasets, CJA migration assessment (`cja_assessments`) and
-  AA to CJA Guided Discovery (`gd_sessions`, labels from `../tools/importer/guided-discovery/copy.source.json`), each with
-  table, search, status filter, detail panel, delete, CSV export and print. It gets the
-  signed-in user's token from Experience Cloud Shell (`@adobe/exc-app`). Open the deployed app through the Shell:
-  `https://experience.adobe.com/?devMode=true#/custom-apps/?localDevUrl=<deployed index.html URL>`.
-  Opened directly it shows a prompt instead of data, by design (the data is PII).
-- Data model and API: [docs/cja-assessment-schema.md](docs/cja-assessment-schema.md)
-- Node 20.12+ (22 recommended). Parcel plugins are pinned to 2.10.3 to match aio-cli 9.x; bump them to the
-  Parcel version bundled with your aio-cli if the web build reports a version mismatch.
-- `actions/guided-discovery`: autosave backend for the Guided Discovery `gd-section` / `gd-summary` EDS blocks
-  (collection `assessment_responses`, see [docs/assessment-responses-schema.md](docs/assessment-responses-schema.md); ops
-  `start`, `save`, `link`, `complete`, GET resume). It validates answers against the published DA structured content
-  documents and scores with `../blocks/gd-summary/scoring.js` (webpack bundles it). The platform does not apply `include-ims-credentials` to it, so it also takes the `ADMIN_IMS_*`
-  inputs below.
-- `assessments-admin` is wrapped by the `require-adobe-auth` validator, which does not forward `include-ims-credentials`, so its
-  database credentials come from `inputs` in `app.config.yaml`, read from `.env`: `ADMIN_IMS_CLIENT_ID`, `ADMIN_IMS_CLIENT_SECRET`,
-  `ADMIN_IMS_ORG_ID`, `ADMIN_IMS_SCOPES` (comma-separated). They are the workspace's OAuth Server-to-Server values; set them locally
-  and as CI secrets before deploying, or the action returns 500.
-- `ci-templates/` holds the inactive `aio app init` workflows.
-- After a fresh clone: `npm ci`, then `aio login` and `aio app use <workspace>.json` (download it from Developer Console;
-  it contains secrets and is git-ignored) to recreate `.env` and `.aio`. Deploy with `aio app deploy` (add `--no-web-assets` to ship actions only).
+**Stage:** project `marketingprototype`, workspace Stage, org `adobe-lamont-crook`.
+
+| Piece | Where |
+|---|---|
+| Public assessment page | `web-src/self-guided.html`, served at https://20409-157ochretakin-stage.adobeio-static.net/self-guided.html (no sign-in) |
+| Admin viewer (profiles, questions, API reference) | `web-src/src/`, opened through Experience Cloud: `https://experience.adobe.com/?devMode=true#/custom-apps/?localDevUrl=https://20409-157ochretakin-stage.adobeio-static.net/index.html` |
+| Profiles API | `actions/assessments`: the assessment's initial form (`cja_assessments`, people in `cja_users`) |
+| Responses API | `actions/guided-discovery`: answers, progress and results (`assessment_responses`), plus `GET ?op=questions` |
+| Admin API | `actions/assessments-admin`: lists, deletes, the question bank, exports; needs an Adobe IMS token (`require-adobe-auth`) |
+| Question bank | `assessment_questions`, edited on the viewer's Questions page (`actions/lib/questions.js`) |
+| Scoring rules | `actions/lib/scoring-config.json`, used by `actions/lib/scoring.js` |
+
+Docs:
+- [docs/cja-assessment-schema.md](docs/cja-assessment-schema.md): profiles
+- [docs/assessment-responses-schema.md](docs/assessment-responses-schema.md): responses, questions, scoring and answer formats
+- The viewer's **API reference** page: every operation, with curl and fetch examples
+
+## Working on it
+
+- **The public page** is one self-contained HTML file: its own page code, plus an "App Builder sync" block at the end that talks to the APIs. The build publishes it because `web-src/index.html` links to it.
+- **Tests:** `npm test` (Jest) covers scoring and answer validation against a fixture of the real questions (`test/fixtures/self-guided-questions.json`). Re-export the fixture when the question bank changes.
+- **Deploy:** `aio app deploy` (actions and web), or `--no-web-assets` / `--no-actions` for one half. Deploying is manual; merging doesn't deploy.
+- **Allowed browser origins** are in `actions/lib/cors.js`: `landing.adobe.com`, this app's static host, localhost and 127.0.0.1. Calls without an `Origin` header (curl, servers) are accepted.
+- **Admin credentials:** `assessments-admin` (wrapped by `require-adobe-auth`) and `guided-discovery` read their database credentials from `inputs` in `app.config.yaml`, which come from `.env`: `ADMIN_IMS_CLIENT_ID`, `ADMIN_IMS_CLIENT_SECRET`, `ADMIN_IMS_ORG_ID`, `ADMIN_IMS_SCOPES` (comma-separated). These are the workspace's OAuth Server-to-Server values.
+- **Maintenance scripts** in `scripts/` use the same `.env`: `backfill-user-ids.js` and `migrate-gd-sessions.js`. Both default to a dry run; add `--write` to apply.
+- **After a fresh clone:** `npm ci`, `aio login`, then `aio app use <workspace>.json` (download it from Developer Console; it holds secrets and is git-ignored) to recreate `.env` and `.aio`.
+- **Node:** 20.12+ (22 recommended). Parcel plugins are pinned to 2.10.3 to match aio-cli 9.x.
+- **Leftover scaffold:** `actions/items` is a scaffold endpoint from the App Builder template.
 
 ## Original generated notes
 

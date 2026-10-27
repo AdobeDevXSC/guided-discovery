@@ -57,7 +57,7 @@ function validateProfile (input) {
 
 // Campaign attribution. `source` is the ?source= value the Qualtrics iframe receives.
 function cleanSource (input) {
-  // the EDS form block sends a plain string (e.g. "aem-eds:/acs/..."); treat it as source.source
+  // clients may send source as a plain string (e.g. "self-guided-page"); treat it as source.source
   const s = typeof input === 'string' ? { source: input } : (input && typeof input === 'object' ? input : {})
   const pick = (v, max) => str(v).slice(0, max)
   const out = {

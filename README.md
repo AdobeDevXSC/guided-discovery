@@ -1,34 +1,10 @@
-# Your Project's Title...
-Your project's description...
+# Guided Discovery
 
-## Environments
-- Preview: https://main--guided-discovery--AdobeDevXSC.aem.page/
-- Live: https://main--guided-discovery--AdobeDevXSC.aem.live/
+The AA to CJA Guided Discovery assessment, built on Adobe App Builder. Everything lives in [`app-builder/`](app-builder/README.md):
+- **Public page:** the assessment page, where people create a profile and answer
+- **APIs:** profiles, responses, questions and admin
+- **Admin viewer:** in Experience Cloud, for profiles with their answers and the question bank, plus the API reference
 
-## Documentation
+Public page (Stage): https://20409-157ochretakin-stage.adobeio-static.net/self-guided.html
 
-Before using the aem-boilerplate, we recommend you to go through the documentation on https://www.aem.live/docs/ and more specifically:
-1. [Developer Tutorial](https://www.aem.live/developer/tutorial)
-2. [The Anatomy of a Project](https://www.aem.live/developer/anatomy-of-a-project)
-3. [Web Performance](https://www.aem.live/developer/keeping-it-100)
-4. [Markup, Sections, Blocks, and Auto Blocking](https://www.aem.live/developer/markup-sections-blocks)
-
-## Installation
-
-```sh
-npm i
-```
-
-## Linting
-
-```sh
-npm run lint
-```
-
-## Local development
-
-1. Create a new repository based on the `aem-boilerplate` template
-1. Add the [AEM Code Sync GitHub App](https://github.com/apps/aem-code-sync) to the repository
-1. Install the [AEM CLI](https://github.com/adobe/helix-cli): `npm install -g @adobe/aem-cli`
-1. Start AEM Proxy: `aem up` (opens your browser at `http://localhost:3000`)
-1. Open the `guided-discovery` directory in your favorite IDE and start coding :)
+Until 2026-10-26 this repo also held an AEM Edge Delivery Services site for the same assessment. It was retired in favour of the single-page app. The last EDS version is tagged [`eds-final`](../../tree/eds-final).

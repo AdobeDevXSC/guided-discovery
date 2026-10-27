@@ -1,7 +1,7 @@
 // The question bank (collection assessment_questions): one document per question, edited in the
 // admin viewer. The responses API validates answers and scores results against it.
 //
-// A question keeps the field names of the original structured-content section schema
+// A question keeps the field names of the original section schema
 // (guided-discovery-section) so validation and scoring read it unchanged:
 //   { assessment, questionId, section, sectionTitle, sectionOrder, order,
 //     title, help, display, required, options:[{id, label, ...}], choices, itemsFrom, ...,

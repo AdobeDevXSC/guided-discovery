@@ -1,0 +1,1418 @@
+{
+  "discovery": {
+    "sectionId": "discovery",
+    "eyebrow": "Start here · Technology-agnostic",
+    "questions": [
+      {
+        "id": "focus",
+        "display": "cards-single",
+        "title": "Where's your focus?",
+        "help": "Pick whichever describes you best right now. Not sure? \"Both\" works fine.",
+        "required": true,
+        "options": [
+          {
+            "id": "analysis",
+            "label": "Understanding your customers",
+            "description": "You need better visibility into what customers are doing: trustworthy reporting, cross-channel measurement, and answers your current tools can't reach.",
+            "bucket": "analysis"
+          },
+          {
+            "id": "activation",
+            "label": "Acting on what you know",
+            "description": "You need to act on what you already know: personalize an experience, suppress a message, target an audience, or trigger a journey.",
+            "bucket": "activation"
+          },
+          {
+            "id": "both",
+            "label": "Both",
+            "description": "Most needs touch both; understanding feeds action. Choose Both and we'll cover the full path, starting with whichever matters most right now.",
+            "bucket": "both"
+          }
+        ]
+      },
+      {
+        "id": "needs",
+        "display": "swipe",
+        "title": "What's really driving this?",
+        "help": "Select anything below that's in play. There's no wrong answer, and it's normal to select more than one.",
+        "required": true,
+        "filterByQuestion": "focus",
+        "outsideTitle": "A few more, outside your focus",
+        "outsideMessage": "That covers what's most relevant to your focus. There are a few more outside it - want to see those too?",
+        "options": [
+          {
+            "id": "personalization",
+            "label": "Personalization",
+            "tag": "Activation",
+            "description": "Deliver 1:1 experiences based on real customer behavior.",
+            "bucket": "activation",
+            "capabilities": [
+              "ai-capabilities"
+            ]
+          },
+          {
+            "id": "messaging",
+            "label": "Improved customer messaging",
+            "tag": "Activation",
+            "description": "Smarter targeting, timing, and sequencing of messages.",
+            "bucket": "activation",
+            "capabilities": [
+              "journey-mapping"
+            ]
+          },
+          {
+            "id": "content-supply-chain",
+            "label": "Content supply chain & content analytics",
+            "tag": "Analysis",
+            "description": "See which content performs, and where production bottlenecks are.",
+            "bucket": "analysis",
+            "capabilities": [
+              "content-analytics"
+            ]
+          },
+          {
+            "id": "segmentation",
+            "label": "Better segmentation",
+            "tag": "Analysis + Activation",
+            "description": "Build audiences that reflect how customers actually behave.",
+            "bucket": "both",
+            "capabilities": [
+              "graph-stitching"
+            ]
+          },
+          {
+            "id": "brand-visibility",
+            "label": "Brand visibility",
+            "tag": "Analysis",
+            "description": "See how your brand shows up and performs across every channel.",
+            "bucket": "analysis",
+            "capabilities": [
+              "attribution"
+            ]
+          },
+          {
+            "id": "customer-experience",
+            "label": "Customer experience",
+            "tag": "Analysis + Activation",
+            "description": "Understand and improve the end-to-end journey.",
+            "bucket": "both",
+            "capabilities": [
+              "journey-mapping"
+            ]
+          },
+          {
+            "id": "modernizing-docs",
+            "label": "Modernizing documents & reporting",
+            "tag": "Analysis",
+            "description": "Move off static exports toward live, shareable analysis.",
+            "bucket": "analysis",
+            "capabilities": [
+              "data-transformations"
+            ]
+          },
+          {
+            "id": "real-time-activation",
+            "label": "Real-time activation",
+            "tag": "Activation",
+            "description": "Trigger journeys and campaigns automatically from behavior.",
+            "bucket": "activation",
+            "capabilities": [
+              "ai-capabilities",
+              "connected-data"
+            ]
+          },
+          {
+            "id": "cross-channel-measurement",
+            "label": "Cross-channel measurement",
+            "tag": "Analysis",
+            "description": "See the same customer across web, app, and offline.",
+            "bucket": "analysis",
+            "capabilities": [
+              "attribution",
+              "graph-stitching"
+            ]
+          },
+          {
+            "id": "governance-compliance",
+            "label": "Data governance & compliance",
+            "tag": "Analysis + Activation",
+            "description": "Manage consent, access, and sensitive data centrally.",
+            "bucket": "both",
+            "capabilities": [
+              "data-transformations"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "success",
+        "groupHeading": "A few questions to start",
+        "display": "chips-multi",
+        "firstForFocus": "activation",
+        "title": "What does success look like, for you personally and for the business?",
+        "options": [
+          {
+            "id": "faster-decisions",
+            "label": "Faster decisions"
+          },
+          {
+            "id": "better-roi-attribution",
+            "label": "Better ROI / attribution"
+          },
+          {
+            "id": "improved-customer-experience",
+            "label": "Improved customer experience"
+          },
+          {
+            "id": "organizational-recognition",
+            "label": "Organizational recognition"
+          },
+          {
+            "id": "cost-savings",
+            "label": "Cost savings"
+          },
+          {
+            "id": "not-sure-yet",
+            "label": "Not sure yet"
+          }
+        ]
+      },
+      {
+        "id": "pain",
+        "display": "chips-multi",
+        "firstForFocus": "analysis",
+        "title": "Where are you feeling the most pain today with how you understand your customers?",
+        "options": [
+          {
+            "id": "data-is-siloed-across-channels",
+            "label": "Data is siloed across channels"
+          },
+          {
+            "id": "reports-arent-trusted",
+            "label": "Reports aren't trusted"
+          },
+          {
+            "id": "cant-see-cross-device-behavior",
+            "label": "Can't see cross-device behavior"
+          },
+          {
+            "id": "too-slow-to-get-answers",
+            "label": "Too slow to get answers"
+          },
+          {
+            "id": "no-significant-pain-today",
+            "label": "No significant pain today"
+          },
+          {
+            "id": "not-sure-yet",
+            "label": "Not sure yet"
+          }
+        ]
+      },
+      {
+        "id": "fix-one-thing",
+        "display": "chips-single",
+        "title": "If you could fix one thing about your data today, what would it be?",
+        "options": [
+          {
+            "id": "identity-stitching",
+            "label": "Identity / stitching"
+          },
+          {
+            "id": "data-quality-and-trust",
+            "label": "Data quality & trust"
+          },
+          {
+            "id": "speed-of-access",
+            "label": "Speed of access"
+          },
+          {
+            "id": "governance-access-control",
+            "label": "Governance / access control"
+          },
+          {
+            "id": "reporting-flexibility",
+            "label": "Reporting flexibility"
+          },
+          {
+            "id": "not-sure-yet",
+            "label": "Not sure yet"
+          }
+        ]
+      },
+      {
+        "id": "stakeholders",
+        "display": "chips-multi",
+        "title": "Who else in your org cares about this outcome, and what do they need that they aren't getting?",
+        "options": [
+          {
+            "id": "marketing",
+            "label": "Marketing"
+          },
+          {
+            "id": "it-engineering",
+            "label": "IT / Engineering"
+          },
+          {
+            "id": "executive-leadership",
+            "label": "Executive leadership"
+          },
+          {
+            "id": "compliance-legal",
+            "label": "Compliance / Legal"
+          },
+          {
+            "id": "customer-service",
+            "label": "Customer service"
+          },
+          {
+            "id": "not-sure-yet",
+            "label": "Not sure yet"
+          }
+        ]
+      },
+      {
+        "id": "journey-dropoff",
+        "groupHeading": "Digging a bit deeper",
+        "display": "slider",
+        "sliderStops": 4,
+        "gauge": "journey",
+        "title": "Where in the customer journey are you losing the most people, and do you know why?",
+        "options": [
+          {
+            "id": "awareness-to-consideration",
+            "label": "Awareness to consideration",
+            "caption": "Right at the very top of the funnel - awareness isn't converting to interest."
+          },
+          {
+            "id": "consideration-to-purchase",
+            "label": "Consideration to purchase",
+            "caption": "Interested people aren't becoming customers."
+          },
+          {
+            "id": "purchase-to-retention",
+            "label": "Purchase to retention",
+            "caption": "People buy once but don't come back."
+          },
+          {
+            "id": "onboarding",
+            "label": "Onboarding",
+            "caption": "You lose people early, before they're even onboarded."
+          },
+          {
+            "id": "dont-know",
+            "label": "Don't know"
+          },
+          {
+            "id": "not-applicable",
+            "label": "Not applicable"
+          }
+        ]
+      },
+      {
+        "id": "segment-dropoff",
+        "display": "chips-single",
+        "title": "Are some customer segments dropping off more than others, and how would you actually know?",
+        "options": [
+          {
+            "id": "yes-and-we-track-it-well",
+            "label": "Yes, and we track it well"
+          },
+          {
+            "id": "yes-but-we-dont-fully-trust-the-data",
+            "label": "Yes, but we don't fully trust the data"
+          },
+          {
+            "id": "we-dont-currently-segment-this-way",
+            "label": "We don't currently segment this way"
+          },
+          {
+            "id": "no-noticeable-difference",
+            "label": "No noticeable difference"
+          },
+          {
+            "id": "not-sure",
+            "label": "Not sure"
+          }
+        ]
+      },
+      {
+        "id": "gap-type",
+        "display": "chips-single",
+        "title": "Is that a data analytics gap (you can't see it), or a segmentation gap (you can see it, but not for the right groups)?",
+        "options": [
+          {
+            "id": "analytics-gap",
+            "label": "Analytics gap"
+          },
+          {
+            "id": "segmentation-gap",
+            "label": "Segmentation gap"
+          },
+          {
+            "id": "both",
+            "label": "Both"
+          },
+          {
+            "id": "neither",
+            "label": "Neither"
+          },
+          {
+            "id": "not-sure",
+            "label": "Not sure"
+          }
+        ]
+      },
+      {
+        "id": "detection-speed",
+        "display": "slider",
+        "sliderStops": 5,
+        "gauge": "clock",
+        "title": "How long does it take today to notice when a segment's behavior changes?",
+        "options": [
+          {
+            "id": "real-time-near-real-time",
+            "label": "Real-time / near real-time",
+            "caption": "Strong signal - you'd know almost immediately."
+          },
+          {
+            "id": "days",
+            "label": "Days",
+            "caption": "A short lag, but you'd still catch it fast."
+          },
+          {
+            "id": "weeks",
+            "label": "Weeks",
+            "caption": "A noticeable delay before it surfaces."
+          },
+          {
+            "id": "months",
+            "label": "Months",
+            "caption": "By the time you know, it's old news."
+          },
+          {
+            "id": "we-dont-currently-monitor-this",
+            "label": "We don't currently monitor this",
+            "caption": "No visibility into this today - a real blind spot."
+          }
+        ]
+      },
+      {
+        "id": "urgency",
+        "display": "chips-single",
+        "title": "Is this urgent because of a deadline (renewal, deprecation) or because of a strategic shift?",
+        "options": [
+          {
+            "id": "contract-license-renewal",
+            "label": "Contract / license renewal"
+          },
+          {
+            "id": "product-deprecation",
+            "label": "Product deprecation"
+          },
+          {
+            "id": "strategic-initiative",
+            "label": "Strategic initiative"
+          },
+          {
+            "id": "no-particular-urgency",
+            "label": "No particular urgency"
+          },
+          {
+            "id": "not-sure",
+            "label": "Not sure"
+          }
+        ]
+      }
+    ]
+  },
+  "data-foundations": {
+    "sectionId": "data-foundations",
+    "eyebrow": "Data Foundations",
+    "questions": [
+      {
+        "id": "tracked",
+        "display": "inventory",
+        "title": "What you track",
+        "guidedTitle": "What you track",
+        "required": true,
+        "filterByQuestion": "discovery.focus",
+        "outsideTitle": "A few more, outside your focus",
+        "outsideMessage": "That covers what's most relevant to what you flagged in Discovery. There are a few more items outside that focus - want to go through those too?",
+        "options": [
+          {
+            "id": "evar-product",
+            "label": "Product / SKU eVar",
+            "tag": "Analysis",
+            "subLabel": "eVar · Commerce",
+            "category": "Commerce",
+            "complexity": "low",
+            "tier": "Foundation",
+            "bucket": "analysis",
+            "mapping": {
+              "target": "Product field in the Commerce XDM field group",
+              "field": "productListItems.SKU",
+              "why": "Commerce field group is purpose-built for product-level detail and arrives pre-mapped for most standard commerce events.",
+              "prereqs": [
+                "Commerce schema field group enabled"
+              ]
+            }
+          },
+          {
+            "id": "evar-order",
+            "label": "Order ID eVar",
+            "tag": "Analysis",
+            "subLabel": "eVar · Commerce",
+            "category": "Commerce",
+            "complexity": "low",
+            "tier": "Foundation",
+            "bucket": "analysis",
+            "mapping": {
+              "target": "Order ID in Commerce XDM field group",
+              "field": "commerce.order.purchaseID",
+              "why": "Maps directly; used as the join key for order-level metrics and de-duplication.",
+              "prereqs": [
+                "Commerce schema field group enabled"
+              ]
+            }
+          },
+          {
+            "id": "evar-campaign",
+            "label": "Campaign / tracking code eVar",
+            "tag": "Analysis + Activation",
+            "subLabel": "eVar · Marketing",
+            "category": "Marketing",
+            "complexity": "low",
+            "tier": "Foundation",
+            "bucket": "both",
+            "mapping": {
+              "target": "Marketing field group, tracking code",
+              "field": "marketing.trackingCode",
+              "why": "Standard field; also feeds Attribution IQ once multiple touches are captured."
+            }
+          },
+          {
+            "id": "prop-pagename",
+            "label": "Page Name prop",
+            "tag": "Analysis",
+            "subLabel": "prop · Engagement",
+            "category": "Engagement",
+            "complexity": "low",
+            "tier": "Foundation",
+            "bucket": "analysis",
+            "mapping": {
+              "target": "Web field group, page name",
+              "field": "web.webPageDetails.name",
+              "why": "Direct mapping; populated automatically by the Web SDK.",
+              "prereqs": [
+                "Web SDK implemented"
+              ]
+            }
+          },
+          {
+            "id": "prop-section",
+            "label": "Site Section prop",
+            "tag": "Analysis",
+            "subLabel": "prop · Engagement",
+            "category": "Engagement",
+            "complexity": "low",
+            "tier": "Foundation",
+            "bucket": "analysis",
+            "mapping": {
+              "target": "Web field group, site section",
+              "field": "web.webPageDetails.siteSection",
+              "why": "Direct mapping; useful for building Data View rollups by section.",
+              "prereqs": [
+                "Web SDK implemented"
+              ]
+            }
+          },
+          {
+            "id": "evar-custom-conv",
+            "label": "Custom conversion eVar (business-specific)",
+            "tag": "Analysis",
+            "subLabel": "eVar · Commerce",
+            "category": "Commerce",
+            "complexity": "medium",
+            "tier": "Parity",
+            "bucket": "analysis",
+            "mapping": {
+              "target": "Custom XDM field group extension",
+              "field": "_yourorg.customDimension",
+              "why": "Business-specific values need a schema extension designed and named deliberately; this is where most implementation time goes.",
+              "prereqs": [
+                "Schema design workshop",
+                "Field naming convention agreed"
+              ]
+            }
+          },
+          {
+            "id": "mcvid",
+            "label": "Marketing Cloud Visitor ID (ECID)",
+            "tag": "Analysis + Activation",
+            "subLabel": "identity · Identity",
+            "category": "Identity",
+            "complexity": "low",
+            "tier": "Foundation",
+            "bucket": "both",
+            "mapping": {
+              "target": "Experience Cloud ID (ECID) identity namespace",
+              "field": "identityMap.ECID",
+              "why": "ECID carries over directly and remains the anonymous backbone identity.",
+              "prereqs": [
+                "Identity Service already in use"
+              ]
+            }
+          },
+          {
+            "id": "crmid",
+            "label": "CRM ID / Customer ID (server-side)",
+            "tag": "Analysis + Activation",
+            "subLabel": "identity · Identity",
+            "category": "Identity",
+            "complexity": "medium",
+            "tier": "Foundation",
+            "bucket": "both",
+            "mapping": {
+              "target": "Custom identity namespace + identity graph",
+              "field": "identityMap.CRMID",
+              "why": "Needs a registered identity namespace and a decision on stitching priority relative to ECID.",
+              "prereqs": [
+                "Identity namespace registered",
+                "Stitching priority defined"
+              ]
+            }
+          },
+          {
+            "id": "succ-orders",
+            "label": "Success Event: Orders",
+            "tag": "Analysis",
+            "subLabel": "success event · Commerce",
+            "category": "Commerce",
+            "complexity": "low",
+            "tier": "Foundation",
+            "bucket": "analysis",
+            "mapping": {
+              "target": "Commerce event, order",
+              "field": "commerce.order",
+              "why": "Standard commerce event; count and revenue metrics available immediately in Workspace.",
+              "prereqs": [
+                "Commerce schema field group enabled"
+              ]
+            }
+          },
+          {
+            "id": "succ-cartadd",
+            "label": "Success Event: Cart Adds",
+            "tag": "Analysis",
+            "subLabel": "success event · Commerce",
+            "category": "Commerce",
+            "complexity": "low",
+            "tier": "Foundation",
+            "bucket": "analysis",
+            "mapping": {
+              "target": "Commerce event, product list adds",
+              "field": "commerce.productListAdds",
+              "why": "Direct mapping; also the building block for cart-abandonment segments.",
+              "prereqs": [
+                "Commerce schema field group enabled"
+              ]
+            }
+          },
+          {
+            "id": "succ-custom",
+            "label": "Success Event: custom conversion (e.g. signup)",
+            "tag": "Analysis",
+            "subLabel": "success event · Engagement",
+            "category": "Engagement",
+            "complexity": "low",
+            "tier": "Foundation",
+            "bucket": "analysis",
+            "mapping": {
+              "target": "Custom XDM event in schema",
+              "field": "_yourorg.customEvent",
+              "why": "Straightforward to add, but needs a name and owner agreed so it isn't duplicated later.",
+              "prereqs": [
+                "Event naming convention agreed"
+              ]
+            }
+          },
+          {
+            "id": "processing-rules",
+            "label": "Processing Rules (VISTA)",
+            "tag": "Analysis",
+            "subLabel": "config · Governance",
+            "category": "Governance",
+            "complexity": "medium",
+            "tier": "Parity",
+            "bucket": "analysis",
+            "mapping": {
+              "target": "Data Prep mapping / transformation rules",
+              "field": "Data Prep transformation",
+              "why": "Logic that used to live in Processing Rules moves upstream into Data Prep at ingestion; this is a rebuild, not a copy.",
+              "prereqs": [
+                "Audit of active Processing Rules",
+                "Data Prep mapping designed"
+              ]
+            }
+          },
+          {
+            "id": "classifications",
+            "label": "Classifications (SAINT)",
+            "tag": "Analysis",
+            "subLabel": "config · Governance",
+            "category": "Governance",
+            "complexity": "medium",
+            "tier": "Parity",
+            "bucket": "analysis",
+            "mapping": {
+              "target": "Lookup dataset joined via Data Prep, or schema field enrichment",
+              "field": "lookup dataset",
+              "why": "SAINT classifications don't migrate automatically; they become a lookup dataset or a richer upstream field.",
+              "prereqs": [
+                "Classification source file identified"
+              ]
+            }
+          },
+          {
+            "id": "segments",
+            "label": "Segments",
+            "tag": "Analysis + Activation",
+            "subLabel": "config · Engagement",
+            "category": "Engagement",
+            "complexity": "medium",
+            "tier": "Parity",
+            "bucket": "both",
+            "mapping": {
+              "target": "CJA Segments (Person / Event / Session container)",
+              "field": "Segment Builder",
+              "why": "CJA adds a Person container, so most AA visitor-scoped segments become simpler and more accurate as Person-scoped segments.",
+              "prereqs": [
+                "Segment inventory + intent documented"
+              ]
+            }
+          },
+          {
+            "id": "calc-metrics",
+            "label": "Calculated Metrics",
+            "tag": "Analysis",
+            "subLabel": "config · Engagement",
+            "category": "Engagement",
+            "complexity": "medium",
+            "tier": "Parity",
+            "bucket": "analysis",
+            "mapping": {
+              "target": "Derived Fields / Calculated Metrics in Data View",
+              "field": "Calculated Metric Builder",
+              "why": "Formula logic is broadly the same concept, but component references and containers differ enough to require a rebuild, not an export/import.",
+              "prereqs": [
+                "Calculated metric inventory"
+              ]
+            }
+          },
+          {
+            "id": "vrs",
+            "label": "Virtual Report Suites (roll-ups)",
+            "tag": "Analysis",
+            "subLabel": "config · Governance",
+            "category": "Governance",
+            "complexity": "medium",
+            "tier": "Foundation",
+            "bucket": "analysis",
+            "mapping": {
+              "target": "Connections + Data Views",
+              "field": "Connection / Data View",
+              "why": "One Connection can power several Data Views, replacing the need for many narrow report suites.",
+              "prereqs": [
+                "Dataset/connection architecture agreed"
+              ]
+            }
+          },
+          {
+            "id": "cross-device",
+            "label": "Cross-Device Analysis (if used in AA)",
+            "tag": "Activation",
+            "subLabel": "config · Identity",
+            "category": "Identity",
+            "complexity": "high",
+            "tier": "Expansion",
+            "bucket": "activation",
+            "mapping": {
+              "target": "Unified Identity Graph (Real-Time CDP integration)",
+              "field": "Identity Graph",
+              "why": "True cross-device stitching at scale typically requires Real-Time CDP alongside CJA, not CJA alone.",
+              "prereqs": [
+                "Identity graph strategy",
+                "Consent model for stitching"
+              ]
+            }
+          },
+          {
+            "id": "heartbeat",
+            "label": "Media / Video tracking (Heartbeat)",
+            "tag": "Analysis",
+            "subLabel": "eVar/event · Media",
+            "category": "Media",
+            "complexity": "medium",
+            "tier": "Parity",
+            "bucket": "analysis",
+            "mapping": {
+              "target": "Media Analytics XDM field group",
+              "field": "mediaAnalytics",
+              "why": "Media Analytics has a dedicated schema and its own Data View best practices; plan it as its own workstream.",
+              "prereqs": [
+                "Media SDK re-implementation"
+              ]
+            }
+          },
+          {
+            "id": "mobile-sdk",
+            "label": "Mobile app data (AppMeasurement SDK)",
+            "tag": "Analysis + Activation",
+            "subLabel": "identity · Identity",
+            "category": "Identity",
+            "complexity": "medium",
+            "tier": "Foundation",
+            "bucket": "both",
+            "mapping": {
+              "target": "Mobile via Edge Network / AEP Mobile SDK",
+              "field": "Edge Mobile SDK",
+              "why": "Legacy AppMeasurement SDK is replaced by the Edge-based Mobile SDK; app teams need lead time here.",
+              "prereqs": [
+                "Mobile SDK migration scheduled"
+              ]
+            }
+          },
+          {
+            "id": "offline-batch",
+            "label": "Offline / CRM batch upload",
+            "tag": "Activation",
+            "subLabel": "config · Identity",
+            "category": "Identity",
+            "complexity": "high",
+            "tier": "Expansion",
+            "bucket": "activation",
+            "mapping": {
+              "target": "Batch ingestion via AEP Sources",
+              "field": "Batch Source Connector",
+              "why": "Offline data becomes a first-class dataset joinable to digital behavior: a genuinely new capability, not just a migration.",
+              "prereqs": [
+                "Source system connector available",
+                "Batch cadence agreed"
+              ]
+            }
+          },
+          {
+            "id": "attribution",
+            "label": "Marketing channel attribution (last-touch)",
+            "tag": "Activation",
+            "subLabel": "config · Attribution",
+            "category": "Attribution",
+            "complexity": "high",
+            "tier": "Expansion",
+            "bucket": "activation",
+            "mapping": {
+              "target": "Attribution IQ (multi-touch) in Workspace",
+              "field": "Attribution Panel",
+              "why": "Multi-touch attribution across channels is native to CJA Workspace: a step up from last-touch marketing channel reporting in AA.",
+              "prereqs": [
+                "Channel taxonomy agreed",
+                "Attribution model selected"
+              ]
+            }
+          },
+          {
+            "id": "anomaly",
+            "label": "Anomaly detection (Analysis Workbench)",
+            "tag": "Analysis",
+            "subLabel": "config · Engagement",
+            "category": "Engagement",
+            "complexity": "medium",
+            "tier": "Expansion",
+            "bucket": "analysis",
+            "mapping": {
+              "target": "Intelligent Alerts",
+              "field": "Intelligent Alerts",
+              "why": "Conceptually similar; needs to be reconfigured against the new metrics once parity is reached.",
+              "prereqs": [
+                "Parity-tier metrics live"
+              ]
+            }
+          },
+          {
+            "id": "dw-export",
+            "label": "Data Warehouse / FTP exports",
+            "tag": "Analysis",
+            "subLabel": "config · Governance",
+            "category": "Governance",
+            "complexity": "medium",
+            "tier": "Expansion",
+            "bucket": "analysis",
+            "mapping": {
+              "target": "Data Distiller / Query Service exports",
+              "field": "Query Service",
+              "why": "SQL-based access to raw event-level data replaces flat-file warehouse exports, and is far more flexible.",
+              "prereqs": [
+                "Query Service access provisioned"
+              ]
+            }
+          },
+          {
+            "id": "debugger",
+            "label": "Debugger / validation tooling",
+            "tag": "Analysis + Activation",
+            "subLabel": "config · Governance",
+            "category": "Governance",
+            "complexity": "low",
+            "tier": "Foundation",
+            "bucket": "both",
+            "mapping": {
+              "target": "Adobe Experience Platform Debugger + Assurance",
+              "field": "AEP Assurance",
+              "why": "Replaces the AA/Launch debugger for validating data collection in real time during rebuild."
+            }
+          }
+        ]
+      },
+      {
+        "id": "quantity",
+        "groupHeading": "Recommended Customer Journey Analytics approach",
+        "display": "per-item",
+        "title": "How many of these do you have?",
+        "guidedTitle": "CJA Mapping",
+        "help": "Here's how each selected element maps into CJA / XDM, and what it takes to get there.",
+        "itemsFrom": "tracked",
+        "choices": [
+          {
+            "id": "one",
+            "label": "One"
+          },
+          {
+            "id": "multiple",
+            "label": "Multiple"
+          },
+          {
+            "id": "unsure",
+            "label": "Not sure"
+          }
+        ]
+      }
+    ]
+  },
+  "segmentation": {
+    "sectionId": "segmentation",
+    "eyebrow": "Segmentation Rebuild",
+    "questions": [
+      {
+        "id": "prioritized",
+        "display": "swipe",
+        "title": "Flag the ones worth rebuilding",
+        "guidedTitle": "Priority to rebuild",
+        "noteLabel": "CJA logic:",
+        "options": [
+          {
+            "id": "cart-abandoners",
+            "label": "Started, didn't finish",
+            "tag": "Activation",
+            "description": "People who added something to their cart but never completed the purchase.",
+            "note": "Person container in CJA evaluates this across every channel and device tied to that identity, not just the session or browser where the cart add happened.",
+            "bucket": "activation"
+          },
+          {
+            "id": "high-value",
+            "label": "High-value / high-loyalty customers",
+            "tag": "Analysis + Activation",
+            "description": "Your best customers, measured by how much they've bought or how loyal they've been.",
+            "note": "Person container aggregates every identity (web, app, in-person/CRM) into one lifetime view, so the threshold reflects the whole relationship, not one device's slice of it.",
+            "bucket": "both"
+          },
+          {
+            "id": "multichannel",
+            "label": "Multi-channel engaged",
+            "tag": "Analysis + Activation",
+            "description": "People who interact with you across more than one channel or device.",
+            "note": "Native cross-dataset, cross-channel sequencing once identities are stitched: no add-on required, and it's auditable at the event level.",
+            "bucket": "both"
+          },
+          {
+            "id": "content-no-convert",
+            "label": "Engaged with content, didn't convert",
+            "tag": "Activation",
+            "description": "People who read, watched, or browsed content but took no further action.",
+            "note": "Same logic, but can span visits and channels via the Person container, catching converters who came back on a different device.",
+            "bucket": "activation"
+          },
+          {
+            "id": "churn-risk",
+            "label": "Churn / lapse risk",
+            "tag": "Activation",
+            "description": "Customers whose activity has dropped off compared to their usual pattern.",
+            "note": "Same pattern, but can be paired with a Derived Field for recency and refreshed automatically; often layered with Intelligent Alerts.",
+            "bucket": "activation"
+          },
+          {
+            "id": "campaign-responders",
+            "label": "Campaign responders",
+            "tag": "Analysis + Activation",
+            "description": "People who clicked, opened, or otherwise responded to a specific campaign.",
+            "note": "Same idea, strengthened by Attribution IQ so response can be credited across every touch, not just last-touch.",
+            "bucket": "both"
+          },
+          {
+            "id": "service-interaction",
+            "label": "Recent service / support interaction",
+            "tag": "Analysis",
+            "description": "Customers who've recently contacted support or opened a service case.",
+            "note": "A joinable dataset (e.g. CRM case data) becomes just another event stream in the Person container: a genuinely new capability for most AA implementations.",
+            "bucket": "analysis"
+          },
+          {
+            "id": "new-vs-returning",
+            "label": "New vs. returning",
+            "tag": "Analysis",
+            "description": "Distinguishes first-time visitors from people who've been here before.",
+            "note": "Same logic, made more reliable because 'returning' is evaluated against the full stitched identity rather than a device-scoped visitor ID.",
+            "bucket": "analysis"
+          }
+        ]
+      }
+    ]
+  },
+  "identity": {
+    "sectionId": "identity",
+    "eyebrow": "Identity & Stitching",
+    "questions": [
+      {
+        "id": "identity-current",
+        "groupHeading": "Identity & Stitching",
+        "display": "slider",
+        "sliderStops": 4,
+        "gauge": "journey",
+        "title": "Where are you today, in terms of identity stitching?",
+        "required": true,
+        "differentFrom": "identity-target",
+        "options": [
+          {
+            "id": "none",
+            "label": "No stitching",
+            "description": "Anonymous only",
+            "caption": "Aggregate, channel-siloed reporting. Each device/browser is its own identity."
+          },
+          {
+            "id": "deterministic-login",
+            "label": "Deterministic login stitch",
+            "description": "CRM ID + ECID",
+            "caption": "Person-level view whenever a customer is logged in or identifiable: the foundation for real segmentation."
+          },
+          {
+            "id": "cross-channel",
+            "label": "Cross-channel deterministic + probabilistic",
+            "description": "Mobile, offline, call center joined",
+            "caption": "Segments and metrics that span web, app, offline purchase and service interactions for the same person."
+          },
+          {
+            "id": "unified-graph",
+            "label": "Unified identity graph",
+            "description": "Real-Time CDP, consent-aware",
+            "caption": "Activation-ready profiles: true cross-device journeys, real-time triggers, and consent-aware suppression at the identity level."
+          }
+        ]
+      },
+      {
+        "id": "identity-target",
+        "display": "slider",
+        "sliderStops": 4,
+        "gauge": "journey",
+        "title": "Where's your target?",
+        "required": true,
+        "differentFrom": "identity-current",
+        "upgradeFrom": "identity-current",
+        "upgradeCapabilities": [
+          "graph-stitching"
+        ],
+        "options": [
+          {
+            "id": "none",
+            "label": "No stitching",
+            "description": "Anonymous only",
+            "caption": "Aggregate, channel-siloed reporting. Each device/browser is its own identity."
+          },
+          {
+            "id": "deterministic-login",
+            "label": "Deterministic login stitch",
+            "description": "CRM ID + ECID",
+            "caption": "Person-level view whenever a customer is logged in or identifiable: the foundation for real segmentation."
+          },
+          {
+            "id": "cross-channel",
+            "label": "Cross-channel deterministic + probabilistic",
+            "description": "Mobile, offline, call center joined",
+            "caption": "Segments and metrics that span web, app, offline purchase and service interactions for the same person."
+          },
+          {
+            "id": "unified-graph",
+            "label": "Unified identity graph",
+            "description": "Real-Time CDP, consent-aware",
+            "caption": "Activation-ready profiles: true cross-device journeys, real-time triggers, and consent-aware suppression at the identity level."
+          }
+        ]
+      }
+    ]
+  },
+  "governance": {
+    "sectionId": "governance",
+    "eyebrow": "Governance & Access",
+    "questions": [
+      {
+        "id": "status",
+        "display": "sort",
+        "title": "Sort each control",
+        "guidedTitle": "Sort each control",
+        "help": "Assign a status to as many controls as apply - each one is independent, so more than one can be \"In place.\"",
+        "required": true,
+        "noteLabel": "Example:",
+        "choices": [
+          {
+            "id": "in-place",
+            "label": "Already in place"
+          },
+          {
+            "id": "gap",
+            "label": "Gap for us",
+            "capabilities": [
+              "data-transformations"
+            ]
+          }
+        ],
+        "options": [
+          {
+            "id": "data-labels",
+            "label": "Data Governance Labels",
+            "tag": "Hard control",
+            "description": "Sensitivity labels (e.g. contractual, identity-linked, sensitive) applied to fields in the schema.",
+            "note": "A field holding health or financial sensitivity is labeled at the schema level, and that label travels with the data everywhere it's used."
+          },
+          {
+            "id": "access-groups",
+            "label": "Access Control Groups / Sandboxes",
+            "tag": "Hard control",
+            "description": "Who can see which datasets, Data Views and sandboxes.",
+            "note": "A regional marketing team gets access to their sandbox and Data Views only, separate from the global analytics team's production sandbox."
+          },
+          {
+            "id": "usage-labels",
+            "label": "Data Usage Labels",
+            "tag": "Soft control",
+            "description": "Contractual or legal restrictions on how specific data can be used downstream (e.g. no use in targeted advertising).",
+            "note": "A dataset sourced under a contract that prohibits ad-targeting use carries a usage label that blocks it from activation flows."
+          },
+          {
+            "id": "consent",
+            "label": "Consent & Identity Governance",
+            "tag": "Hard control",
+            "description": "Opt-outs and consent preferences propagate to every identity tied to a person, not just one dataset.",
+            "note": "A customer opts out on the website; that preference is honored across app, email and offline touchpoints because it's tied to the identity graph."
+          }
+        ]
+      }
+    ]
+  },
+  "roles": {
+    "sectionId": "roles",
+    "eyebrow": "Roles & Stakeholders",
+    "questions": [
+      {
+        "id": "owners",
+        "display": "owner-cards",
+        "title": "Roles & Stakeholders",
+        "filterByQuestion": "discovery.focus",
+        "options": [
+          {
+            "id": "analyst",
+            "label": "Analyst",
+            "bucket": "analysis",
+            "fields": [
+              {
+                "label": "Moving from",
+                "text": "Analysis Workbench, Report Builder, ad hoc segments scoped to one report suite."
+              },
+              {
+                "label": "Moving to",
+                "text": "CJA Workspace with cross-channel Data Views, plus Query Service for SQL-level access to raw event data."
+              },
+              {
+                "label": "New skill to build",
+                "text": "Thinking in Person vs. Event vs. Session containers, and when to use each."
+              },
+              {
+                "label": "Quick win",
+                "text": "The first rebuilt Data View usually answers a cross-channel question that was previously impossible, a good moment to demonstrate value early."
+              }
+            ]
+          },
+          {
+            "id": "marketer",
+            "label": "Marketer / Campaign Manager",
+            "bucket": "activation",
+            "fields": [
+              {
+                "label": "Moving from",
+                "text": "Segments built and used inside Adobe Analytics, manually exported for activation."
+              },
+              {
+                "label": "Moving to",
+                "text": "Segments built in CJA, activated directly into Real-Time CDP / Journey Optimizer without manual export."
+              },
+              {
+                "label": "New skill to build",
+                "text": "Understanding that a Person-container segment already reflects every channel: no more stitching audiences by hand across tools."
+              },
+              {
+                "label": "Quick win",
+                "text": "Show a segment triggering an actual message send in the same workshop; the previously multi-day activation process becomes minutes."
+              }
+            ]
+          },
+          {
+            "id": "engineer",
+            "label": "Data Engineer / Implementation",
+            "bucket": "both",
+            "fields": [
+              {
+                "label": "Moving from",
+                "text": "s.tags / AppMeasurement, Processing Rules, SAINT classifications."
+              },
+              {
+                "label": "Moving to",
+                "text": "Web/Mobile SDK on Edge Network, XDM schema design, Data Prep transformations, identity namespace management."
+              },
+              {
+                "label": "New skill to build",
+                "text": "Schema design: this is the highest-leverage new skill on the team, since a well-designed schema saves rework across every other role."
+              },
+              {
+                "label": "Quick win",
+                "text": "Start schema design before any tag rebuild; it's the one artifact every other workstream depends on."
+              }
+            ]
+          },
+          {
+            "id": "admin",
+            "label": "IT / Governance Admin",
+            "bucket": "both",
+            "fields": [
+              {
+                "label": "Moving from",
+                "text": "Report suite and user management in the AA Admin Console."
+              },
+              {
+                "label": "Moving to",
+                "text": "Sandboxes, Product Profiles, data governance labels, and consent management in Experience Platform."
+              },
+              {
+                "label": "New skill to build",
+                "text": "Designing a sandbox strategy up front (how many, who owns which); retrofitting this later is expensive."
+              },
+              {
+                "label": "Quick win",
+                "text": "Stand up a dev sandbox on day one so engineering can start schema work without touching production."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "strategy-adoption": {
+    "sectionId": "strategy-adoption",
+    "eyebrow": "Strategy & Adoption",
+    "questions": [
+      {
+        "id": "strategy-model",
+        "groupHeading": "Strategy & Adoption",
+        "display": "chips-single",
+        "bucket": "both",
+        "title": "How will your team operate CJA day to day?",
+        "options": [
+          {
+            "id": "centralized-analytics-team-center-of-excellence",
+            "label": "Centralized analytics team / center of excellence"
+          },
+          {
+            "id": "federated-across-business-units",
+            "label": "Federated across business units"
+          },
+          {
+            "id": "hybrid-model",
+            "label": "Hybrid model"
+          },
+          {
+            "id": "not-sure-yet",
+            "label": "Not sure yet"
+          }
+        ]
+      },
+      {
+        "id": "strategy-change",
+        "display": "chips-single",
+        "bucket": "both",
+        "title": "What's your organization's appetite for change management and training?",
+        "options": [
+          {
+            "id": "we-have-dedicated-enablement-resources",
+            "label": "We have dedicated enablement resources"
+          },
+          {
+            "id": "well-need-external-support",
+            "label": "We'll need external support"
+          },
+          {
+            "id": "leaderships-bought-in-but-teams-need-convincing",
+            "label": "Leadership's bought in but teams need convincing"
+          },
+          {
+            "id": "not-sure-yet",
+            "label": "Not sure yet"
+          }
+        ]
+      },
+      {
+        "id": "strategy-blockers",
+        "display": "chips-multi",
+        "bucket": "activation",
+        "title": "Once you have better data, what typically gets in the way of acting on it?",
+        "options": [
+          {
+            "id": "unclear-ownership-of-next-steps",
+            "label": "Unclear ownership of next steps"
+          },
+          {
+            "id": "too-slow-to-operationalize-into-campaigns-journeys",
+            "label": "Too slow to operationalize into campaigns/journeys"
+          },
+          {
+            "id": "lack-of-automation-ai-tooling",
+            "label": "Lack of automation/AI tooling"
+          },
+          {
+            "id": "skills-gap-on-the-team",
+            "label": "Skills gap on the team"
+          },
+          {
+            "id": "not-sure-yet",
+            "label": "Not sure yet"
+          }
+        ]
+      },
+      {
+        "id": "strategy-ai",
+        "display": "slider",
+        "sliderStops": 3,
+        "gauge": "signal",
+        "bucket": "activation",
+        "title": "Are you exploring AI-driven or agentic workflows as part of this shift?",
+        "required": true,
+        "options": [
+          {
+            "id": "not-a-priority-right-now",
+            "label": "Not a priority right now",
+            "caption": "Not where your attention is right now."
+          },
+          {
+            "id": "not-yet-but-interested",
+            "label": "Not yet, but interested",
+            "caption": "On the radar, but nothing formal started yet.",
+            "capabilities": [
+              "ai-capabilities"
+            ]
+          },
+          {
+            "id": "actively-exploring",
+            "label": "Actively exploring",
+            "caption": "Live initiatives already underway.",
+            "capabilities": [
+              "ai-capabilities"
+            ]
+          },
+          {
+            "id": "not-sure-yet",
+            "label": "Not sure yet"
+          }
+        ]
+      },
+      {
+        "id": "ai-picks",
+        "groupHeading": "What AI-readiness actually looks like",
+        "display": "cards-multi",
+        "title": "Which of these would help your team most right now?",
+        "help": "Click the ones that would help your team most right now - this feeds directly into your recommendation at the end.",
+        "options": [
+          {
+            "id": "connected-data",
+            "label": "Connected Data",
+            "description": "Ingest event-level data from every source and query it in seconds, without pre-aggregation delays.",
+            "capabilities": [
+              "connected-data"
+            ]
+          },
+          {
+            "id": "graph-stitching",
+            "label": "Graph-Based Stitching",
+            "description": "Resolve every identity, on any channel or device, into a single connected view of the person.",
+            "capabilities": [
+              "graph-stitching"
+            ]
+          },
+          {
+            "id": "data-transformations",
+            "label": "Data Transformations",
+            "description": "Reshape, correct, or enrich data at report time, without waiting on a re-implementation.",
+            "capabilities": [
+              "data-transformations"
+            ]
+          },
+          {
+            "id": "journey-mapping",
+            "label": "Journey Mapping Visualization",
+            "description": "See exactly where people move, stall, or drop out of a journey, across every touchpoint.",
+            "capabilities": [
+              "journey-mapping"
+            ]
+          },
+          {
+            "id": "attribution",
+            "label": "Attribution",
+            "description": "Compare multi-touch attribution models using fully stitched, cross-channel data.",
+            "capabilities": [
+              "attribution"
+            ]
+          },
+          {
+            "id": "experimentation",
+            "label": "Experimentation Analysis",
+            "description": "Measure the lift and confidence of any test, from any source, in one place.",
+            "capabilities": [
+              "experimentation"
+            ]
+          },
+          {
+            "id": "ai-capabilities",
+            "label": "AI Capabilities",
+            "description": "Ask questions in plain language, surface anomalies automatically, and let AI do the heavy analytical lifting.",
+            "capabilities": [
+              "ai-capabilities"
+            ]
+          },
+          {
+            "id": "content-analytics",
+            "label": "Content Analytics",
+            "description": "Automatically tag and analyze content performance without manual setup.",
+            "capabilities": [
+              "content-analytics"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
