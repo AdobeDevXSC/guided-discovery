@@ -89,13 +89,6 @@ const postAdmin = (token, org, body) => call(ENDPOINT, {
   body: JSON.stringify(body),
 });
 
-/** ai: { clientId, clientSecret? (empty keeps the saved one), clearSecret? } */
-export async function saveAiSettings({
-  token, org, ai, editor,
-}) {
-  return postAdmin(token, org, { op: 'settings-save', ai, editor });
-}
-
 /** prompt: { promptId? (omit to create), name, text } */
 export async function savePrompt({
   token, org, prompt, editor,

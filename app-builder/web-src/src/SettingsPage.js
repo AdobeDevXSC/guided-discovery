@@ -1,12 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import {
-  fetchSettings, saveAiSettings, savePrompt, deletePrompt,
-} from './api';
+import { fetchSettings, savePrompt, deletePrompt } from './api';
 import { fmt } from './Detail';
 
-// Settings: the AI connection used to send assessment results to an AI service (client ID and
-// client secret) and the prompts stored for it. The client secret is write-only: the server keeps
-// it encrypted and only reports whether one is saved and its last four characters.
+// Settings: the prompts stored for sending assessment results to AI (Anthropic's Claude). The API key
+// is not entered here: it is a server-side secret, used only for server-to-server calls.
 
 const denied = (e) => e && (e.status === 401 || e.status === 403);
 const errorText = (e, what) => (denied(e) ? `Your Adobe account is not authorized to ${what}.` : e.message);
@@ -14,80 +11,6 @@ const errorText = (e, what) => (denied(e) ? `Your Adobe account is not authorize
 function FieldError({ errors, name }) {
   const msg = errors && errors[name];
   return msg ? <span className="field-error" role="alert">{msg}</span> : null;
-}
-
-function AiConnection({
-  token, org, editor, ai, onSaved,
-}) {
-  const [clientId, setClientId] = useState(ai.clientId);
-  const [secret, setSecret] = useState('');
-  const [replacing, setReplacing] = useState(!ai.hasSecret);
-  const [saving, setSaving] = useState(false);
-  const [errors, setErrors] = useState(null);
-  const [message, setMessage] = useState(null);
-  useEffect(() => { setClientId(ai.clientId); setReplacing(!ai.hasSecret); setSecret(''); }, [ai]);
-
-  const save = async (extra = {}) => {
-    setSaving(true); setErrors(null); setMessage(null);
-    try {
-      const res = await saveAiSettings({
-        token, org, editor, ai: { clientId, clientSecret: replacing ? secret : '', ...extra },
-      });
-      onSaved(res.ai);
-      setMessage({ ok: true, text: extra.clearSecret ? 'Client secret removed.' : 'Saved.' });
-    } catch (e) {
-      setErrors(e.errors);
-      setMessage({ ok: false, text: errorText(e, 'change settings') });
-    }
-    setSaving(false);
-  };
-
-  return (
-    <section className="settings-card" aria-labelledby="ai-h">
-      <h2 id="ai-h">AI connection</h2>
-      <p className="muted small">The credentials used to send assessment results to the AI service.</p>
-      <form onSubmit={(e) => { e.preventDefault(); save(); }}>
-        <label className="field">
-          Client ID
-          <input value={clientId} onChange={(e) => setClientId(e.target.value)} autoComplete="off" spellCheck="false" />
-          <FieldError errors={errors} name="clientId" />
-        </label>
-        <div className="field">
-          <span>Client secret</span>
-          {ai.hasSecret && !replacing ? (
-            <div className="secret-saved">
-              <span>
-                Saved
-                <span className="muted"> · ends in </span>
-                <code>{`••••${ai.secretHint}`}</code>
-              </span>
-              <button type="button" className="ghost" onClick={() => setReplacing(true)}>Replace</button>
-              <button type="button" className="ghost danger-text" onClick={() => save({ clearSecret: true })} disabled={saving}>Remove</button>
-            </div>
-          ) : (
-            <>
-              <input
-                type="password"
-                value={secret}
-                onChange={(e) => setSecret(e.target.value)}
-                autoComplete="new-password"
-                placeholder={ai.hasSecret ? 'New client secret' : 'Client secret'}
-                aria-label="Client secret"
-              />
-              <span className="muted small">Stored encrypted. It isn&apos;t shown again after saving.</span>
-              {ai.hasSecret && <button type="button" className="ghost inline" onClick={() => { setReplacing(false); setSecret(''); }}>Keep the saved secret</button>}
-            </>
-          )}
-          <FieldError errors={errors} name="clientSecret" />
-        </div>
-        <div className="editor-actions">
-          <button type="submit" className="primary" disabled={saving}>{saving ? 'Saving…' : 'Save connection'}</button>
-          {message && <span className={message.ok ? 'saved-note' : 'error'} role="status">{message.text}</span>}
-        </div>
-        {ai.updatedAt && <p className="muted small">Last changed {fmt(ai.updatedAt)}{ai.updatedBy ? ` by ${ai.updatedBy}` : ''}</p>}
-      </form>
-    </section>
-  );
 }
 
 function PromptEditor({
@@ -172,7 +95,7 @@ function PromptEditor({
 }
 
 export default function SettingsPage({ token, org, profile }) {
-  const [state, setState] = useState({ loading: true, error: null, ai: null, prompts: [] });
+  const [state, setState] = useState({ loading: true, error: null, prompts: null });
   const [editing, setEditing] = useState(null);
   const editor = profile && (profile.email || profile.name);
 
@@ -180,9 +103,7 @@ export default function SettingsPage({ token, org, profile }) {
     setState((s) => ({ ...s, loading: true, error: null }));
     try {
       const res = await fetchSettings({ token, org });
-      setState({
-        loading: false, error: null, ai: res.ai, prompts: res.prompts || [],
-      });
+      setState({ loading: false, error: null, prompts: res.prompts || [] });
     } catch (e) {
       setState((s) => ({ ...s, loading: false, error: e }));
     }
@@ -205,7 +126,7 @@ export default function SettingsPage({ token, org, profile }) {
       <header className="top no-print">
         <div>
           <h1>Settings</h1>
-          <p className="muted">The AI connection and the prompts used to send assessment results to AI.</p>
+          <p className="muted">The prompts used to send assessment results to AI.</p>
         </div>
         <div className="actions">
           <button type="button" className="ghost" onClick={load} disabled={state.loading}>{state.loading ? 'Loading…' : 'Refresh'}</button>
@@ -214,10 +135,16 @@ export default function SettingsPage({ token, org, profile }) {
 
       {state.error && <p role="alert" className="error">{denied(state.error) ? 'Your Adobe account is not authorized to read settings.' : `Could not load settings: ${state.error.message}`}</p>}
 
-      {state.ai && (
+      {state.prompts && (
         <div className="layout">
           <div className="settings-main">
-            <AiConnection token={token} org={org} editor={editor} ai={state.ai} onSaved={(ai) => setState((s) => ({ ...s, ai }))} />
+            <section className="settings-card" aria-labelledby="ai-h">
+              <h2 id="ai-h">AI service</h2>
+              <p className="small">
+                Anthropic (Claude). The API key is kept on the server and isn&apos;t entered or shown here;
+                results are sent to Claude server to server.
+              </p>
+            </section>
 
             <section className="settings-card" aria-labelledby="prompts-h">
               <div className="settings-card-head">

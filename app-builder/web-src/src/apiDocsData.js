@@ -808,14 +808,11 @@ const adminApi = {
     },
     {
       id: 'admin-settings',
-      title: 'Settings: AI connection and prompts',
+      title: 'Settings: AI prompts',
       method: 'GET / POST',
-      summary: 'Backs the viewer\u2019s Settings page. `GET ?dataset=settings` returns the AI connection and the stored prompts. The client secret is never returned, only whether one is saved and its last four characters. It is stored encrypted (AES-256-GCM) with the key in `SETTINGS_ENCRYPTION_KEY`.',
+      summary: 'Backs the viewer\u2019s Settings page. `GET ?dataset=settings` returns the stored prompts, sorted by name. The AI service\u2019s API key is not part of this API: it is a server-side secret.',
       fields: [
-        ['op', '"settings-save" | "prompt-save" | "prompt-delete"', 'POST', ''],
-        ['ai.clientId', 'string', 'settings-save', 'Up to 200 characters, no spaces. Empty clears it.'],
-        ['ai.clientSecret', 'string', 'no', 'A non-empty value replaces the saved secret; omitted or empty keeps it.'],
-        ['ai.clearSecret', 'boolean', 'no', '`true` removes the saved secret.'],
+        ['op', '"prompt-save" | "prompt-delete"', 'POST', ''],
         ['prompt.promptId', 'uuid', 'no', 'Omit to create a prompt; send it to update one (404 if it doesn\u2019t exist).'],
         ['prompt.name', 'string', 'prompt-save', 'Up to 120 characters.'],
         ['prompt.text', 'string', 'prompt-save', 'Up to 20,000 characters.'],
@@ -826,17 +823,15 @@ const adminApi = {
         status: 200,
         body: json({
           ok: true,
-          ai: { clientId: '<client id>', hasSecret: true, secretHint: 'ABCD', updatedAt: NOW, updatedBy: 'jordan.rivera@example.com' },
           prompts: [{ promptId: '<promptId>', name: 'Executive summary', text: 'Summarize these assessment results…', createdAt: NOW, updatedAt: NOW, updatedBy: 'jordan.rivera@example.com' }],
         }),
       },
       errors: [
         { status: 201, when: 'prompt-save created a prompt', body: json({ ok: true, created: true, prompt: { promptId: '<promptId>', '...': '...' } }) },
-        { status: 400, when: 'Field errors', body: json({ ok: false, errors: { clientId: 'no spaces', name: 'required' } }) },
-        { status: 400, when: 'The server has no encryption key (the secret is refused, never stored in plain text)', body: json({ ok: false, errors: { clientSecret: 'the server has no encryption key configured; the secret was not saved' } }) },
+        { status: 400, when: 'Field errors', body: json({ ok: false, errors: { name: 'required' } }) },
         { status: 404, when: 'prompt-save or prompt-delete with an unknown promptId', body: json({ ok: false, error: 'not found' }) },
       ],
-      curl: [curlGet('assessments-admin', 'dataset=settings', ADMIN_CURL_HEADERS), '', '# save the connection', curlPost('assessments-admin', { op: 'settings-save', ai: { clientId: '<client id>', clientSecret: '<client secret>' } }, ADMIN_CURL_HEADERS), '', '# add a prompt', curlPost('assessments-admin', { op: 'prompt-save', prompt: { name: 'Executive summary', text: 'Summarize these assessment results…' } }, ADMIN_CURL_HEADERS)].join('\n'),
+      curl: [curlGet('assessments-admin', 'dataset=settings', ADMIN_CURL_HEADERS), '', '# add a prompt', curlPost('assessments-admin', { op: 'prompt-save', prompt: { name: 'Executive summary', text: 'Summarize these assessment results…' } }, ADMIN_CURL_HEADERS)].join('\n'),
       fetch: fetchPost('assessments-admin', { op: 'prompt-save', prompt: { name: 'Executive summary', text: 'Summarize these assessment results…' } }, ADMIN_FETCH_HEADERS + ', '),
     },
     {

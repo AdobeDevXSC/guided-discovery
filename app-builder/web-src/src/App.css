@@ -189,13 +189,6 @@ table.questions code, .question-editor code { font-size: 12px; }
 .settings-card { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); padding: 18px 20px; }
 .settings-card h2 { margin: 0 0 4px; font-size: 18px; }
 .settings-card-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 8px; }
-.settings-card form { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; max-width: 560px; }
-.settings-card .field, .question-editor .field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
-.settings-card .field input { font: inherit; color: inherit; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 7px 9px; }
-.secret-saved { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; color: inherit; font-size: 14px; }
-.secret-saved code { font-size: 13px; }
-button.inline { align-self: flex-start; padding: 2px 0; border: 0; background: none; text-decoration: underline; }
-.danger-text { color: var(--danger); }
 .prompt-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .prompt-row { width: 100%; text-align: left; display: flex; flex-direction: column; gap: 3px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: inherit; font: inherit; cursor: pointer; }
 .prompt-row:hover, .prompt-row.on { border-color: var(--accent); }

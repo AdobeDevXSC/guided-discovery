@@ -36,8 +36,6 @@ application:
               clientSecret: $ADMIN_IMS_CLIENT_SECRET
               orgId: $ADMIN_IMS_ORG_ID
               scopes: $ADMIN_IMS_SCOPES
-              # encrypts secrets saved on the viewer's Settings page (see actions/lib/settings.js)
-              settingsKey: $SETTINGS_ENCRYPTION_KEY
             annotations:
               require-adobe-auth: true
               final: true

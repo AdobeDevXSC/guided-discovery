@@ -33,10 +33,7 @@ const DATASETS = {
 //   GET ?dataset=questions&assessment=self-guided -> { ok, items } the question bank, in page order
 //   GET ?dataset=profile-answers&submissionId=... -> { ok, runs } every response linked to that profile,
 //        each laid out against the whole question bank (answered or not), newest first
-//   GET ?dataset=settings -> { ok, ai: {clientId, hasSecret, secretHint, updatedAt, updatedBy}, prompts }
-//        the client secret is never returned, only whether one is saved and its last 4 characters
-//   POST {op:'settings-save', ai:{clientId, clientSecret?, clearSecret?}, editor?} -> { ok, ai }
-//        a non-empty clientSecret replaces the saved one (stored encrypted); omitted keeps it
+//   GET ?dataset=settings -> { ok, prompts } the stored AI prompts, by name
 //   POST {op:'prompt-save', prompt:{promptId?, name, text}, editor?} -> { ok, prompt, created }
 //   POST {op:'prompt-delete', promptId} -> { ok, deleted }
 //   GET ?dataset=answers-export&assessment=self-guided -> { ok, columns, rows } for the CSV export:
@@ -50,7 +47,7 @@ async function main (params) {
   if (params.op === 'question-save' || params.dataset === 'questions') return questionBank(params)
   if (params.dataset === 'profile-answers') return profileAnswers(params)
   if (params.dataset === 'answers-export') return answersExport(params)
-  if (params.dataset === 'settings' || ['settings-save', 'prompt-save', 'prompt-delete'].includes(params.op)) return appSettings(params)
+  if (params.dataset === 'settings' || ['prompt-save', 'prompt-delete'].includes(params.op)) return appSettings(params)
   const dataset = params.dataset || 'assessments'
   const ds = DATASETS[dataset]
   if (!ds) return reply(400, { ok: false, error: 'invalid dataset' })
@@ -205,39 +202,22 @@ async function answersExport (params) {
   }
 }
 
-// Settings page: the AI connection (client ID + encrypted client secret) and stored prompts.
+// Settings page: the stored AI prompts.
 async function appSettings (params) {
   const method = (params.__ow_method || 'get').toLowerCase()
   try {
     return await withDb(params, async (client) => {
-      const store = client.collection(settings.SETTINGS_COLLECTION)
       const prompts = client.collection(settings.PROMPTS_COLLECTION)
-      await ensureIndexes(store, settings.SETTINGS_INDEXES)
       await ensureIndexes(prompts, settings.PROMPT_INDEXES)
       const now = new Date().toISOString()
       const editor = editorOf(params)
 
       if (method === 'get') {
-        const ai = await findOneOrNull(store, { key: settings.AI_KEY })
         const list = await prompts.find({}).limit(500).toArray()
         list.sort((a, b) => String(a.name).localeCompare(String(b.name)))
-        return reply(200, { ok: true, ai: settings.publicAi(ai), prompts: list.map(settings.publicPrompt) })
+        return reply(200, { ok: true, prompts: list.map(settings.publicPrompt) })
       }
       if (method !== 'post') return reply(405, { ok: false, error: 'method not allowed' })
-
-      if (params.op === 'settings-save') {
-        const { set, unset, errors } = settings.validateAi(params.ai, params.settingsKey)
-        if (Object.keys(errors).length) return reply(400, { ok: false, errors })
-        const existing = await findOneOrNull(store, { key: settings.AI_KEY })
-        const fields = { ...set, updatedAt: now, updatedBy: editor }
-        if (existing) {
-          await store.updateOne({ key: settings.AI_KEY }, { $set: fields, ...(Object.keys(unset).length ? { $unset: unset } : {}) })
-        } else {
-          await store.insertOne({ key: settings.AI_KEY, ...fields, createdAt: now })
-        }
-        console.log('assessments-admin saved AI settings', set.secret ? '(new secret)' : unset.secret !== undefined ? '(secret cleared)' : '(secret kept)')
-        return reply(200, { ok: true, ai: settings.publicAi(await findOneOrNull(store, { key: settings.AI_KEY })) })
-      }
 
       if (params.op === 'prompt-save') {
         const { promptId, name, text, errors } = settings.validatePrompt(params.prompt)
