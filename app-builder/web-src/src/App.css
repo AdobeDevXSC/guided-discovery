@@ -85,6 +85,18 @@ th.pick, td.pick { width: 32px; padding-right: 0; }
 .pick input { width: 16px; height: 16px; cursor: pointer; }
 .bulk { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 8px 0 12px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
 .bulk .error { margin: 0; }
+/* Send to AI, on completed runs in the profile panel */
+.ai-panel { margin: 8px 0 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: color-mix(in srgb, var(--accent) 4%, var(--surface)); }
+.ai-send { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ai-send select { font: inherit; color: inherit; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; max-width: 220px; }
+.ai-analysis { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
+.ai-analysis > summary { cursor: pointer; }
+.ai-output { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; line-height: 1.5; margin: 8px 0; max-height: 480px; overflow: auto; }
+.ai-input .ai-output { font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--muted); }
+.pill.ai-done { background: var(--ok-bg); color: var(--ok); }
+.pill.ai-queued, .pill.ai-running { background: var(--warn-bg); color: var(--warn); }
+.pill.ai-failed { background: color-mix(in srgb, var(--danger) 14%, var(--surface)); color: var(--danger); }
+@media print { .ai-send, .ai-input { display: none; } }
 /* profiles whose latest assessment run is still in progress */
 tbody tr.in-progress { background: color-mix(in srgb, var(--warn) 10%, var(--surface)); }
 tbody tr.in-progress td:first-child { box-shadow: inset 3px 0 0 var(--warn); }

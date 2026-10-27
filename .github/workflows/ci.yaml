@@ -22,7 +22,7 @@ jobs:
         run: npm test
       - name: Actions load
         run: |
-          node -e "for (const a of ['assessments', 'assessments-admin', 'guided-discovery']) require('./actions/' + a + '/index.js'); console.log('actions load')"
+          node -e "for (const a of ['assessments', 'assessments-admin', 'guided-discovery', 'ai-analysis']) require('./actions/' + a + '/index.js'); console.log('actions load')"
       - name: Scoring rules are valid JSON with every assessment's required fields
         run: |
           node -e "const c=require('./actions/lib/scoring-config.json'); for (const [k,v] of Object.entries(c)) for (const f of ['sections','readinessFrom','headlines','sizes','capabilities']) if(!v[f]) throw Error(k+' is missing '+f); console.log('scoring config ok')"
