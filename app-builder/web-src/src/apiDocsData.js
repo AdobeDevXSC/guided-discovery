@@ -808,11 +808,13 @@ const adminApi = {
     },
     {
       id: 'admin-settings',
-      title: 'Settings: AI prompts',
+      title: 'Settings: AI API key and prompts',
       method: 'GET / POST',
-      summary: 'Backs the viewer\u2019s Settings page. `GET ?dataset=settings` returns the stored prompts, sorted by name. The AI service\u2019s API key is not part of this API: it is a server-side secret.',
+      summary: 'Backs the viewer\u2019s Settings page. `GET ?dataset=settings` returns whether an Anthropic API key is saved (and its last four characters) and the stored prompts, sorted by name. The key is write-only: it is stored encrypted with a public key this action holds, so even this action cannot read it back. Only the action that calls Claude can decrypt it.',
       fields: [
-        ['op', '"prompt-save" | "prompt-delete"', 'POST', ''],
+        ['op', '"settings-save" | "prompt-save" | "prompt-delete"', 'POST', ''],
+        ['ai.apiKey', 'string', 'settings-save', 'An Anthropic API key (`sk-ant-…`). Replaces the saved key.'],
+        ['ai.clearKey', 'boolean', 'no', '`true` removes the saved key (send instead of `apiKey`).'],
         ['prompt.promptId', 'uuid', 'no', 'Omit to create a prompt; send it to update one (404 if it doesn\u2019t exist).'],
         ['prompt.name', 'string', 'prompt-save', 'Up to 120 characters.'],
         ['prompt.text', 'string', 'prompt-save', 'Up to 20,000 characters.'],
@@ -823,15 +825,17 @@ const adminApi = {
         status: 200,
         body: json({
           ok: true,
+          ai: { provider: 'anthropic', hasKey: true, keyHint: 'ABCD', updatedAt: NOW, updatedBy: 'jordan.rivera@example.com' },
           prompts: [{ promptId: '<promptId>', name: 'Executive summary', text: 'Summarize these assessment results…', createdAt: NOW, updatedAt: NOW, updatedBy: 'jordan.rivera@example.com' }],
         }),
       },
       errors: [
         { status: 201, when: 'prompt-save created a prompt', body: json({ ok: true, created: true, prompt: { promptId: '<promptId>', '...': '...' } }) },
-        { status: 400, when: 'Field errors', body: json({ ok: false, errors: { name: 'required' } }) },
+        { status: 400, when: 'Field errors', body: json({ ok: false, errors: { apiKey: 'an Anthropic API key starts with sk-ant-', name: 'required' } }) },
+        { status: 400, when: 'The server has no encryption key (the API key is refused, never stored in plain text)', body: json({ ok: false, errors: { apiKey: 'the server has no encryption key configured; the key was not saved' } }) },
         { status: 404, when: 'prompt-save or prompt-delete with an unknown promptId', body: json({ ok: false, error: 'not found' }) },
       ],
-      curl: [curlGet('assessments-admin', 'dataset=settings', ADMIN_CURL_HEADERS), '', '# add a prompt', curlPost('assessments-admin', { op: 'prompt-save', prompt: { name: 'Executive summary', text: 'Summarize these assessment results…' } }, ADMIN_CURL_HEADERS)].join('\n'),
+      curl: [curlGet('assessments-admin', 'dataset=settings', ADMIN_CURL_HEADERS), '', '# save the API key', curlPost('assessments-admin', { op: 'settings-save', ai: { apiKey: '<sk-ant-…>' } }, ADMIN_CURL_HEADERS), '', '# add a prompt', curlPost('assessments-admin', { op: 'prompt-save', prompt: { name: 'Executive summary', text: 'Summarize these assessment results…' } }, ADMIN_CURL_HEADERS)].join('\n'),
       fetch: fetchPost('assessments-admin', { op: 'prompt-save', prompt: { name: 'Executive summary', text: 'Summarize these assessment results…' } }, ADMIN_FETCH_HEADERS + ', '),
     },
     {
