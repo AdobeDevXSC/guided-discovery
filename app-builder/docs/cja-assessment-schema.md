@@ -56,7 +56,7 @@ Enum values live in `actions/assessments/options.json` (generated from the surve
 
 A hidden `website` field is a honeypot: if it is non-empty the request is silently accepted and dropped.
 
-## EDS frontend example
+## Browser example
 
 ```js
 const API = 'https://20409-157ochretakin-stage.adobeio-static.net/api/v1/web/marketingprototype/assessments';

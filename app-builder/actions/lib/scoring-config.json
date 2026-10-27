@@ -1,0 +1,147 @@
+{
+  "self-guided": {
+    "sections": [
+      "discovery",
+      "data-foundations",
+      "segmentation",
+      "identity",
+      "governance",
+      "roles",
+      "strategy-adoption"
+    ],
+    "readinessFrom": "data-foundations.tracked",
+    "headlines": [
+      {
+        "id": "migration-ready",
+        "label": "Migration-Ready",
+        "minReadiness": 0.6,
+        "steps": [
+          {
+            "title": "Close any flagged gaps before migration kicks off",
+            "text": "Resolving open governance or ownership gaps now avoids delays once implementation begins."
+          },
+          {
+            "title": "Bring your discovery answers into a formal assessment",
+            "text": "What you have scoped here gives your Adobe team a strong starting point for a guided evolution assessment."
+          },
+          {
+            "title": "Schedule your AA to CJA Evolution Assessment kickoff",
+            "text": "Your Adobe team below can walk through timeline and team structure based on what you shared."
+          }
+        ]
+      },
+      {
+        "id": "building-your-case",
+        "label": "Building Your Case",
+        "minReadiness": 0.25,
+        "steps": [
+          {
+            "title": "Continue the data foundations inventory",
+            "text": "A short working session to finish cataloging your current Adobe Analytics setup so we can map what carries over to CJA."
+          },
+          {
+            "title": "Resolve any flagged governance or ownership gaps",
+            "text": "Getting the right people and access sorted now avoids rework once migration planning starts."
+          },
+          {
+            "title": "Schedule an AA to CJA Evolution Assessment scoping conversation",
+            "text": "A no-cost conversation with your Adobe team to review what you have shared and outline next steps."
+          }
+        ]
+      },
+      {
+        "id": "early-discovery",
+        "label": "Early Discovery Stage",
+        "minReadiness": 0,
+        "steps": [
+          {
+            "title": "Complete a Data Foundations inventory session",
+            "text": "A short working session to catalog your current Adobe Analytics report suites, eVars, and events."
+          },
+          {
+            "title": "Identify your core migration stakeholders",
+            "text": "Getting the right people in the room early, including data governance and identity/CDP owners, avoids rework later."
+          },
+          {
+            "title": "Schedule an AA to CJA Evolution Assessment scoping conversation",
+            "text": "A no-cost conversation with your Adobe team to review what you have shared and outline what a guided evolution assessment would look like."
+          }
+        ]
+      }
+    ],
+    "sizes": [
+      {
+        "id": "small",
+        "label": "Small",
+        "duration": "6-12 weeks",
+        "model": "Ultimate Success with Integrated Services",
+        "title": "Value Framework",
+        "text": "A Value Framework activation: maturity assessment, competitive analysis, KPI planning, and a value-focused framework to build the case before committing to the move. Delivered as a focused Integrated Services activation, one at a time.",
+        "maxCapabilities": 2,
+        "maxReadiness": 0.34,
+        "match": "all"
+      },
+      {
+        "id": "medium",
+        "label": "Medium",
+        "duration": "4-12 weeks",
+        "model": "Ultimate Success with Integrated Services",
+        "title": "Modernization + Roadmap Development",
+        "text": "A Modernization activation to assess your current Adobe Analytics implementation, data, and architecture and prepare the CJA migration, paired with Roadmap Development to sequence a phased, prioritized plan. Delivered as focused Integrated Services activations.",
+        "maxCapabilities": 5,
+        "maxReadiness": 0.67,
+        "match": "any"
+      },
+      {
+        "id": "large",
+        "label": "Large",
+        "duration": "4-6 wks, then 4-12 wks",
+        "model": "Ultimate Success with Integrated Services",
+        "title": "Development Validation, then Feature Configuration / Capability Deployment",
+        "text": "Development Validation to lock the technical requirements, architecture, and Business Requirements Document, then Feature Configuration / Capability Deployment to stand up and activate CJA. Delivered as focused Integrated Services activations."
+      }
+    ],
+    "capabilities": [
+      {
+        "id": "connected-data",
+        "label": "Connected Data",
+        "description": "Ingest event-level data from every source and query it in seconds, without pre-aggregation delays."
+      },
+      {
+        "id": "graph-stitching",
+        "label": "Graph-Based Stitching",
+        "description": "Resolve every identity, on any channel or device, into a single connected view of the person."
+      },
+      {
+        "id": "data-transformations",
+        "label": "Data Transformations",
+        "description": "Reshape, correct, or enrich data at report time, without waiting on a re-implementation."
+      },
+      {
+        "id": "journey-mapping",
+        "label": "Journey Mapping Visualization",
+        "description": "See exactly where people move, stall, or drop out of a journey, across every touchpoint."
+      },
+      {
+        "id": "attribution",
+        "label": "Attribution",
+        "description": "Compare multi-touch attribution models using fully stitched, cross-channel data."
+      },
+      {
+        "id": "experimentation",
+        "label": "Experimentation Analysis",
+        "description": "Measure the lift and confidence of any test, from any source, in one place."
+      },
+      {
+        "id": "ai-capabilities",
+        "label": "AI Capabilities",
+        "description": "Ask questions in plain language, surface anomalies automatically, and let AI do the heavy analytical lifting."
+      },
+      {
+        "id": "content-analytics",
+        "label": "Content Analytics",
+        "description": "Automatically tag and analyze content performance without manual setup."
+      }
+    ]
+  }
+}

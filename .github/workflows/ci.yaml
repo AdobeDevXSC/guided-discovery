@@ -1,0 +1,28 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app-builder
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app-builder/package-lock.json
+      - run: npm ci
+      - name: Unit tests (scoring and answer validation)
+        run: npm test
+      - name: Actions load
+        run: |
+          node -e "for (const a of ['assessments', 'assessments-admin', 'guided-discovery']) require('./actions/' + a + '/index.js'); console.log('actions load')"
+      - name: Scoring rules are valid JSON with every assessment's required fields
+        run: |
+          node -e "const c=require('./actions/lib/scoring-config.json'); for (const [k,v] of Object.entries(c)) for (const f of ['sections','readinessFrom','headlines','sizes','capabilities']) if(!v[f]) throw Error(k+' is missing '+f); console.log('scoring config ok')"

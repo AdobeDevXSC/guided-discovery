@@ -61,8 +61,8 @@ const PROFILE = {
   industry: 'Retail',
 };
 const SOURCE = {
-  source: 'aem-eds:/acs/cja-assessment',
-  pageUrl: 'https://main--guided-discovery--adobedevxsc.aem.live/acs/cja-assessment',
+  source: 'self-guided-page',
+  pageUrl: 'https://20409-157ochretakin-stage.adobeio-static.net/self-guided.html',
   referrer: '',
   utm: { campaign: 'cja-migration' },
 };
@@ -93,11 +93,10 @@ export const OVERVIEW = {
   cors: {
     intro: 'The public actions accept browser calls only from these origins:',
     origins: [
-      '`https://<branch>--guided-discovery--adobedevxsc.aem.page` and `.aem.live` (EDS preview and live)',
       '`https://landing.adobe.com`',
       '`https://20409-157ochretakin-stage.adobeio-static.net` (this app, e.g. the public `self-guided.html` page)',
-      '`http://localhost:<port>` (local `aem up`)',
-      '`http://127.0.0.1:<port>` (local `aem up`)',
+      '`http://localhost:<port>` (local development)',
+      '`http://127.0.0.1:<port>` (local development)',
     ],
     rules: [
       'A request with an allowed `Origin` gets `Access-Control-Allow-Origin` echoed back. Allowed methods are GET, POST and OPTIONS; the only allowed request header is `Content-Type`. Preflight answers are cached for 600 seconds.',
@@ -120,7 +119,6 @@ export const OVERVIEW = {
     ['405', 'Method other than GET or POST.'],
     ['409', 'Conflict: the profile is already completed (`section`), or a section save used a stale `rev`.'],
     ['500', '`{"error": "internal error"}`: database or platform failure. Safe to retry.'],
-    ['503', 'Responses `complete` only: the published questions could not be fetched to score the result. Retry.'],
   ],
   setup: 'BASE=' + BASE_URL,
   setupFetch: "const BASE = '" + BASE_URL + "';",
@@ -240,7 +238,7 @@ const profileApi = {
             submissionId: '<submissionId>', userId: '<userId>', assessment: 'self-guided', schemaVersion: 1, status: 'started',
             profile: { firstName: 'Jordan', lastName: 'Rivera', email: 'jordan.rivera@example.com', '...': '...' },
             consent: { marketingContact: true, version: '2026-adobe-marketing-v1', acceptedAt: NOW },
-            source: { source: 'aem-eds:/acs/cja-assessment', pageUrl: '...', referrer: '', utm: { campaign: 'cja-migration' } },
+            source: { source: 'self-guided-page', pageUrl: '...', referrer: '', utm: { campaign: 'cja-migration' } },
             sections: {}, summary: null, createdAt: NOW, updatedAt: NOW, completedAt: null,
           },
         }),
@@ -292,7 +290,7 @@ const responsesApi = {
   action: 'guided-discovery',
   intro: [
     'The person\'s answers to an assessment run. Collection `assessment_responses`, one document per run. A response stores only a reference to the profile (`submissionId` and `userId`), never the profile itself.',
-    'Answers are checked against the questions published in DA structured content for that assessment (`self-guided`: sections discovery, data-foundations, segmentation, identity, governance, roles, strategy-adoption). Every answer value is an array of strings; see Answer value formats.',
+    'Answers are checked against the question bank for that assessment (`self-guided`: sections discovery, data-foundations, segmentation, identity, governance, roles, strategy-adoption; list them with `GET ?op=questions`). Every answer value is an array of strings; see Answer value formats.',
     'Responses carry `Cache-Control: no-store`. A POST may also be sent as `text/plain` (for example `navigator.sendBeacon` on tab close); the body is still parsed as JSON.',
   ],
   notes: [
@@ -310,7 +308,6 @@ const responsesApi = {
         ['leadRef', 'uuid | { submissionId }', 'no', 'The profile\'s `submissionId`. Linked only if that profile exists and belongs to the same assessment; otherwise the response starts unlinked (`linked: false`, no error).'],
         ['source', 'object | string', 'no', 'Same shape and cleaning as the profile `source`.'],
         ['contentVersion', 'string', 'no', 'Free-form label for the content the client rendered, up to 40 characters.'],
-        ['contentEnv', '"live" | "preview"', 'no', 'Which published questions to validate and score against. Anything but `preview` means `live`.'],
       ],
       success: { status: 201, body: json({ ok: true, responseId: '<responseId>', sessionId: '<responseId>', linked: true }) },
       errors: [
@@ -353,7 +350,6 @@ const responsesApi = {
         ['question', 'string', 'single', 'Question ID, e.g. `focus`: lowercase letters, digits and `-`, up to 64 characters.'],
         ['value', 'string | string[] | null', 'single', 'In the format for that question\'s display. `null`, `[]` or a missing value clears the question.'],
         ['answers', '[{ section, question, value }]', 'batch', '1 to 50 answers, in place of the three fields above. If the same question appears twice, the last one wins.'],
-        ['contentEnv', '"live" | "preview"', 'no', 'Which published questions to validate against.'],
       ],
       success: {
         status: 200,
@@ -399,7 +395,6 @@ const responsesApi = {
         ['rev', 'integer >= 1', 'with section', 'Must be greater than the stored revision for that section, or the save is rejected with `409`.'],
         ['data', '{ answers: { questionId: string[] } }', 'with section', 'The complete set of answers for the section. Questions left out are removed. No other keys are allowed in `data`.'],
         ['progress', '{ completed: string[] }', 'no', 'Section IDs the person has finished, up to 40. Merged into the stored progress. A legacy `lastPage` key is accepted and dropped.'],
-        ['contentEnv', '"live" | "preview"', 'no', ''],
       ],
       success: { status: 200, body: json({ ok: true, rev: 3, savedAt: NOW }) },
       errors: [
@@ -424,13 +419,12 @@ const responsesApi = {
       fields: [
         ['op', '"complete"', 'yes', ''],
         ['responseId', 'uuid', 'yes', ''],
-        ['contentEnv', '"live" | "preview"', 'no', 'Which published content to score against.'],
       ],
       success: { status: 200, body: json({ ok: true, result: RESULT }) },
       errors: [
         { status: 400, when: 'Bad or missing responseId', body: json({ ok: false, error: 'invalid responseId' }) },
         { status: 404, when: 'No such response', body: json({ ok: false, error: 'not found' }) },
-        { status: 503, when: 'Published content unreachable; retry', body: json({ ok: false, error: 'content unavailable, try again' }) },
+        { status: 400, when: 'The assessment has no scoring rules (lib/scoring-config.json)', body: json({ ok: false, error: 'no scoring rules for this assessment' }) },
       ],
       curl: curlPost('guided-discovery', completeBody),
       fetch: fetchPost('guided-discovery', completeBody),
@@ -862,7 +856,7 @@ export const WALKTHROUGH = {
     {
       title: 'Start a response linked to it',
       text: 'Pass the profile as `leadRef`. Store `responseId` (the assessment page keeps it in localStorage) to resume later.',
-      code: "const { responseId, linked } = await post('guided-discovery', {\n  op: 'start', leadRef: submissionId, source: { source: 'aem-eds:/acs/cja-assessment' },\n});\n// linked === true",
+      code: "const { responseId, linked } = await post('guided-discovery', {\n  op: 'start', leadRef: submissionId, source: { source: 'self-guided-page' },\n});\n// linked === true",
     },
     {
       title: 'Answer one question',
@@ -876,7 +870,7 @@ export const WALKTHROUGH = {
     },
     {
       title: 'Complete it',
-      text: 'The server scores the answers. Retry on `503`.',
+      text: 'The server scores the answers with the rules in `lib/scoring-config.json`.',
       code: "const { result } = await post('guided-discovery', { op: 'complete', responseId });\n// result.readinessPct, result.headline, result.matchedCapabilities",
     },
     {

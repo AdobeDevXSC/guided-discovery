@@ -1,5 +1,5 @@
 const crypto = require('crypto')
-const { computeSummary } = require('../../../blocks/gd-summary/scoring.js')
+const { computeSummary } = require('../lib/scoring')
 const {
   COLLECTION, SCHEMA_VERSION, INDEXES,
   leadRefId, cleanSource, validateProgress, sectionIdOf, validateStructured
@@ -15,46 +15,17 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 const hasErrors = (errors) => Object.keys(errors).length > 0
 
 // Questions come from the question bank (collection assessment_questions, edited in the admin
-// viewer). Each assessment's summary document (scoring thresholds, capability copy) is still
-// authored in DA structured content and read through the delivery service.
-const SC_BASE = 'https://da-sc.adobeaem.workers.dev'
-const CONTENT = {
-  'self-guided': 'adobedevxsc/guided-discovery/forms/guided-discovery'
-}
+// viewer). Each assessment's scoring rules (readiness bands, engagement sizes, capabilities) are in
+// lib/scoring-config.json; an assessment exists when it has rules there.
+const SCORING = require('../lib/scoring-config.json')
 
-// Published documents are cached per warm container; preview vs live follows the visitor's page.
-const SC_TTL_MS = 60 * 1000
-const scCache = new Map()
-async function structuredDoc (assessment, id, env) {
-  const which = env === 'preview' ? 'preview' : 'live'
-  const cacheKey = `${which}/${assessment}/${id}`
-  const hit = scCache.get(cacheKey)
-  if (hit && Date.now() - hit.at < SC_TTL_MS) return hit.doc
-  try {
-    const res = await fetch(`${SC_BASE}/${which}/${CONTENT[assessment]}/${id}`)
-    if (res.status === 404) return { missing: true }
-    if (!res.ok) return null
-    const json = await res.json()
-    const data = json && json.data ? json.data : null
-    // a short fingerprint of the exact published version the answers were checked against
-    const hash = data ? crypto.createHash('sha256').update(JSON.stringify(data)).digest('hex').slice(0, 16) : null
-    const doc = data ? { data, hash } : null
-    scCache.set(cacheKey, { at: Date.now(), doc })
-    return doc
-  } catch (e) {
-    return null // delivery unreachable: fall back to shape-only validation
-  }
-}
-
-// The recommendation, scored from the DA summary document and the bank's questions (same module as
-// the gd-summary block). Returns null when the summary can't be fetched right now.
-async function scoredResult (client, assessment, sections, env) {
-  const summary = await structuredDoc(assessment, 'summary', env)
-  if (!summary || summary.missing) return null
+// The recommendation, scored from the assessment's rules and the bank's questions.
+async function scoredResult (client, assessment, sections) {
+  const rules = SCORING[assessment]
+  if (!rules) return null
   const bank = await questions.sectionsOf(client, assessment)
-  const ids = Array.isArray(summary.data.sections) ? summary.data.sections : []
-  const docs = Object.fromEntries(ids.map((id) => [id, bank.has(id) ? bank.get(id).data : {}]))
-  return computeSummary(summary.data, docs, sections || {})
+  const docs = Object.fromEntries(rules.sections.map((id) => [id, bank.has(id) ? bank.get(id).data : {}]))
+  return computeSummary(rules, docs, sections || {})
 }
 
 // The bank's version of one section, or { missing: true } if it has no questions.
@@ -82,13 +53,13 @@ function readBody (params) {
 //   POST {op:'link', responseId, leadRef}                    -> 200 {linked} (only if not yet linked)
 //   POST {op:'save', responseId, section, rev, data, progress?} -> 200 {rev, savedAt}; 409 if rev is stale
 //   POST {op:'save', responseId, progress}                   -> 200 (progress only)
-//   POST {op:'answer', responseId, userId?, section, question, value, contentEnv?}
+//   POST {op:'answer', responseId, userId?, section, question, value}
 //        -> 200 {userId, saved, revs, savedAt}; 400 if the response isn't linked to a user
 //   POST {op:'answer', responseId, userId?, answers:[{section, question, value}, ...]} (up to 50, all or nothing)
 //        Each answer replaces that one question; the section's other answers are kept. value is a
 //        string or an array of strings; null or [] clears the question. Only responses with a userId
 //        (started with leadRef, or linked) take answers; userId, if sent, must be theirs (else 404)
-//   POST {op:'complete', responseId, contentEnv?}            -> 200 {result}; 503 if content is unreachable
+//   POST {op:'complete', responseId}                         -> 200 {result}
 //   GET  ?responseId=...                                     -> 200 {response}
 //   GET  ?op=questions&assessment=self-guided                -> 200 {sections:[{section, title, questions}]}
 //   GET  ?op=answers&userId=...&responseId=...&assessment=?  -> 200 {userId, responses:[...]} every run of
@@ -133,7 +104,7 @@ async function handle (raw) {
 // the questions themselves. Public: the bank holds no personal data.
 async function listQuestions (params) {
   const assessment = params.assessment || assessments.DEFAULT_ASSESSMENT
-  if (!CONTENT[assessment]) return reply(400, { ok: false, error: 'unknown assessment' })
+  if (!SCORING[assessment]) return reply(400, { ok: false, error: 'unknown assessment' })
   try {
     return await withDb(params, async (client) => {
       const bank = await questions.sectionsOf(client, assessment)
@@ -154,7 +125,7 @@ async function listAnswers (params) {
   if (!UUID_RE.test(userId || '') || !UUID_RE.test(responseId || '')) {
     return reply(400, { ok: false, error: 'userId and responseId are required' })
   }
-  if (params.assessment && !CONTENT[params.assessment]) return reply(400, { ok: false, error: 'unknown assessment' })
+  if (params.assessment && !SCORING[params.assessment]) return reply(400, { ok: false, error: 'unknown assessment' })
   try {
     return await withDb(params, async (client) => {
       const col = client.collection(COLLECTION)
@@ -216,7 +187,7 @@ async function verifiedLead (client, input, assessment) {
 
 async function start (client, col, params) {
   const assessment = params.assessment || assessments.DEFAULT_ASSESSMENT
-  if (!CONTENT[assessment]) return reply(400, { ok: false, errors: { assessment: 'unknown assessment' } })
+  if (!SCORING[assessment]) return reply(400, { ok: false, errors: { assessment: 'unknown assessment' } })
   const lead = await verifiedLead(client, params.leadRef, assessment)
   const now = new Date().toISOString()
   const responseId = crypto.randomUUID()
@@ -228,7 +199,6 @@ async function start (client, col, params) {
     submissionId: lead ? lead.submissionId : null,
     status: 'started',
     contentVersion: String(params.contentVersion || '').slice(0, 40),
-    contentEnv: params.contentEnv === 'preview' ? 'preview' : 'live',
     source: cleanSource(params.source),
     sections: {},
     progress: { completed: [] },
@@ -290,7 +260,7 @@ async function save (client, col, responseId, params) {
   if (doc.status === 'completed') {
     // edits after completion keep the server-side recommendation current
     const sections = hasSection ? { ...(doc.sections || {}), [sectionId]: entry } : doc.sections
-    const result = await scoredResult(client, doc.assessment, sections, params.contentEnv)
+    const result = await scoredResult(client, doc.assessment, sections)
     if (result) set.result = { ...result, computedAt: now }
   } else {
     set.status = 'in_progress'
@@ -372,7 +342,7 @@ async function answer (client, col, responseId, params) {
   if (hasErrors(errors)) return reply(400, { ok: false, errors })
 
   if (doc.status === 'completed') {
-    const result = await scoredResult(client, doc.assessment, sections, params.contentEnv)
+    const result = await scoredResult(client, doc.assessment, sections)
     if (result) set.result = { ...result, computedAt: now }
   } else {
     set.status = 'in_progress'
@@ -386,8 +356,8 @@ async function complete (client, col, responseId, params) {
   const doc = await findOneOrNull(col, { responseId })
   if (!doc) return reply(404, { ok: false, error: 'not found' })
   const now = new Date().toISOString()
-  const scored = await scoredResult(client, doc.assessment, doc.sections, params.contentEnv)
-  if (!scored) return reply(503, { ok: false, error: 'content unavailable, try again' })
+  const scored = await scoredResult(client, doc.assessment, doc.sections)
+  if (!scored) return reply(400, { ok: false, error: 'no scoring rules for this assessment' })
   const result = { ...scored, computedAt: now }
   await col.updateOne(
     { responseId },

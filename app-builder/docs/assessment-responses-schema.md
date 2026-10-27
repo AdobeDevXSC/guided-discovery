@@ -9,12 +9,18 @@ The answers someone gives in an assessment: one document per person per assessme
 Questions live in the **question bank**, collection `assessment_questions`. There's one document per question, in `actions/lib/questions.js`: `{ assessment, questionId, section, sectionTitle, sectionOrder, order, title, help, display, required, options:[{id, label, ...}], choices?, itemsFrom?, ..., createdAt, updatedAt, updatedBy }`.
 - **Editing:** the admin viewer's Questions page (admin op `question-save`). Keys are fixed once saved; saved options can be relabelled but not removed, and the answer type can't change.
 - **Reading:** `GET ?op=questions` on this action (public).
-- **Seeding:** `scripts/seed-questions.js` loaded the bank from the original DA section documents (23 questions, 2026-10-22). It skips questions already in the bank.
-- **What still comes from DA:** each assessment's summary document (schema `guided-discovery-summary`: scoring thresholds and capability copy). The EDS page also still renders from its DA section documents. Each assessment has a content folder, mapped in `CONTENT` in `actions/guided-discovery/index.js`:
+- **Origin:** the bank was seeded on 2026-10-22 from the original section documents (23 questions). The seed script is in git history at tag `eds-final`.
 
-| Assessment | Content |
-|---|---|
-| `self-guided` | `/forms/guided-discovery/` (discovery, data-foundations, segmentation, identity, governance, roles, strategy-adoption, summary) |
+## Scoring rules
+
+Each assessment's scoring rules live in `actions/lib/scoring-config.json`, keyed by assessment ID. An assessment exists when it has an entry there. The rules are:
+- **`sections`:** the sections scored, in order.
+- **`readinessFrom`:** the question whose share of picked options is the readiness score (`data-foundations.tracked`).
+- **`headlines`:** a band per `minReadiness`, with recommended next steps.
+- **`sizes`:** engagement sizes, checked in order with `maxCapabilities` and `maxReadiness`.
+- **`capabilities`:** labels and descriptions.
+
+Change the rules through a PR. `test/scoring.test.js` checks them against the real questions (`test/fixtures/self-guided-questions.json`).
 
 Answers are checked against the bank. Option and question IDs are the stable keys: authors can reword labels freely, but shouldn't change or reuse an ID after launch.
 
@@ -29,14 +35,13 @@ Answers are checked against the bank. Option and question IDs are the stable key
   "submissionId": "uuid | null",      // the profile record that handed off (?lead=)
   "status": "started | in_progress | completed",
   "contentVersion": "structured-content",
-  "contentEnv": "live | preview",     // which published content the run started against
   "source": { "source": "", "pageUrl": "", "referrer": "", "utm": {} },
   "sections": {
     "<sectionId>": {
       "answers": { "<questionId>": ["<value>", "..."] },
       "rev": 7,                       // client revision; a save with rev <= stored is rejected (409)
       "savedAt": "ISO-8601",
-      "contentHash": "16 hex chars"   // fingerprint of the bank's section the answers were checked against
+      "contentHash": "16 hex chars"   // fingerprint of the bank section the answers were checked against
     }
   },
   "progress": { "completed": ["<sectionId>", "..."] },
@@ -70,11 +75,11 @@ Each question stores a list of strings. What a value looks like depends on how t
 
 | Call | Request | Response |
 |---|---|---|
-| Start | `POST {op:"start", assessment?, leadRef?, source, contentVersion, contentEnv?}` | `201 {responseId, linked}`. `assessment` defaults to `self-guided`; `leadRef` is the profile's `submissionId` |
+| Start | `POST {op:"start", assessment?, leadRef?, source, contentVersion}` | `201 {responseId, linked}`. `assessment` defaults to `self-guided`; `leadRef` is the profile's `submissionId` |
 | Link | `POST {op:"link", responseId, leadRef}` | `200 {linked}` (only if not linked yet) |
-| Save | `POST {op:"save", responseId, section, rev, data:{answers}, progress?, contentEnv?}` | `200 {rev, savedAt}`, `409` if `rev` is stale, `400 {errors}` |
-| Answer | `POST {op:"answer", responseId, userId?, section, question, value, contentEnv?}` or `POST {op:"answer", responseId, userId?, answers:[{section, question, value}, …]}` | `200 {userId, saved:[{section, question}], revs:{section: rev}, savedAt}`, `400 {errors}`, `400` if the response isn't linked to a user, `404` (also when `userId` isn't the response's) |
-| Complete | `POST {op:"complete", responseId, contentEnv?}` | `200 {result}`, `503` if the content can't be fetched |
+| Save | `POST {op:"save", responseId, section, rev, data:{answers}, progress?}` | `200 {rev, savedAt}`, `409` if `rev` is stale, `400 {errors}` |
+| Answer | `POST {op:"answer", responseId, userId?, section, question, value}` or `POST {op:"answer", responseId, userId?, answers:[{section, question, value}, …]}` | `200 {userId, saved:[{section, question}], revs:{section: rev}, savedAt}`, `400 {errors}`, `400` if the response isn't linked to a user, `404` (also when `userId` isn't the response's) |
+| Complete | `POST {op:"complete", responseId}` | `200 {result}` |
 | Questions | `GET ?op=questions&assessment=` | `200 {sections:[{section, title, questions:[{question, text, help?, type, display, required, options:[{key, label}], choices?, itemsFrom?}]}]}` |
 | Answers for a person | `GET ?op=answers&userId=&responseId=&assessment=?` | `200 {userId, count, responses:[{assessment, status, sections:[{section, title, answers:[{question, text, values:[{value, label…}]}]}], result, …}]}`. `responseId` must be one of that person's responses (otherwise `404`); only that one is echoed back |
 | Resume | `GET ?responseId=` | `200 {response}`: answers, revisions, progress, result. No profile data |

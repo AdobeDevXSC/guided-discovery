@@ -1,11 +1,11 @@
-// EDS sites are served at https://<branch>--<repo>--<org>.aem.page (preview) and .aem.live (production).
+// Browser origins allowed to call the public actions.
 const ALLOWED_ORIGIN_PATTERNS = [
-  /^https:\/\/[a-z0-9-]+--guided-discovery--adobedevxsc\.aem\.(page|live)$/,
-  // the Adobe landing-page host, for testing the front end outside EDS
+  // the Adobe landing-page host
   /^https:\/\/landing\.adobe\.com$/,
   // this app's own static host (Stage), which serves the public self-guided.html page
   /^https:\/\/20409-157ochretakin-stage\.adobeio-static\.net$/,
-  // local development with `aem up` on localhost or 127.0.0.1 (Origin is spoofable by non-browsers anyway, so this adds no exposure)
+  // local development (e.g. Live Server or aio app run) on localhost or 127.0.0.1 (Origin is spoofable
+  // by non-browsers anyway, so this adds no exposure)
   /^http:\/\/localhost:\d{2,5}$/,
   /^http:\/\/127\.0\.0\.1:\d{2,5}$/
 ]
@@ -33,7 +33,7 @@ module.exports = { isAllowedOrigin, originOf, corsHeaders }
 
 const jsonHeaders = { 'Content-Type': 'application/json' }
 
-// Wraps a web action handler with the CORS gate: answers preflight for allowed EDS origins,
+// Wraps a web action handler with the CORS gate: answers preflight for allowed origins,
 // rejects requests carrying a disallowed Origin (400; a 403 is rewritten by the CDN into a 503),
 // and adds the CORS headers to every response. Requests with no Origin (server-side, curl) are
 // not browser traffic and pass through; CORS cannot protect against those.

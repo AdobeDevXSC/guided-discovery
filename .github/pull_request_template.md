@@ -1,7 +1,5 @@
-Please always provide the [GitHub issue(s)](../issues) your PR is for, as well as test URLs where your change can be observed (before and after):
+What this changes and why:
 
-Fix #<gh-issue-id>
+How it was tested (`npm test` in `app-builder/`, plus what you checked on Stage):
 
-Test URLs:
-- Before: https://main--guided-discovery--AdobeDevXSC.aem.live/
-- After: https://<branch>--guided-discovery--AdobeDevXSC.aem.live/
+Deployed to Stage? (yes / no, and which part: actions, web assets)

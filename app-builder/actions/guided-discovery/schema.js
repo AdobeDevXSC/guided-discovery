@@ -1,6 +1,6 @@
 // Validation for assessment responses (collection assessment_responses): one document per person
-// per assessment run. Answers are checked against the published DA structured content documents
-// they were authored in. See docs/assessment-responses-schema.md.
+// per assessment run. Answers are checked against the question bank (actions/lib/questions.js).
+// See docs/assessment-responses-schema.md.
 const COLLECTION = 'assessment_responses'
 const LEGACY_COLLECTION = 'gd_sessions' // pre-rename sessions; copied by scripts/migrate-gd-sessions.js
 const SCHEMA_VERSION = 2
