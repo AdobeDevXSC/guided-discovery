@@ -27,6 +27,9 @@ const DATASETS = {
 //   GET ?dataset=assessments|responses &status=started|in_progress|completed &limit=1..500 &skip=0
 //   -> { ok, dataset, total, count, items } newest first
 //        &assessment=self-guided filters either dataset
+//        profiles (dataset=assessments) carry `run`: their latest linked response's
+//        { responseId, status, answered, totalQuestions, completedSections, totalSections, updatedAt },
+//        or null if none (answered = bank questions with at least one value)
 //   POST {op:'delete', dataset, id} -> { ok, deleted: 1 } permanently removes one record (404 if absent)
 //   POST {op:'delete', dataset, ids:[...]} -> { ok, deleted, notFound } removes up to 100 records
 //        (legacy body {op:'delete', submissionId} deletes from assessments)
@@ -78,6 +81,7 @@ async function main (params) {
       ? await col.find(filter).sort('createdAt', -1).skip(skip).limit(limit).toArray()
       : []
     if (ds === RESPONSES) await attachProfiles(client, items)
+    if (ds === DATASETS.assessments) await attachRuns(client, items)
     return reply(200, { ok: true, dataset, total, count: items.length, items })
   })
 }
@@ -93,6 +97,42 @@ async function attachProfiles (client, items) {
   items.forEach((i) => {
     if (byId.has(i.submissionId)) i.profile = byId.get(i.submissionId)
   })
+}
+
+// Each profile's latest linked response (by last save), so the viewer can show who is still in
+// the middle of the assessment.
+async function attachRuns (client, items) {
+  const ids = items.map((i) => i.submissionId).filter(Boolean)
+  if (!ids.length) return
+  const runs = await client.collection(responses.COLLECTION).find({ submissionId: { $in: ids } }).limit(5000).toArray()
+  const latest = new Map()
+  for (const r of runs) {
+    const prev = latest.get(r.submissionId)
+    if (!prev || String(r.updatedAt || r.createdAt) > String(prev.updatedAt || prev.createdAt)) latest.set(r.submissionId, r)
+  }
+  const banks = new Map()
+  for (const i of items) {
+    const r = latest.get(i.submissionId)
+    if (!r) { i.run = null; continue }
+    if (!banks.has(r.assessment)) banks.set(r.assessment, await questions.sectionsOf(client, r.assessment))
+    const bank = banks.get(r.assessment)
+    let answered = 0
+    let totalQuestions = 0
+    for (const [sectionId, { data }] of bank) {
+      const given = ((r.sections || {})[sectionId] || {}).answers || {}
+      totalQuestions += data.questions.length
+      answered += data.questions.filter((q) => (given[q.id] || []).length > 0).length
+    }
+    i.run = {
+      responseId: r.responseId,
+      status: r.status,
+      answered,
+      totalQuestions,
+      completedSections: ((r.progress || {}).completed || []).length,
+      totalSections: bank.size,
+      updatedAt: r.updatedAt || r.createdAt
+    }
+  }
 }
 
 // The question bank: list in page order, or create/update one question.

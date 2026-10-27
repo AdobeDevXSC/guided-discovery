@@ -196,6 +196,7 @@ export default function App() {
 
   // the same person can submit more than once; userId (or email for older records) groups them
   const people = useMemo(() => new Set(data.items.map((r) => ds.person(r)).filter(Boolean)).size, [data.items, ds]);
+  const inProgress = useMemo(() => (ds.inProgress ? data.items.filter(ds.inProgress).length : 0), [data.items, ds]);
 
   if (auth.status === 'waiting') {
     return <Notice title="Connecting to Experience Cloud…"><p>Waiting for your Adobe sign-in.</p></Notice>;
@@ -289,6 +290,7 @@ export default function App() {
       <section className="stats no-print" aria-label="Summary">
         <div><strong>{data.items.length}</strong><span>Profiles</span></div>
         <div><strong>{people}</strong><span>People</span></div>
+        {ds.inProgress && <div className="stat-in-progress"><strong>{inProgress}</strong><span>In progress</span></div>}
       </section>
 
       <section className="filters no-print">
@@ -334,7 +336,7 @@ export default function App() {
               {rows.map((r) => (
                 <tr
                   key={ds.id(r)}
-                  className={selected && ds.id(selected) === ds.id(r) ? 'on' : ''}
+                  className={[selected && ds.id(selected) === ds.id(r) ? 'on' : '', ds.inProgress && ds.inProgress(r) ? 'in-progress' : ''].filter(Boolean).join(' ') || undefined}
                   onClick={() => setSelected(r)}
                   onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setSelected(r)}
                   tabIndex={0}
