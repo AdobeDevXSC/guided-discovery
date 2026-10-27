@@ -77,3 +77,32 @@ export async function fetchAnswersExport({ token, org, assessment }) {
   const qs = new URLSearchParams({ dataset: 'answers-export', assessment });
   return call(`${ENDPOINT}?${qs}`, { headers: authHeaders(token, org) });
 }
+
+/** Settings page: the AI connection (the secret itself is never returned) and stored prompts. */
+export async function fetchSettings({ token, org }) {
+  return call(`${ENDPOINT}?${new URLSearchParams({ dataset: 'settings' })}`, { headers: authHeaders(token, org) });
+}
+
+const postAdmin = (token, org, body) => call(ENDPOINT, {
+  method: 'POST',
+  headers: { ...authHeaders(token, org), 'Content-Type': 'application/json' },
+  body: JSON.stringify(body),
+});
+
+/** ai: { clientId, clientSecret? (empty keeps the saved one), clearSecret? } */
+export async function saveAiSettings({
+  token, org, ai, editor,
+}) {
+  return postAdmin(token, org, { op: 'settings-save', ai, editor });
+}
+
+/** prompt: { promptId? (omit to create), name, text } */
+export async function savePrompt({
+  token, org, prompt, editor,
+}) {
+  return postAdmin(token, org, { op: 'prompt-save', prompt, editor });
+}
+
+export async function deletePrompt({ token, org, promptId }) {
+  return postAdmin(token, org, { op: 'prompt-delete', promptId });
+}

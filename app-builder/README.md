@@ -13,6 +13,7 @@ The AA to CJA Guided Discovery assessment: a public assessment page, the APIs it
 | Admin API | `actions/assessments-admin`: lists, deletes, the question bank, exports; needs an Adobe IMS token (`require-adobe-auth`) |
 | Question bank | `assessment_questions`, edited on the viewer's Questions page (`actions/lib/questions.js`) |
 | Scoring rules | `actions/lib/scoring-config.json`, used by `actions/lib/scoring.js` |
+| Settings (AI connection, prompts) | the viewer's Settings page: `app_settings` and `ai_prompts`, via `actions/lib/settings.js`. The client secret is stored encrypted and never returned |
 
 Docs:
 - [docs/cja-assessment-schema.md](docs/cja-assessment-schema.md): profiles
@@ -25,6 +26,7 @@ Docs:
 - **Tests:** `npm test` (Jest) covers scoring and answer validation against a fixture of the real questions (`test/fixtures/self-guided-questions.json`). Re-export the fixture when the question bank changes.
 - **Deploy:** `aio app deploy` (actions and web), or `--no-web-assets` / `--no-actions` for one half. Deploying is manual; merging doesn't deploy.
 - **Allowed browser origins** are in `actions/lib/cors.js`: `landing.adobe.com`, this app's static host, localhost and 127.0.0.1. Calls without an `Origin` header (curl, servers) are accepted.
+- **Settings encryption key:** `SETTINGS_ENCRYPTION_KEY` in `.env` (32 random bytes, base64) encrypts the AI client secret saved on the Settings page. It is passed to `assessments-admin` as the `settingsKey` input. Keep it safe and the same across deploys: with a different key, saved secrets can't be read and must be re-entered. Without one, the page refuses to save a secret. To generate one: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`.
 - **Admin credentials:** `assessments-admin` (wrapped by `require-adobe-auth`) and `guided-discovery` read their database credentials from `inputs` in `app.config.yaml`, which come from `.env`: `ADMIN_IMS_CLIENT_ID`, `ADMIN_IMS_CLIENT_SECRET`, `ADMIN_IMS_ORG_ID`, `ADMIN_IMS_SCOPES` (comma-separated). These are the workspace's OAuth Server-to-Server values.
 - **Maintenance scripts** in `scripts/` use the same `.env`: `backfill-user-ids.js` and `migrate-gd-sessions.js`. Both default to a dry run; add `--write` to apply.
 - **After a fresh clone:** `npm ci`, `aio login`, then `aio app use <workspace>.json` (download it from Developer Console; it holds secrets and is git-ignored) to recreate `.env` and `.aio`.
