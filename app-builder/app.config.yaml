@@ -42,6 +42,21 @@ application:
             annotations:
               require-adobe-auth: true
               final: true
+          ai-analysis:
+            function: actions/ai-analysis/index.js
+            web: 'no'
+            runtime: nodejs:22
+            # started (non-blocking) by assessments-admin; the only action given the private key that
+            # decrypts the Anthropic API key (see actions/lib/settings.js)
+            inputs:
+              clientId: $ADMIN_IMS_CLIENT_ID
+              clientSecret: $ADMIN_IMS_CLIENT_SECRET
+              orgId: $ADMIN_IMS_ORG_ID
+              scopes: $ADMIN_IMS_SCOPES
+              aiKeyPrivate: $AI_KEY_PRIVATE
+            limits:
+              timeout: 600000
+              memorySize: 512
           guided-discovery:
             function: actions/guided-discovery/index.js
             web: 'yes'

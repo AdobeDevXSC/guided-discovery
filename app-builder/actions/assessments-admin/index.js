@@ -4,6 +4,7 @@ const responses = require('../guided-discovery/schema')
 const { withDb, isNotFound, findOneOrNull, ensureIndexes } = require('../lib/db')
 const questions = require('../lib/questions')
 const settings = require('../lib/settings')
+const ai = require('../lib/ai')
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
@@ -40,6 +41,10 @@ const DATASETS = {
 //        the API key is never returned, only whether one is saved and its last 4 characters
 //   POST {op:'settings-save', ai:{apiKey} | {clearKey:true}, editor?} -> { ok, ai }
 //        stores the key encrypted with the public key; this action cannot decrypt it
+//   GET ?dataset=ai-analyses&responseId=... -> { ok, analyses } AI replies for one response, newest first
+//   POST {op:'ai-send', responseId, promptId, editor?} -> 201 { ok, analysis } sends a completed
+//        response (full question text and answers, no contact details) with a stored prompt to
+//        Claude in the background (action ai-analysis); poll the list until status is done/failed
 //   POST {op:'prompt-save', prompt:{promptId?, name, text}, editor?} -> { ok, prompt, created }
 //   POST {op:'prompt-delete', promptId} -> { ok, deleted }
 //   GET ?dataset=answers-export&assessment=self-guided -> { ok, columns, rows } for the CSV export:
@@ -52,6 +57,7 @@ const DATASETS = {
 async function main (params) {
   if (params.op === 'question-save' || params.dataset === 'questions') return questionBank(params)
   if (params.dataset === 'profile-answers') return profileAnswers(params)
+  if (params.dataset === 'ai-analyses' || params.op === 'ai-send') return aiAnalyses(params)
   if (params.dataset === 'answers-export') return answersExport(params)
   if (params.dataset === 'settings' || ['settings-save', 'prompt-save', 'prompt-delete'].includes(params.op)) return appSettings(params)
   const dataset = params.dataset || 'assessments'
@@ -97,6 +103,67 @@ async function attachProfiles (client, items) {
   items.forEach((i) => {
     if (byId.has(i.submissionId)) i.profile = byId.get(i.submissionId)
   })
+}
+
+// AI analyses of one response: list them, or queue a new one and start the ai-analysis action.
+async function aiAnalyses (params) {
+  const method = (params.__ow_method || 'get').toLowerCase()
+  const responseId = String(params.responseId || '')
+  if (!UUID_RE.test(responseId)) return reply(400, { ok: false, error: 'invalid responseId' })
+  try {
+    return await withDb(params, async (client) => {
+      const col = client.collection(ai.ANALYSES_COLLECTION)
+      await ensureIndexes(col, ai.ANALYSES_INDEXES)
+      if (method === 'get') {
+        const list = await col.find({ responseId }).limit(100).toArray()
+        list.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))
+        return reply(200, { ok: true, responseId, analyses: list.map((d) => ai.publicAnalysis(d)) })
+      }
+      if (method !== 'post') return reply(405, { ok: false, error: 'method not allowed' })
+
+      const response = await findOneOrNull(client.collection(responses.COLLECTION), { responseId })
+      if (!response) return reply(404, { ok: false, error: 'not found' })
+      if (response.status !== 'completed') return reply(400, { ok: false, error: 'only completed assessments can be sent to AI' })
+      const prompt = settings.PROMPT_ID_RE.test(String(params.promptId || ''))
+        ? await findOneOrNull(client.collection(settings.PROMPTS_COLLECTION), { promptId: params.promptId })
+        : null
+      if (!prompt) return reply(400, { ok: false, error: 'choose a saved prompt' })
+      const saved = await findOneOrNull(client.collection(settings.SETTINGS_COLLECTION), { key: settings.AI_KEY })
+      if (!saved || !saved.apiKey) return reply(400, { ok: false, error: 'no API key is saved; add one on the Settings page' })
+      const pending = (await col.find({ responseId, status: { $in: ['queued', 'running'] } }).limit(10).toArray())
+        .map((d) => ai.publicAnalysis(d)).filter((d) => d.status !== 'failed')
+      if (pending.length) return reply(409, { ok: false, error: 'an analysis of this assessment is already running' })
+
+      const now = new Date().toISOString()
+      const doc = {
+        analysisId: crypto.randomUUID(),
+        responseId,
+        submissionId: response.submissionId || null,
+        assessment: response.assessment,
+        promptId: prompt.promptId,
+        promptName: prompt.name,
+        promptText: prompt.text,
+        model: ai.MODEL,
+        input: ai.buildInput({ assessment: response.assessment, response, sections: await questions.sectionsOf(client, response.assessment) }),
+        status: 'queued',
+        createdAt: now,
+        createdBy: editorOf(params)
+      }
+      await col.insertOne(doc)
+      try {
+        await require('openwhisk')().actions.invoke({ name: 'marketingprototype/ai-analysis', blocking: false, params: { analysisId: doc.analysisId } })
+      } catch (e) {
+        console.error('assessments-admin could not start ai-analysis:', e.name, e.message)
+        await col.updateOne({ analysisId: doc.analysisId }, { $set: { status: 'failed', error: 'The analysis could not be started.', finishedAt: new Date().toISOString() } })
+        return reply(500, { ok: false, error: 'the analysis could not be started' })
+      }
+      console.log('assessments-admin queued AI analysis', doc.analysisId, 'for', responseId)
+      return reply(201, { ok: true, analysis: ai.publicAnalysis(doc) })
+    })
+  } catch (e) {
+    console.error('assessments-admin ai-analyses failed:', e.name, e.httpStatusCode, e.message)
+    return reply(500, { ok: false, error: 'internal error' })
+  }
 }
 
 // Each profile's latest linked response (by last save), so the viewer can show who is still in

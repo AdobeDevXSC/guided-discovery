@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { fetchProfileAnswers } from './api';
 import { fmt } from './Detail';
+import AiAnalyses from './AiAnalyses';
 
 // The questions and answers behind one profile: every response (run) linked to the submission,
 // each listing all questions of the bank by section, answered or not.
@@ -14,7 +15,7 @@ function valueText(v) {
   return v.label || v.value;
 }
 
-function Run({ run, open }) {
+function Run({ run, open, auth }) {
   const total = run.sections.reduce((n, s) => n + s.questions.length, 0);
   const answered = run.sections.reduce((n, s) => n + s.questions.filter((q) => q.values.length).length, 0);
   const r = run.result;
@@ -28,6 +29,7 @@ function Run({ run, open }) {
         {answered} of {total} questions answered
         {r ? ` · ${words(r.headline)} · ${words(r.engagement)} engagement · ${(r.matchedCapabilities || []).length} capabilities` : ''}
       </p>
+      {run.status === 'completed' && <AiAnalyses responseId={run.responseId} auth={auth} />}
       {run.sections.map((s) => {
         const done = s.questions.filter((q) => q.values.length).length;
         return (
@@ -58,7 +60,9 @@ function Run({ run, open }) {
   );
 }
 
-export default function ProfileAnswers({ submissionId, token, org }) {
+export default function ProfileAnswers({
+  submissionId, token, org, profile,
+}) {
   const [state, setState] = useState({ loading: true, runs: [], error: null });
   useEffect(() => {
     let alive = true;
@@ -77,7 +81,7 @@ export default function ProfileAnswers({ submissionId, token, org }) {
       {!state.loading && !state.error && !state.runs.length && (
         <p className="muted">No answers linked to this profile yet. They appear once this person answers after the form hands off to the assessment.</p>
       )}
-      {state.runs.map((run, i) => <Run key={run.responseId} run={run} open={i === 0} />)}
+      {state.runs.map((run, i) => <Run key={run.responseId} run={run} open={i === 0} auth={{ token, org, profile }} />)}
     </>
   );
 }

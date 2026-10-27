@@ -839,6 +839,37 @@ const adminApi = {
       fetch: fetchPost('assessments-admin', { op: 'prompt-save', prompt: { name: 'Executive summary', text: 'Summarize these assessment results…' } }, ADMIN_FETCH_HEADERS + ', '),
     },
     {
+      id: 'admin-ai',
+      title: 'Send to AI',
+      method: 'GET / POST',
+      summary: '`op: "ai-send"` sends a completed response to Claude (`claude-opus-5-5`) with a stored prompt, server to server. The message holds every question\u2019s full text with the answer labels and the scored result, never contact details, followed by the prompt. It runs in the background (action `ai-analysis`): the reply is `201` with a `queued` analysis; poll `GET ?dataset=ai-analyses&responseId=` until `status` is `done` or `failed`. Replies are stored in `ai_analyses`.',
+      fields: [
+        ['op', '"ai-send"', 'POST', ''],
+        ['responseId', 'uuid', 'yes', 'A completed response. For `GET ?dataset=ai-analyses`, the response whose analyses to list.'],
+        ['promptId', 'uuid', 'ai-send', 'A prompt saved on the Settings page.'],
+        ['editor', 'string', 'no', 'Who sent it (stored as `createdBy`).'],
+      ],
+      success: {
+        status: 200,
+        body: json({
+          ok: true,
+          responseId: '<responseId>',
+          analyses: [{
+            analysisId: '<analysisId>', responseId: '<responseId>', status: 'done', error: '', promptId: '<promptId>', promptName: 'Executive summary', model: 'claude-opus-5-5', output: '…Claude\u2019s reply…', stopReason: 'end_turn', usage: { inputTokens: 1800, outputTokens: 650 }, input: 'Assessment: …\n\n## Start here\n\nQuestion: Where\u2019s your focus?\nAnswer: Understanding your customers\n…', createdAt: NOW, createdBy: 'jordan.rivera@example.com', finishedAt: NOW,
+          }],
+        }),
+      },
+      errors: [
+        { status: 201, when: 'ai-send queued the analysis', body: json({ ok: true, analysis: { analysisId: '<analysisId>', status: 'queued', '...': '...' } }) },
+        { status: 400, when: 'The response is not completed, the prompt is unknown, or no API key is saved', body: json({ ok: false, error: 'only completed assessments can be sent to AI' }) },
+        { status: 404, when: 'Unknown responseId', body: json({ ok: false, error: 'not found' }) },
+        { status: 409, when: 'An analysis of this response is already queued or running', body: json({ ok: false, error: 'an analysis of this assessment is already running' }) },
+        { status: 200, when: 'Failed analyses are listed with a short reason (e.g. the key was rejected); one stuck for 15 minutes is reported as failed', body: json({ ok: true, analyses: [{ status: 'failed', error: 'The API key was rejected by Anthropic. Replace it on the Settings page.', '...': '...' }] }) },
+      ],
+      curl: [curlPost('assessments-admin', { op: 'ai-send', responseId: '<responseId>', promptId: '<promptId>' }, ADMIN_CURL_HEADERS), '', '# poll for the reply', curlGet('assessments-admin', 'dataset=ai-analyses&responseId=<responseId>', ADMIN_CURL_HEADERS)].join('\n'),
+      fetch: fetchPost('assessments-admin', { op: 'ai-send', responseId: '<responseId>', promptId: '<promptId>' }, ADMIN_FETCH_HEADERS + ', '),
+    },
+    {
       id: 'admin-delete',
       title: 'Delete records',
       method: 'POST',

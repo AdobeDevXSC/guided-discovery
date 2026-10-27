@@ -72,6 +72,25 @@ export async function fetchProfileAnswers({ token, org, submissionId }) {
   return call(`${ENDPOINT}?${qs}`, { headers: authHeaders(token, org) });
 }
 
+/** AI analyses of one response, newest first. */
+export async function fetchAnalyses({ token, org, responseId }) {
+  const qs = new URLSearchParams({ dataset: 'ai-analyses', responseId });
+  return call(`${ENDPOINT}?${qs}`, { headers: authHeaders(token, org) });
+}
+
+/** Sends a completed response to AI with a stored prompt; resolves to { analysis } (queued). */
+export async function sendToAi({
+  token, org, responseId, promptId, editor,
+}) {
+  return call(ENDPOINT, {
+    method: 'POST',
+    headers: { ...authHeaders(token, org), 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      op: 'ai-send', responseId, promptId, editor,
+    }),
+  });
+}
+
 /** Latest-run answers for every profile of an assessment, for the CSV export. */
 export async function fetchAnswersExport({ token, org, assessment }) {
   const qs = new URLSearchParams({ dataset: 'answers-export', assessment });

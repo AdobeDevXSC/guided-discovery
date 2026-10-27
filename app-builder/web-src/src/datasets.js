@@ -52,7 +52,7 @@ function ProfileBody({ item, auth }) {
         ['Source', s.source], ['Page', s.pageUrl], ['Referrer', s.referrer],
         ['UTM', s.utm ? JSON.stringify(s.utm) : '—'],
       ]} />
-      {auth && <ProfileAnswers submissionId={item.submissionId} token={auth.token} org={auth.org} />}
+      {auth && <ProfileAnswers submissionId={item.submissionId} token={auth.token} org={auth.org} profile={auth.profile} />}
     </>
   );
 }
