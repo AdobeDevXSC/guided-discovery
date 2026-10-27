@@ -1,11 +1,68 @@
-// Prompts edited on the viewer's Settings page (collection ai_prompts), for sending results to AI.
-// Only the admin action (Adobe IMS sign-in) reads or writes them. The AI service's API key is not
-// stored here: it is a server-side secret set at deploy time, never in the database or the browser.
+// Settings edited on the viewer's Settings page: the AI service's API key (collection app_settings)
+// and stored prompts (collection ai_prompts). Only the admin action (Adobe IMS sign-in) writes them.
+//
+// The Anthropic API key is entered on the page and stored on the server, encrypted with RSA-OAEP
+// (SHA-256). The admin action holds only the public key (input `aiKeyPublic`, AI_KEY_PUBLIC in .env),
+// so it can encrypt a new key but never read a saved one. Only the action that calls Claude gets the
+// private key (AI_KEY_PRIVATE) and decrypts it, server to server. The browser sees whether a key is
+// saved and its last four characters, never the key.
+const crypto = require('crypto')
 
+const SETTINGS_COLLECTION = 'app_settings'
 const PROMPTS_COLLECTION = 'ai_prompts'
+const SETTINGS_INDEXES = [{ spec: { key: 1 }, options: { unique: true } }]
 const PROMPT_INDEXES = [{ spec: { promptId: 1 }, options: { unique: true } }, { spec: { updatedAt: -1 }, options: {} }]
+const AI_KEY = 'ai'
+const ALG = 'rsa-oaep-256'
 
 const str = (v) => (typeof v === 'string' ? v.trim() : '')
+
+// Keys are base64 DER on one line (SPKI public, PKCS#8 private), so they fit in .env.
+const publicKeyOf = (b64) => crypto.createPublicKey({ key: Buffer.from(String(b64 || ''), 'base64'), format: 'der', type: 'spki' })
+const privateKeyOf = (b64) => crypto.createPrivateKey({ key: Buffer.from(String(b64 || ''), 'base64'), format: 'der', type: 'pkcs8' })
+const OAEP = { padding: crypto.constants.RSA_PKCS1_OAEP_PADDING, oaepHash: 'sha256' }
+
+function encrypt (plain, publicKeyB64) {
+  let key
+  try { key = publicKeyOf(publicKeyB64) } catch (e) { throw Object.assign(Error('no public key'), { code: 'NO_KEY' }) }
+  return { alg: ALG, data: crypto.publicEncrypt({ key, ...OAEP }, Buffer.from(String(plain), 'utf8')).toString('base64') }
+}
+
+/** For the action that calls the AI service only. Never send the result to a browser. */
+function decrypt (box, privateKeyB64) {
+  if (!box || box.alg !== ALG) throw Error('unsupported key format')
+  return crypto.privateDecrypt({ key: privateKeyOf(privateKeyB64), ...OAEP }, Buffer.from(box.data, 'base64')).toString('utf8')
+}
+
+/** The AI settings as the browser may see them. */
+function publicAi (doc) {
+  const d = doc || {}
+  return {
+    provider: 'anthropic',
+    hasKey: Boolean(d.apiKey),
+    keyHint: d.apiKeyHint || '',
+    updatedAt: d.updatedAt || null,
+    updatedBy: d.updatedBy || ''
+  }
+}
+
+/** Checks an API key update: { apiKey } replaces the saved key, { clearKey: true } removes it. */
+function validateAi (input, publicKeyB64) {
+  const ai = input && typeof input === 'object' ? input : {}
+  if (ai.clearKey === true) return { set: {}, unset: { apiKey: '', apiKeyHint: '' }, errors: {} }
+  const apiKey = typeof ai.apiKey === 'string' ? ai.apiKey.trim() : ''
+  const errors = {}
+  if (!apiKey) errors.apiKey = 'required'
+  else if (!/^sk-ant-[A-Za-z0-9_-]+$/.test(apiKey)) errors.apiKey = 'an Anthropic API key starts with sk-ant-'
+  else if (Buffer.byteLength(apiKey) > 300) errors.apiKey = 'too long'
+  if (Object.keys(errors).length) return { set: {}, unset: {}, errors }
+  try {
+    return { set: { apiKey: encrypt(apiKey, publicKeyB64), apiKeyHint: apiKey.slice(-4) }, unset: {}, errors }
+  } catch (e) {
+    if (e.code === 'NO_KEY') return { set: {}, unset: {}, errors: { apiKey: 'the server has no encryption key configured; the key was not saved' } }
+    throw e
+  }
+}
 
 const PROMPT_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
@@ -29,8 +86,15 @@ const publicPrompt = (d) => ({
 })
 
 module.exports = {
+  SETTINGS_COLLECTION,
   PROMPTS_COLLECTION,
+  SETTINGS_INDEXES,
   PROMPT_INDEXES,
+  AI_KEY,
+  encrypt,
+  decrypt,
+  publicAi,
+  validateAi,
   PROMPT_ID_RE,
   validatePrompt,
   publicPrompt

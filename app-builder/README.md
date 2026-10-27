@@ -13,7 +13,7 @@ The AA to CJA Guided Discovery assessment: a public assessment page, the APIs it
 | Admin API | `actions/assessments-admin`: lists, deletes, the question bank, exports; needs an Adobe IMS token (`require-adobe-auth`) |
 | Question bank | `assessment_questions`, edited on the viewer's Questions page (`actions/lib/questions.js`) |
 | Scoring rules | `actions/lib/scoring-config.json`, used by `actions/lib/scoring.js` |
-| Settings (AI prompts) | the viewer's Settings page: `ai_prompts`, via `actions/lib/settings.js` |
+| Settings (AI API key, prompts) | the viewer's Settings page: `app_settings` and `ai_prompts`, via `actions/lib/settings.js`. The API key is stored encrypted and never returned |
 
 Docs:
 - [docs/cja-assessment-schema.md](docs/cja-assessment-schema.md): profiles
@@ -26,7 +26,7 @@ Docs:
 - **Tests:** `npm test` (Jest) covers scoring and answer validation against a fixture of the real questions (`test/fixtures/self-guided-questions.json`). Re-export the fixture when the question bank changes.
 - **Deploy:** `aio app deploy` (actions and web), or `--no-web-assets` / `--no-actions` for one half. Deploying is manual; merging doesn't deploy.
 - **Allowed browser origins** are in `actions/lib/cors.js`: `landing.adobe.com`, this app's static host, localhost and 127.0.0.1. Calls without an `Origin` header (curl, servers) are accepted.
-- **AI API key (Anthropic):** a server-side secret, never stored in the database or sent to the browser. The Settings page holds only the prompts. When the AI step is built, `ANTHROPIC_API_KEY` goes in `.env` (or the deploy pipeline's secrets) and is passed only to the action that calls Claude, server to server. Use a key made for this app, in its own Anthropic workspace with a spending limit.
+- **AI API key (Anthropic):** entered on the Settings page and stored on the server, in `app_settings`, encrypted with RSA-OAEP. `AI_KEY_PUBLIC` in `.env` goes to `assessments-admin`, which can encrypt a new key but can't read a saved one. `AI_KEY_PRIVATE` is for the action that calls Claude, server to server, and only that action should receive it. Keep both values, and the same across deploys: with a new pair, the saved API key can't be read and must be re-entered. Without `AI_KEY_PUBLIC` the page refuses to save a key. To generate a pair (base64 DER, one line each): `node -e "const {publicKey:p,privateKey:k}=require('crypto').generateKeyPairSync('rsa',{modulusLength:3072});console.log('AI_KEY_PUBLIC='+p.export({type:'spki',format:'der'}).toString('base64')+'\nAI_KEY_PRIVATE='+k.export({type:'pkcs8',format:'der'}).toString('base64'))"`. Use an API key made for this app, in its own Anthropic workspace with a spending limit.
 - **Admin credentials:** `assessments-admin` (wrapped by `require-adobe-auth`) and `guided-discovery` read their database credentials from `inputs` in `app.config.yaml`, which come from `.env`: `ADMIN_IMS_CLIENT_ID`, `ADMIN_IMS_CLIENT_SECRET`, `ADMIN_IMS_ORG_ID`, `ADMIN_IMS_SCOPES` (comma-separated). These are the workspace's OAuth Server-to-Server values.
 - **Maintenance scripts** in `scripts/` use the same `.env`: `backfill-user-ids.js` and `migrate-gd-sessions.js`. Both default to a dry run; add `--write` to apply.
 - **After a fresh clone:** `npm ci`, `aio login`, then `aio app use <workspace>.json` (download it from Developer Console; it holds secrets and is git-ignored) to recreate `.env` and `.aio`.

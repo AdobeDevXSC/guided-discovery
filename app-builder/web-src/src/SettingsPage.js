@@ -1,9 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { fetchSettings, savePrompt, deletePrompt } from './api';
+import {
+  fetchSettings, saveAiSettings, savePrompt, deletePrompt,
+} from './api';
 import { fmt } from './Detail';
 
-// Settings: the prompts stored for sending assessment results to AI (Anthropic's Claude). The API key
-// is not entered here: it is a server-side secret, used only for server-to-server calls.
+// Settings: the Anthropic API key and the prompts stored for sending assessment results to Claude.
+// The key is write-only: it is sent once, stored encrypted on the server and used only for
+// server-to-server calls; the page only learns whether one is saved and its last four characters.
 
 const denied = (e) => e && (e.status === 401 || e.status === 403);
 const errorText = (e, what) => (denied(e) ? `Your Adobe account is not authorized to ${what}.` : e.message);
@@ -11,6 +14,75 @@ const errorText = (e, what) => (denied(e) ? `Your Adobe account is not authorize
 function FieldError({ errors, name }) {
   const msg = errors && errors[name];
   return msg ? <span className="field-error" role="alert">{msg}</span> : null;
+}
+
+function ApiKey({
+  token, org, editor, ai, onSaved,
+}) {
+  const [apiKey, setApiKey] = useState('');
+  const [replacing, setReplacing] = useState(!ai.hasKey);
+  const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState(null);
+  const [message, setMessage] = useState(null);
+  useEffect(() => { setReplacing(!ai.hasKey); setApiKey(''); }, [ai]);
+
+  const save = async (body, done) => {
+    setSaving(true); setErrors(null); setMessage(null);
+    try {
+      const res = await saveAiSettings({
+        token, org, editor, ai: body,
+      });
+      onSaved(res.ai);
+      setMessage({ ok: true, text: done });
+    } catch (e) {
+      setErrors(e.errors);
+      setMessage({ ok: false, text: errorText(e, 'change settings') });
+    }
+    setSaving(false);
+  };
+
+  return (
+    <section className="settings-card" aria-labelledby="ai-h">
+      <h2 id="ai-h">AI service</h2>
+      <p className="muted small">Anthropic (Claude). Assessment results are sent to Claude server to server.</p>
+      <form onSubmit={(e) => { e.preventDefault(); save({ apiKey }, 'API key saved.'); }}>
+        <div className="field">
+          <span>API key</span>
+          {ai.hasKey && !replacing ? (
+            <div className="secret-saved">
+              <span>
+                Saved
+                <span className="muted"> · ends in </span>
+                <code>{`••••${ai.keyHint}`}</code>
+              </span>
+              <button type="button" className="ghost" onClick={() => setReplacing(true)}>Replace</button>
+              <button type="button" className="ghost danger-text" onClick={() => save({ clearKey: true }, 'API key removed.')} disabled={saving}>Remove</button>
+            </div>
+          ) : (
+            <>
+              <input
+                type="password"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                autoComplete="off"
+                spellCheck="false"
+                placeholder="sk-ant-…"
+                aria-label="API key"
+              />
+              <span className="muted small">Stored encrypted on the server. It isn&apos;t shown again after saving.</span>
+              {ai.hasKey && <button type="button" className="ghost inline" onClick={() => { setReplacing(false); setApiKey(''); }}>Keep the saved key</button>}
+            </>
+          )}
+          <FieldError errors={errors} name="apiKey" />
+        </div>
+        <div className="editor-actions">
+          {(!ai.hasKey || replacing) && <button type="submit" className="primary" disabled={saving || !apiKey.trim()}>{saving ? 'Saving…' : 'Save API key'}</button>}
+          {message && <span className={message.ok ? 'saved-note' : 'error'} role="status">{message.text}</span>}
+        </div>
+        {ai.updatedAt && <p className="muted small">Last changed {fmt(ai.updatedAt)}{ai.updatedBy ? ` by ${ai.updatedBy}` : ''}</p>}
+      </form>
+    </section>
+  );
 }
 
 function PromptEditor({
@@ -95,7 +167,9 @@ function PromptEditor({
 }
 
 export default function SettingsPage({ token, org, profile }) {
-  const [state, setState] = useState({ loading: true, error: null, prompts: null });
+  const [state, setState] = useState({
+    loading: true, error: null, ai: null, prompts: null,
+  });
   const [editing, setEditing] = useState(null);
   const editor = profile && (profile.email || profile.name);
 
@@ -103,7 +177,9 @@ export default function SettingsPage({ token, org, profile }) {
     setState((s) => ({ ...s, loading: true, error: null }));
     try {
       const res = await fetchSettings({ token, org });
-      setState({ loading: false, error: null, prompts: res.prompts || [] });
+      setState({
+        loading: false, error: null, ai: res.ai, prompts: res.prompts || [],
+      });
     } catch (e) {
       setState((s) => ({ ...s, loading: false, error: e }));
     }
@@ -126,7 +202,7 @@ export default function SettingsPage({ token, org, profile }) {
       <header className="top no-print">
         <div>
           <h1>Settings</h1>
-          <p className="muted">The prompts used to send assessment results to AI.</p>
+          <p className="muted">The AI service&apos;s API key and the prompts used to send assessment results to AI.</p>
         </div>
         <div className="actions">
           <button type="button" className="ghost" onClick={load} disabled={state.loading}>{state.loading ? 'Loading…' : 'Refresh'}</button>
@@ -138,13 +214,7 @@ export default function SettingsPage({ token, org, profile }) {
       {state.prompts && (
         <div className="layout">
           <div className="settings-main">
-            <section className="settings-card" aria-labelledby="ai-h">
-              <h2 id="ai-h">AI service</h2>
-              <p className="small">
-                Anthropic (Claude). The API key is kept on the server and isn&apos;t entered or shown here;
-                results are sent to Claude server to server.
-              </p>
-            </section>
+            <ApiKey token={token} org={org} editor={editor} ai={state.ai} onSaved={(ai) => setState((s) => ({ ...s, ai }))} />
 
             <section className="settings-card" aria-labelledby="prompts-h">
               <div className="settings-card-head">

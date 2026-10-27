@@ -36,6 +36,9 @@ application:
               clientSecret: $ADMIN_IMS_CLIENT_SECRET
               orgId: $ADMIN_IMS_ORG_ID
               scopes: $ADMIN_IMS_SCOPES
+              # encrypts the AI API key saved on the Settings page; the private key is not given to
+              # this action (see actions/lib/settings.js)
+              aiKeyPublic: $AI_KEY_PUBLIC
             annotations:
               require-adobe-auth: true
               final: true
