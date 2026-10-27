@@ -7,13 +7,14 @@ import { toCsv, download } from './csv';
 import Detail from './Detail';
 import QuestionsPage from './QuestionsPage';
 import ApiDocs from './ApiDocs';
+import SettingsPage from './SettingsPage';
 import { ASSESSMENTS, answerColumns } from './datasets';
 import './App.css';
 
 const ASSESSMENT_KEYS = Object.keys(ASSESSMENTS);
 
 // Pages of the viewer, addressable by hash (#questions) so they can be linked to.
-const VIEWS = [['profiles', 'Profiles'], ['questions', 'Questions'], ['api', 'API reference']];
+const VIEWS = [['profiles', 'Profiles'], ['questions', 'Questions'], ['settings', 'Settings'], ['api', 'API reference']];
 const viewFromHash = () => {
   const h = window.location.hash.replace(/^#\/?/, '').split('/')[0]; // #api/<part> is still the api page
   return VIEWS.some(([k]) => k === h) ? h : 'profiles';
@@ -222,6 +223,15 @@ export default function App() {
       <div className="viewer">
         <Nav view={view} />
         <ApiDocs />
+      </div>
+    );
+  }
+
+  if (view === 'settings') {
+    return (
+      <div className="viewer">
+        <Nav view={view} />
+        <SettingsPage token={token} org={org} profile={auth.profile} />
       </div>
     );
   }

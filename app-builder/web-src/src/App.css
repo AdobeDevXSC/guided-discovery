@@ -183,3 +183,13 @@ table.questions code, .question-editor code { font-size: 12px; }
 .qa dd ul { margin: 0; padding-left: 18px; }
 .qa code { font-size: 11px; }
 @media print { .qa-section { break-inside: avoid; } .qa-section:not([open]) .qa { display: block; } }
+
+/* ---------- settings ---------- */
+.settings-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+.settings-card { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); padding: 18px 20px; }
+.settings-card h2 { margin: 0 0 4px; font-size: 18px; }
+.settings-card-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 8px; }
+.prompt-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.prompt-row { width: 100%; text-align: left; display: flex; flex-direction: column; gap: 3px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: inherit; font: inherit; cursor: pointer; }
+.prompt-row:hover, .prompt-row.on { border-color: var(--accent); }
+.question-editor textarea.prompt-text { font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; min-height: 220px; }

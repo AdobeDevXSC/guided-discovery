@@ -1,7 +1,9 @@
+const crypto = require('crypto')
 const assessments = require('../assessments/schema')
 const responses = require('../guided-discovery/schema')
 const { withDb, isNotFound, findOneOrNull, ensureIndexes } = require('../lib/db')
 const questions = require('../lib/questions')
+const settings = require('../lib/settings')
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
@@ -31,6 +33,9 @@ const DATASETS = {
 //   GET ?dataset=questions&assessment=self-guided -> { ok, items } the question bank, in page order
 //   GET ?dataset=profile-answers&submissionId=... -> { ok, runs } every response linked to that profile,
 //        each laid out against the whole question bank (answered or not), newest first
+//   GET ?dataset=settings -> { ok, prompts } the stored AI prompts, by name
+//   POST {op:'prompt-save', prompt:{promptId?, name, text}, editor?} -> { ok, prompt, created }
+//   POST {op:'prompt-delete', promptId} -> { ok, deleted }
 //   GET ?dataset=answers-export&assessment=self-guided -> { ok, columns, rows } for the CSV export:
 //        columns = every bank question in page order; rows = { submissionId: latest run's status,
 //        result and answers as text } for every profile with a linked response
@@ -42,6 +47,7 @@ async function main (params) {
   if (params.op === 'question-save' || params.dataset === 'questions') return questionBank(params)
   if (params.dataset === 'profile-answers') return profileAnswers(params)
   if (params.dataset === 'answers-export') return answersExport(params)
+  if (params.dataset === 'settings' || ['prompt-save', 'prompt-delete'].includes(params.op)) return appSettings(params)
   const dataset = params.dataset || 'assessments'
   const ds = DATASETS[dataset]
   if (!ds) return reply(400, { ok: false, error: 'invalid dataset' })
@@ -192,6 +198,50 @@ async function answersExport (params) {
     })
   } catch (e) {
     console.error('assessments-admin answers-export failed:', e.name, e.httpStatusCode, e.message)
+    return reply(500, { ok: false, error: 'internal error' })
+  }
+}
+
+// Settings page: the stored AI prompts.
+async function appSettings (params) {
+  const method = (params.__ow_method || 'get').toLowerCase()
+  try {
+    return await withDb(params, async (client) => {
+      const prompts = client.collection(settings.PROMPTS_COLLECTION)
+      await ensureIndexes(prompts, settings.PROMPT_INDEXES)
+      const now = new Date().toISOString()
+      const editor = editorOf(params)
+
+      if (method === 'get') {
+        const list = await prompts.find({}).limit(500).toArray()
+        list.sort((a, b) => String(a.name).localeCompare(String(b.name)))
+        return reply(200, { ok: true, prompts: list.map(settings.publicPrompt) })
+      }
+      if (method !== 'post') return reply(405, { ok: false, error: 'method not allowed' })
+
+      if (params.op === 'prompt-save') {
+        const { promptId, name, text, errors } = settings.validatePrompt(params.prompt)
+        if (Object.keys(errors).length) return reply(400, { ok: false, errors })
+        if (promptId) {
+          const existing = await findOneOrNull(prompts, { promptId })
+          if (!existing) return reply(404, { ok: false, errors: { promptId: 'not found' } })
+          await prompts.updateOne({ promptId }, { $set: { name, text, updatedAt: now, updatedBy: editor } })
+          return reply(200, { ok: true, created: false, prompt: settings.publicPrompt(await findOneOrNull(prompts, { promptId })) })
+        }
+        const doc = { promptId: crypto.randomUUID(), name, text, createdAt: now, updatedAt: now, updatedBy: editor }
+        await prompts.insertOne(doc)
+        return reply(201, { ok: true, created: true, prompt: settings.publicPrompt(doc) })
+      }
+
+      // prompt-delete
+      if (!settings.PROMPT_ID_RE.test(String(params.promptId || ''))) return reply(400, { ok: false, error: 'invalid promptId' })
+      const res = await prompts.deleteOne({ promptId: params.promptId })
+      if (!res || !res.deletedCount) return reply(404, { ok: false, error: 'not found' })
+      return reply(200, { ok: true, deleted: 1 })
+    })
+  } catch (e) {
+    if (isNotFound(e)) return reply(404, { ok: false, error: 'not found' })
+    console.error('assessments-admin settings failed:', e.name, e.httpStatusCode, e.message)
     return reply(500, { ok: false, error: 'internal error' })
   }
 }

@@ -807,6 +807,34 @@ const adminApi = {
       notes: ['`runs` counts every linked run of the profile; the values come from the most recently saved one. Several values for one question are joined with "; ".'],
     },
     {
+      id: 'admin-settings',
+      title: 'Settings: AI prompts',
+      method: 'GET / POST',
+      summary: 'Backs the viewer\u2019s Settings page. `GET ?dataset=settings` returns the stored prompts, sorted by name. The AI service\u2019s API key is not part of this API: it is a server-side secret.',
+      fields: [
+        ['op', '"prompt-save" | "prompt-delete"', 'POST', ''],
+        ['prompt.promptId', 'uuid', 'no', 'Omit to create a prompt; send it to update one (404 if it doesn\u2019t exist).'],
+        ['prompt.name', 'string', 'prompt-save', 'Up to 120 characters.'],
+        ['prompt.text', 'string', 'prompt-save', 'Up to 20,000 characters.'],
+        ['promptId', 'uuid', 'prompt-delete', 'The prompt to delete.'],
+        ['editor', 'string', 'no', 'Who made the change (stored as `updatedBy`).'],
+      ],
+      success: {
+        status: 200,
+        body: json({
+          ok: true,
+          prompts: [{ promptId: '<promptId>', name: 'Executive summary', text: 'Summarize these assessment results…', createdAt: NOW, updatedAt: NOW, updatedBy: 'jordan.rivera@example.com' }],
+        }),
+      },
+      errors: [
+        { status: 201, when: 'prompt-save created a prompt', body: json({ ok: true, created: true, prompt: { promptId: '<promptId>', '...': '...' } }) },
+        { status: 400, when: 'Field errors', body: json({ ok: false, errors: { name: 'required' } }) },
+        { status: 404, when: 'prompt-save or prompt-delete with an unknown promptId', body: json({ ok: false, error: 'not found' }) },
+      ],
+      curl: [curlGet('assessments-admin', 'dataset=settings', ADMIN_CURL_HEADERS), '', '# add a prompt', curlPost('assessments-admin', { op: 'prompt-save', prompt: { name: 'Executive summary', text: 'Summarize these assessment results…' } }, ADMIN_CURL_HEADERS)].join('\n'),
+      fetch: fetchPost('assessments-admin', { op: 'prompt-save', prompt: { name: 'Executive summary', text: 'Summarize these assessment results…' } }, ADMIN_FETCH_HEADERS + ', '),
+    },
+    {
       id: 'admin-delete',
       title: 'Delete records',
       method: 'POST',
