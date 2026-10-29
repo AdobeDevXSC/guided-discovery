@@ -129,7 +129,7 @@ async function aiAnalyses (params) {
         : null
       if (!prompt) return reply(400, { ok: false, error: 'choose a saved prompt' })
       const saved = await findOneOrNull(client.collection(settings.SETTINGS_COLLECTION), { key: settings.AI_KEY })
-      if (!saved || !saved.apiKey) return reply(400, { ok: false, error: 'no API key is saved; add one on the Settings page' })
+      if (!settings.hasKey(saved)) return reply(400, { ok: false, error: 'no API key is saved; add one on the Settings page' })
       const pending = (await col.find({ responseId, status: { $in: ['queued', 'running'] } }).limit(10).toArray())
         .map((d) => ai.publicAnalysis(d)).filter((d) => d.status !== 'failed')
       if (pending.length) return reply(409, { ok: false, error: 'an analysis of this assessment is already running' })

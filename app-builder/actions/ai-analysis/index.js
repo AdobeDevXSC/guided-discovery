@@ -1,6 +1,6 @@
 // Runs one AI analysis in the background: invoked (non-blocking) by assessments-admin with
-// { analysisId } after it stored the input and prompt on the record. Decrypts the Anthropic API key
-// with the private key (this is the only action that has it), calls Claude server to server and
+// { analysisId } after it stored the input and prompt on the record. Decrypts the Amazon Bedrock API
+// key with the private key (this is the only action that has it), calls Claude on Bedrock and
 // stores the reply, or a short failure message, on the record. Not a web action.
 const { withDb, findOneOrNull } = require('../lib/db')
 const settings = require('../lib/settings')
@@ -24,7 +24,7 @@ async function main (params) {
     }
 
     const saved = await findOneOrNull(client.collection(settings.SETTINGS_COLLECTION), { key: settings.AI_KEY })
-    if (!saved || !saved.apiKey) return finish({ status: 'failed', error: 'No API key is saved. Add one on the Settings page.' })
+    if (!settings.hasKey(saved)) return finish({ status: 'failed', error: 'No API key is saved. Add one on the Settings page.' })
     let apiKey
     try {
       apiKey = settings.decrypt(saved.apiKey, params.aiKeyPrivate)

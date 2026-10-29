@@ -106,7 +106,7 @@ export default function AiAnalyses({ responseId, auth }) {
       </div>
       {prompts && !ready && (
         <p className="muted small">
-          {!hasKey ? 'Add the Anthropic API key' : 'Add a prompt'} on the <a href="#settings">Settings</a> page to send answers to AI.
+          {!hasKey ? 'Add the Amazon Bedrock API key' : 'Add a prompt'} on the <a href="#settings">Settings</a> page to send answers to AI.
         </p>
       )}
       {error && <p role="alert" className="error">{error}</p>}

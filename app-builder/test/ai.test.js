@@ -45,4 +45,11 @@ describe('ai input', () => {
     expect(ai.publicAnalysis(old, Date.parse('2026-10-27T10:05:00Z')).status).toBe('running')
     expect(ai.publicAnalysis(old, Date.parse('2026-10-27T11:00:00Z'))).toMatchObject({ status: 'failed', error: expect.stringMatching(/did not finish/) })
   })
+
+  test('Bedrock 403s are reported as a rejected key or as missing model access', () => {
+    const Anthropic = require('@anthropic-ai/sdk')
+    const denied = (Message) => new Anthropic.PermissionDeniedError(403, { Message }, `403 ${Message}`, new Headers())
+    expect(ai.failureText(denied('Authentication failed: Please make sure your API Key is valid.'))).toMatch(/^The API key was rejected by Amazon Bedrock/)
+    expect(ai.failureText(denied("You don't have access to the model with the specified model ID."))).toMatch(/not allowed to use anthropic\.claude-opus-5-5 in us-east-2/)
+  })
 })
