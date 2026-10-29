@@ -10,7 +10,7 @@ const pair = () => {
   }
 }
 const KEYS = pair()
-const API_KEY = 'sk-ant-api03-' + 'a'.repeat(80) + 'WXYZ'
+const API_KEY = 'ABSK' + 'QmVkcm9ja0FQSUtleS1h'.repeat(6) + 'WXYZ'
 
 describe('settings', () => {
   test('the API key is encrypted with the public key and only the private key decrypts it', () => {
@@ -18,7 +18,8 @@ describe('settings', () => {
     expect(errors).toEqual({})
     expect(set.apiKeyHint).toBe('WXYZ')
     expect(set.apiKey.alg).toBe('rsa-oaep-256')
-    expect(JSON.stringify(set)).not.toContain('sk-ant')
+    expect(JSON.stringify(set)).not.toContain('ABSK')
+    expect(set.provider).toBe('bedrock')
     expect(settings.decrypt(set.apiKey, KEYS.priv)).toBe(API_KEY)
     expect(() => settings.decrypt(set.apiKey, pair().priv)).toThrow()
   })
@@ -30,17 +31,21 @@ describe('settings', () => {
   })
 
   test('clearKey removes the saved key; other input is checked', () => {
-    expect(settings.validateAi({ clearKey: true }, KEYS.pub)).toEqual({ set: {}, unset: { apiKey: '', apiKeyHint: '' }, errors: {} })
+    expect(settings.validateAi({ clearKey: true }, KEYS.pub)).toEqual({ set: {}, unset: { apiKey: '', apiKeyHint: '', provider: '' }, errors: {} })
     expect(settings.validateAi({ apiKey: '' }, KEYS.pub).errors).toEqual({ apiKey: 'required' })
-    expect(settings.validateAi({ apiKey: 'sk-proj-123' }, KEYS.pub).errors.apiKey).toMatch(/sk-ant-/)
-    expect(settings.validateAi({ apiKey: 'sk-ant-' + 'a'.repeat(400) }, KEYS.pub).errors).toEqual({ apiKey: 'too long' })
+    expect(settings.validateAi({ apiKey: 'sk-ant-api03-abc' }, KEYS.pub).errors.apiKey).toMatch(/ABSK/)
+    expect(settings.validateAi({ apiKey: 'bedrock-api-key-abc' }, KEYS.pub).errors.apiKey).toMatch(/ABSK/)
+    expect(settings.validateAi({ apiKey: 'ABSK' + 'a'.repeat(400) }, KEYS.pub).errors.apiKey).toMatch(/too long/)
   })
 
   test('the public view never includes the key', () => {
     const { set } = settings.validateAi({ apiKey: API_KEY }, KEYS.pub)
     const view = settings.publicAi({ ...set, updatedAt: 'u', updatedBy: 'e' })
-    expect(view).toEqual({ provider: 'anthropic', hasKey: true, keyHint: 'WXYZ', updatedAt: 'u', updatedBy: 'e' })
+    expect(view).toEqual({ provider: 'bedrock', hasKey: true, keyHint: 'WXYZ', updatedAt: 'u', updatedBy: 'e' })
     expect(settings.publicAi(null)).toMatchObject({ hasKey: false, keyHint: '' })
+    // a key saved before the switch to Bedrock (no provider) is treated as not saved
+    expect(settings.publicAi({ apiKey: set.apiKey, apiKeyHint: 'abcd' })).toMatchObject({ hasKey: false, keyHint: '' })
+    expect(settings.hasKey({ apiKey: set.apiKey })).toBe(false)
   })
 
   test('prompt validation', () => {

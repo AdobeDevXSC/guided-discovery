@@ -4,7 +4,7 @@ import {
 } from './api';
 import { fmt } from './Detail';
 
-// Settings: the Anthropic API key and the prompts stored for sending assessment results to Claude.
+// Settings: the Amazon Bedrock API key and the prompts stored for sending assessment results to Claude.
 // The key is write-only: it is sent once, stored encrypted on the server and used only for
 // server-to-server calls; the page only learns whether one is saved and its last four characters.
 
@@ -44,7 +44,7 @@ function ApiKey({
   return (
     <section className="settings-card" aria-labelledby="ai-h">
       <h2 id="ai-h">AI service</h2>
-      <p className="muted small">Anthropic (Claude). Assessment results are sent to Claude server to server.</p>
+      <p className="muted small">Claude on Amazon Bedrock (us-east-2). Assessment results are sent to Claude server to server. Use a long-term Bedrock API key.</p>
       <form onSubmit={(e) => { e.preventDefault(); save({ apiKey }, 'API key saved.'); }}>
         <div className="field">
           <span>API key</span>
@@ -66,7 +66,7 @@ function ApiKey({
                 onChange={(e) => setApiKey(e.target.value)}
                 autoComplete="off"
                 spellCheck="false"
-                placeholder="sk-ant-…"
+                placeholder="ABSK…"
                 aria-label="API key"
               />
               <span className="muted small">Stored encrypted on the server. It isn&apos;t shown again after saving.</span>

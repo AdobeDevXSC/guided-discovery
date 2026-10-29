@@ -1,4 +1,5 @@
-// Sending a completed assessment to AI (Anthropic's Claude), server to server.
+// Sending a completed assessment to AI (Claude on Amazon Bedrock, bedrock-runtime in us-east-2),
+// server to server, authenticated with the saved Bedrock API key.
 //
 // The admin action builds the input (every question's full text with the answer labels, plus the
 // scored result) and stores it on an analysis record in ai_analyses; the ai-analysis action then
@@ -13,7 +14,8 @@ const ANALYSES_INDEXES = [
   { spec: { responseId: 1, createdAt: -1 }, options: {} }
 ]
 const STATUSES = ['queued', 'running', 'done', 'failed']
-const MODEL = 'claude-opus-5-5'
+const MODEL = 'anthropic.claude-opus-5-5'
+const REGION = 'us-east-2' // https://bedrock-runtime.us-east-2.amazonaws.com
 const MAX_TOKENS = 64000
 // A queued or running analysis older than this is reported as failed (the action timed out or died).
 const STALE_MS = 15 * 60 * 1000
@@ -75,35 +77,42 @@ function userMessage (input, promptText) {
 
 /** Calls Claude and returns { text, model, stopReason, usage }; throws the SDK's typed errors. */
 async function analyze ({ apiKey, input, promptText }) {
-  const Anthropic = require('@anthropic-ai/sdk')
-  const client = new Anthropic({ apiKey, maxRetries: 2 })
-  const stream = client.beta.messages.stream({
+  const { AnthropicBedrock } = require('@anthropic-ai/bedrock-sdk')
+  const client = new AnthropicBedrock({ apiKey, awsRegion: REGION, maxRetries: 2 })
+  // Bedrock has no server-side fallback, so a classifier decline comes back as stop_reason 'refusal'
+  const stream = client.messages.stream({
     model: MODEL,
     max_tokens: MAX_TOKENS,
-    // a classifier decline is retried on Anthropic's recommended fallback model, server side
-    betas: ['server-side-fallback-2026-07-01'],
-    fallbacks: 'default',
     messages: [{ role: 'user', content: userMessage(input, promptText) }]
   })
   const message = await stream.finalMessage()
   const text = message.content.filter((b) => b.type === 'text').map((b) => b.text).join('\n\n').trim()
   return {
     text,
-    model: message.model,
+    model: message.model || MODEL,
     stopReason: message.stop_reason,
     usage: { inputTokens: message.usage.input_tokens, outputTokens: message.usage.output_tokens }
   }
 }
 
+// Bedrock's own error text, e.g. { Message: "..." }, kept short
+const bedrockMessage = (e) => String((e.error && (e.error.Message || e.error.message)) || '').slice(0, 200)
+
 /** A failure as a short message that is safe to store and show (never includes the key). */
 function failureText (e) {
   const Anthropic = require('@anthropic-ai/sdk')
-  if (e instanceof Anthropic.AuthenticationError) return 'The API key was rejected by Anthropic. Replace it on the Settings page.'
-  if (e instanceof Anthropic.PermissionDeniedError) return 'The API key is not allowed to use this model.'
-  if (e instanceof Anthropic.RateLimitError) return 'Anthropic rate limit reached. Try again in a minute.'
-  if (e instanceof Anthropic.BadRequestError) return `Anthropic rejected the request: ${String(e.message).slice(0, 300)}`
-  if (e instanceof Anthropic.APIError && e.status) return `Anthropic error ${e.status}. Try again later.`
-  if (e instanceof Anthropic.APIConnectionError) return 'Could not reach Anthropic. Try again later.'
+  // the Bedrock client throws the base SDK's error classes
+  if (e instanceof Anthropic.AuthenticationError) return 'The API key was rejected by Amazon Bedrock. Replace it on the Settings page.'
+  // Bedrock answers 403 both for a bad key and for missing model access; tell them apart by its message
+  if (e instanceof Anthropic.PermissionDeniedError) {
+    const said = bedrockMessage(e)
+    if (/api key|security token|authenticat|expired|signature/i.test(said)) return `The API key was rejected by Amazon Bedrock (${said}). Replace it on the Settings page.`
+    return `The API key is not allowed to use ${MODEL} in ${REGION}${said ? ` (${said})` : ''}. Check the key's permissions and model access in the AWS console.`
+  }
+  if (e instanceof Anthropic.RateLimitError) return 'Amazon Bedrock rate limit reached. Try again in a minute.'
+  if (e instanceof Anthropic.BadRequestError) return `Amazon Bedrock rejected the request: ${String(e.message).slice(0, 300)}`
+  if (e instanceof Anthropic.APIError && e.status) return `Amazon Bedrock error ${e.status}. Try again later.`
+  if (e instanceof Anthropic.APIConnectionError) return 'Could not reach Amazon Bedrock. Try again later.'
   return 'The analysis failed.'
 }
 
@@ -133,6 +142,7 @@ module.exports = {
   ANALYSES_INDEXES,
   STATUSES,
   MODEL,
+  REGION,
   buildInput,
   userMessage,
   analyze,

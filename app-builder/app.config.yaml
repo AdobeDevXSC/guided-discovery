@@ -47,7 +47,7 @@ application:
             web: 'no'
             runtime: nodejs:22
             # started (non-blocking) by assessments-admin; the only action given the private key that
-            # decrypts the Anthropic API key (see actions/lib/settings.js)
+            # decrypts the Amazon Bedrock API key (see actions/lib/settings.js)
             inputs:
               clientId: $ADMIN_IMS_CLIENT_ID
               clientSecret: $ADMIN_IMS_CLIENT_SECRET

@@ -1,9 +1,9 @@
 // Settings edited on the viewer's Settings page: the AI service's API key (collection app_settings)
 // and stored prompts (collection ai_prompts). Only the admin action (Adobe IMS sign-in) writes them.
 //
-// The Anthropic API key is entered on the page and stored on the server, encrypted with RSA-OAEP
-// (SHA-256). The admin action holds only the public key (input `aiKeyPublic`, AI_KEY_PUBLIC in .env),
-// so it can encrypt a new key but never read a saved one. Only the action that calls Claude gets the
+// The Amazon Bedrock API key (long-term, ABSK…) is entered on the page and stored on the server,
+// encrypted with RSA-OAEP (SHA-256). The admin action holds only the public key (input `aiKeyPublic`,
+// AI_KEY_PUBLIC in .env), so it can encrypt a new key but never read a saved one. Only the action that calls Claude gets the
 // private key (AI_KEY_PRIVATE) and decrypts it, server to server. The browser sees whether a key is
 // saved and its last four characters, never the key.
 const crypto = require('crypto')
@@ -14,6 +14,9 @@ const SETTINGS_INDEXES = [{ spec: { key: 1 }, options: { unique: true } }]
 const PROMPT_INDEXES = [{ spec: { promptId: 1 }, options: { unique: true } }, { spec: { updatedAt: -1 }, options: {} }]
 const AI_KEY = 'ai'
 const ALG = 'rsa-oaep-256'
+const PROVIDER = 'bedrock'
+// a long-term Bedrock API key: ABSK followed by base64
+const KEY_RE = /^ABSK[A-Za-z0-9+/]+={0,2}$/
 
 const str = (v) => (typeof v === 'string' ? v.trim() : '')
 
@@ -34,13 +37,16 @@ function decrypt (box, privateKeyB64) {
   return crypto.privateDecrypt({ key: privateKeyOf(privateKeyB64), ...OAEP }, Buffer.from(box.data, 'base64')).toString('utf8')
 }
 
+/** True when a Bedrock key is saved (a key saved for an earlier provider doesn't count). */
+const hasKey = (doc) => Boolean(doc && doc.apiKey && doc.provider === PROVIDER)
+
 /** The AI settings as the browser may see them. */
 function publicAi (doc) {
   const d = doc || {}
   return {
-    provider: 'anthropic',
-    hasKey: Boolean(d.apiKey),
-    keyHint: d.apiKeyHint || '',
+    provider: PROVIDER,
+    hasKey: hasKey(d),
+    keyHint: hasKey(d) ? d.apiKeyHint || '' : '',
     updatedAt: d.updatedAt || null,
     updatedBy: d.updatedBy || ''
   }
@@ -49,15 +55,16 @@ function publicAi (doc) {
 /** Checks an API key update: { apiKey } replaces the saved key, { clearKey: true } removes it. */
 function validateAi (input, publicKeyB64) {
   const ai = input && typeof input === 'object' ? input : {}
-  if (ai.clearKey === true) return { set: {}, unset: { apiKey: '', apiKeyHint: '' }, errors: {} }
+  if (ai.clearKey === true) return { set: {}, unset: { apiKey: '', apiKeyHint: '', provider: '' }, errors: {} }
   const apiKey = typeof ai.apiKey === 'string' ? ai.apiKey.trim() : ''
   const errors = {}
   if (!apiKey) errors.apiKey = 'required'
-  else if (!/^sk-ant-[A-Za-z0-9_-]+$/.test(apiKey)) errors.apiKey = 'an Anthropic API key starts with sk-ant-'
-  else if (Buffer.byteLength(apiKey) > 300) errors.apiKey = 'too long'
+  else if (!KEY_RE.test(apiKey)) errors.apiKey = 'a long-term Amazon Bedrock API key starts with ABSK'
+  // RSA-OAEP with a 3072-bit key fits 318 bytes; short-term Bedrock keys are much longer
+  else if (Buffer.byteLength(apiKey) > 300) errors.apiKey = 'too long; use a long-term Bedrock API key'
   if (Object.keys(errors).length) return { set: {}, unset: {}, errors }
   try {
-    return { set: { apiKey: encrypt(apiKey, publicKeyB64), apiKeyHint: apiKey.slice(-4) }, unset: {}, errors }
+    return { set: { provider: PROVIDER, apiKey: encrypt(apiKey, publicKeyB64), apiKeyHint: apiKey.slice(-4) }, unset: {}, errors }
   } catch (e) {
     if (e.code === 'NO_KEY') return { set: {}, unset: {}, errors: { apiKey: 'the server has no encryption key configured; the key was not saved' } }
     throw e
@@ -93,6 +100,7 @@ module.exports = {
   AI_KEY,
   encrypt,
   decrypt,
+  hasKey,
   publicAi,
   validateAi,
   PROMPT_ID_RE,
