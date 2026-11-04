@@ -64,6 +64,7 @@ function buildInput ({ assessment, response, sections }) {
       if (!q.values.length) out.push('Answer: Not answered')
       else if (q.values.length === 1) out.push(`Answer: ${questions.valueText(q.values[0])}`)
       else out.push('Answer:', ...q.values.map((v) => `- ${questions.valueText(v)}`))
+      if (q.notSelected && q.notSelected.length) out.push('Not selected:', ...q.notSelected.map((o) => `- ${o.label}`))
       out.push('')
     }
   }

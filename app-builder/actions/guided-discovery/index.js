@@ -152,7 +152,8 @@ async function listAnswers (params) {
                 question: qid,
                 text: q ? q.title || '' : '',
                 help: q ? q.help || '' : '',
-                values: (values || []).map((v) => questions.labelValue(q, v, qs))
+                values: (values || []).map((v) => questions.labelValue(q, v, qs)),
+                notSelected: questions.notSelected(q, values, qs, entry.answers)
               }
             })
           }
