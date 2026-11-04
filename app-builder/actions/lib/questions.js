@@ -184,6 +184,7 @@ function answerSheet (sections, responseSections) {
       questions: data.questions.map((q) => ({
         question: q.id,
         text: q.title || '',
+        help: q.help || '',
         type: TYPE_OF_DISPLAY[q.display] || q.display,
         values: (given[q.id] || []).map((v) => labelValue(q, v, data.questions))
       }))
@@ -194,7 +195,7 @@ function answerSheet (sections, responseSections) {
     const known = sections.get(sectionId)
     const extra = Object.entries(entry.answers || {})
       .filter(([qid]) => !known || !known.data.questions.some((q) => q.id === qid))
-      .map(([qid, values]) => ({ question: qid, text: '', type: '', values: values.map((v) => ({ value: v })) }))
+      .map(([qid, values]) => ({ question: qid, text: '', help: '', type: '', values: values.map((v) => ({ value: v })) }))
     if (extra.length) out.push({ section: sectionId, title: sectionId, savedAt: entry.savedAt || null, questions: extra, unknown: true })
   }
   return out

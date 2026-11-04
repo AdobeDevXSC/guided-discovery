@@ -474,7 +474,7 @@ const responsesApi = {
       id: 'responses-by-user',
       title: 'All answers for a person',
       method: 'GET',
-      summary: '`?op=answers&userId=<uuid>&responseId=<uuid>`. Every response (run) of one person, newest first, with each answer labelled from the question bank, plus status and result. The `responseId` is the secret: it must be one of that person\u2019s own responses, so a `userId` alone reads nothing.',
+      summary: '`?op=answers&userId=<uuid>&responseId=<uuid>`. Every response (run) of one person, newest first, with each question’s text and help text (`help`, empty when the question has none) and each answer labelled from the question bank, plus status and result. The `responseId` is the secret: it must be one of that person\u2019s own responses, so a `userId` alone reads nothing.',
       fieldsLabel: 'Query parameters',
       fields: [
         ['op', '"answers"', 'yes', ''],
@@ -500,7 +500,7 @@ const responsesApi = {
                   section: 'discovery',
                   title: 'Start here · Technology-agnostic',
                   savedAt: NOW,
-                  answers: [{ question: 'focus', text: "Where's your focus?", values: [{ value: 'activation', label: 'Acting on what you know' }] }],
+                  answers: [{ question: 'focus', text: "Where's your focus?", help: 'Pick whichever describes you best right now. Not sure? "Both" works fine.', values: [{ value: 'activation', label: 'Acting on what you know' }] }],
                 },
                 {
                   section: 'governance',
@@ -751,8 +751,8 @@ const adminApi = {
               section: 'discovery',
               title: 'Start here · Technology-agnostic',
               questions: [
-                { question: 'focus', text: "Where's your focus?", type: 'single', values: [{ value: 'activation', label: 'Acting on what you know' }] },
-                { question: 'success', text: 'What does success look like…', type: 'multiple', values: [] },
+                { question: 'focus', text: "Where's your focus?", help: 'Pick whichever describes you best right now. Not sure? "Both" works fine.', type: 'single', values: [{ value: 'activation', label: 'Acting on what you know' }] },
+                { question: 'success', text: 'What does success look like…', help: '', type: 'multiple', values: [] },
               ],
             }],
           }],
