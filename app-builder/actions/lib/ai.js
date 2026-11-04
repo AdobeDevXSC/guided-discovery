@@ -1,7 +1,7 @@
 // Sending a completed assessment to AI (Claude on Amazon Bedrock, bedrock-runtime in us-east-2),
 // server to server, authenticated with the saved Bedrock API key.
 //
-// The admin action builds the input (every question's full text with the answer labels, plus the
+// The admin action builds the input (every question's full text and help text with the answer labels, plus the
 // scored result) and stores it on an analysis record in ai_analyses; the ai-analysis action then
 // sends it with the chosen prompt and stores Claude's reply on the same record. Contact details
 // (name, email, phone) are never part of the input.
@@ -46,7 +46,7 @@ function resultLines (assessment, result) {
 
 /**
  * The assessment as plain text for the model: every section and question in page order with its
- * full text and the answer labels ("Not answered" when empty), then the scored result.
+ * full text, its help text when it has one, and the answer labels ("Not answered" when empty), then the scored result.
  */
 function buildInput ({ assessment, response, sections }) {
   const sheet = questions.answerSheet(sections, response.sections)
@@ -60,6 +60,7 @@ function buildInput ({ assessment, response, sections }) {
     out.push(`## ${s.title}`, '')
     for (const q of s.questions) {
       out.push(`Question: ${q.text || q.question}`)
+      if (q.help) out.push(`Help text: ${q.help}`)
       if (!q.values.length) out.push('Answer: Not answered')
       else if (q.values.length === 1) out.push(`Answer: ${questions.valueText(q.values[0])}`)
       else out.push('Answer:', ...q.values.map((v) => `- ${questions.valueText(v)}`))

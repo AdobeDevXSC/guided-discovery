@@ -150,6 +150,7 @@ async function listAnswers (params) {
               return {
                 question: qid,
                 text: q ? q.title || '' : '',
+                help: q ? q.help || '' : '',
                 values: (values || []).map((v) => questions.labelValue(q, v, qs))
               }
             })

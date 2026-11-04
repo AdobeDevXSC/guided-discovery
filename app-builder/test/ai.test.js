@@ -21,9 +21,17 @@ describe('ai input', () => {
   test('every question is included with its full text, answered or not', () => {
     const total = [...sections.values()].reduce((n, s) => n + s.data.questions.length, 0)
     expect(input.match(/^Question: /gm)).toHaveLength(total)
-    expect(input).toContain(`Question: ${q.title}\nAnswer: ${q.options[0].label}`)
+    expect(input).toContain(`Question: ${q.title}\n${q.help ? `Help text: ${q.help}\n` : ''}Answer: ${q.options[0].label}`)
     expect(input.match(/^Answer: Not answered$/gm)).toHaveLength(total - 1)
     expect(input).toContain(`## ${first.data.eyebrow}`)
+  })
+
+  test('help text follows its question, only when the question has one', () => {
+    const all = [...sections.values()].flatMap((s) => s.data.questions)
+    const withHelp = all.filter((x) => x.help)
+    expect(withHelp.length).toBeGreaterThan(0)
+    expect(input.match(/^Help text: /gm)).toHaveLength(withHelp.length)
+    for (const x of withHelp) expect(input).toContain(`Question: ${x.title}\nHelp text: ${x.help}\n`)
   })
 
   test('the result is labelled from the scoring rules', () => {
