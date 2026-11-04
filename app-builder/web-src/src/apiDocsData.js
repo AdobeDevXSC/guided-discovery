@@ -750,7 +750,7 @@ const adminApi = {
       id: 'admin-profile-answers',
       title: 'Answers for one profile',
       method: 'GET',
-      summary: '`?dataset=profile-answers&submissionId=<uuid>`. Every response linked to that profile, newest first, each laid out against the whole question bank: all sections and questions in page order, with labelled values (empty when unanswered). Used by the profile panel. `result` has the same labels as in the public answers API (`headlineLabel`, `nextSteps`, `engagementDetail`, capability `label`/`description`, labelled `reasons`). Each answered question also lists `notSelected`, the options that weren’t picked.',
+      summary: '`?dataset=profile-answers&submissionId=<uuid>`. Every response linked to that profile, newest first, each laid out against the whole question bank: all sections and questions in page order, with labelled values (empty when unanswered). Used by the profile panel. `result` has the same labels as in the public answers API (`headlineLabel`, `nextSteps`, `engagementDetail`, capability `label`/`description`, labelled `reasons`). Each answered question also lists `notSelected`, the options that weren’t picked. `submission` is the profile\u2019s initial form as stored (profile with contact details, consent, source), without the internal `_id` and `client` fields; `null` if the profile was deleted.',
       fieldsLabel: 'Query parameters',
       fields: [
         ['dataset', '"profile-answers"', 'yes', ''],
@@ -761,6 +761,13 @@ const adminApi = {
         body: json({
           ok: true,
           submissionId: '<submissionId>',
+          submission: {
+            submissionId: '<submissionId>', userId: '<userId>', assessment: 'self-guided', schemaVersion: 1, status: 'started',
+            profile: PROFILE,
+            consent: { marketingContact: true, version: '2026-adobe-marketing-v1', acceptedAt: NOW },
+            source: SOURCE,
+            sections: {}, summary: null, createdAt: NOW, updatedAt: NOW, completedAt: null,
+          },
           count: 1,
           runs: [{
             responseId: '<responseId>',

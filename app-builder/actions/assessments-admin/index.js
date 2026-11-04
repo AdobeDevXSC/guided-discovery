@@ -36,7 +36,8 @@ const DATASETS = {
 //   POST {op:'delete', dataset, ids:[...]} -> { ok, deleted, notFound } removes up to 100 records
 //        (legacy body {op:'delete', submissionId} deletes from assessments)
 //   GET ?dataset=questions&assessment=self-guided -> { ok, items } the question bank, in page order
-//   GET ?dataset=profile-answers&submissionId=... -> { ok, runs } every response linked to that profile,
+//   GET ?dataset=profile-answers&submissionId=... -> { ok, submission, runs } the initial form (profile,
+//        consent, source; null if the profile is gone) and every response linked to that profile,
 //        each laid out against the whole question bank (answered or not), newest first
 //   GET ?dataset=settings -> { ok, ai: {provider, hasKey, keyHint, updatedAt, updatedBy}, prompts }
 //        the API key is never returned, only whether one is saved and its last 4 characters
@@ -250,7 +251,10 @@ async function profileAnswers (params) {
           sections: questions.answerSheet(banks.get(r.assessment), r.sections)
         })
       }
-      return reply(200, { ok: true, submissionId: params.submissionId, count: out.length, runs: out })
+      // the initial form (profile, consent, source) as stored, without internal fields
+      const doc = await findOneOrNull(client.collection(assessments.COLLECTION), { submissionId: params.submissionId })
+      const submission = doc ? (({ _id, client: ua, ...rest }) => rest)(doc) : null
+      return reply(200, { ok: true, submissionId: params.submissionId, submission, count: out.length, runs: out })
     })
   } catch (e) {
     console.error('assessments-admin profile-answers failed:', e.name, e.httpStatusCode, e.message)
