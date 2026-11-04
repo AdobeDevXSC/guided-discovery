@@ -26,6 +26,12 @@ describe('ai input', () => {
     expect(input).toContain(`## ${first.data.eyebrow}`)
   })
 
+  test('an answered question lists the options that were not picked', () => {
+    const rest = q.options.slice(1).map((o) => `- ${o.label}`).join('\n')
+    expect(input).toContain(`Answer: ${q.options[0].label}\nNot selected:\n${rest}\n`)
+    expect(input.match(/^Not selected:$/gm)).toHaveLength(1)
+  })
+
   test('help text follows its question, only when the question has one', () => {
     const all = [...sections.values()].flatMap((s) => s.data.questions)
     const withHelp = all.filter((x) => x.help)

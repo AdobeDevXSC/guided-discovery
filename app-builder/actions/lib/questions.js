@@ -170,6 +170,24 @@ function labelValue (q, value, questionsOfSection) {
 }
 
 /**
+ * The options of an answered question that weren't picked, as [{ value, label }] in page order:
+ * for a per-item question, the items picked in its itemsFrom question that got no answer; for a
+ * sort or owner question, the options not sorted or given no owner. Empty when the question is
+ * unanswered or free text.
+ */
+function notSelected (q, raw, questionsOfSection, sectionAnswers) {
+  if (!q || !raw || !raw.length || q.display === 'text') return []
+  let options = q.options || []
+  if (q.itemsFrom) {
+    const source = (questionsOfSection || []).find((x) => x.id === q.itemsFrom)
+    const picked = new Set((sectionAnswers || {})[q.itemsFrom] || [])
+    options = ((source && source.options) || []).filter((o) => picked.has(o.id))
+  }
+  const answered = new Set(raw.map((v) => String(v).split(/[:=]/)[0]))
+  return options.filter((o) => !answered.has(o.id)).map((o) => ({ value: o.id, label: o.label }))
+}
+
+/**
  * One response's answers laid out against the whole bank: every section and question in page order,
  * with its labelled values (empty when unanswered), plus answers to questions no longer in the bank.
  */
@@ -186,7 +204,8 @@ function answerSheet (sections, responseSections) {
         text: q.title || '',
         help: q.help || '',
         type: TYPE_OF_DISPLAY[q.display] || q.display,
-        values: (given[q.id] || []).map((v) => labelValue(q, v, data.questions))
+        values: (given[q.id] || []).map((v) => labelValue(q, v, data.questions)),
+        notSelected: notSelected(q, given[q.id], data.questions, given)
       }))
     })
   }
@@ -195,7 +214,7 @@ function answerSheet (sections, responseSections) {
     const known = sections.get(sectionId)
     const extra = Object.entries(entry.answers || {})
       .filter(([qid]) => !known || !known.data.questions.some((q) => q.id === qid))
-      .map(([qid, values]) => ({ question: qid, text: '', help: '', type: '', values: values.map((v) => ({ value: v })) }))
+      .map(([qid, values]) => ({ question: qid, text: '', help: '', type: '', values: values.map((v) => ({ value: v })), notSelected: [] }))
     if (extra.length) out.push({ section: sectionId, title: sectionId, savedAt: entry.savedAt || null, questions: extra, unknown: true })
   }
   return out
@@ -211,5 +230,5 @@ function valueText (v) {
 
 module.exports = {
   COLLECTION, INDEXES, NEW_TYPES, TYPE_OF_DISPLAY, sectionsOf, publicSections, validateEdit, forget, asQuestion,
-  labelValue, answerSheet, valueText
+  labelValue, notSelected, answerSheet, valueText
 }
