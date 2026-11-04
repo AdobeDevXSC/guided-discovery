@@ -8,6 +8,7 @@ const assessments = require('../assessments/schema')
 const { withCors } = require('../lib/cors')
 const { withDb, findOneOrNull, ensureIndexes } = require('../lib/db')
 const questions = require('../lib/questions')
+const { labelResult } = require('../lib/result')
 
 const headers = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
 const reply = (statusCode, body) => ({ statusCode, headers, body })
@@ -163,7 +164,7 @@ async function listAnswers (params) {
           status: d.status,
           progress: d.progress || { completed: [] },
           sections,
-          result: d.result || null,
+          result: labelResult(d.assessment, d.result, bank),
           createdAt: d.createdAt,
           updatedAt: d.updatedAt,
           completedAt: d.completedAt || null
