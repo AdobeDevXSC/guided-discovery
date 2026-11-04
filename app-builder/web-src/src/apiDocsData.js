@@ -77,6 +77,27 @@ const RESULT = {
   }],
   computedAt: NOW,
 };
+// the result as the answers APIs return it: the stored IDs plus labels (actions/lib/result.js)
+const LABELLED_RESULT = {
+  readinessPct: 0.292,
+  headline: 'building-your-case',
+  engagement: 'medium',
+  matchedCapabilities: [{
+    id: 'data-transformations',
+    label: 'Data Transformations',
+    description: 'Reshape, correct, or enrich data at report time, without waiting on a re-implementation.',
+    reasons: [{
+      section: 'governance', question: 'status', option: 'consent', choice: 'gap', sectionTitle: 'Governance & Access', questionText: 'Sort each control', optionLabel: 'Consent & Identity Governance', choiceLabel: 'Gap for us',
+    }],
+  }],
+  computedAt: NOW,
+  readinessLabel: '29%',
+  headlineLabel: 'Building Your Case',
+  nextSteps: [{ title: 'Continue the data foundations inventory', text: 'A short working session to finish cataloging your current Adobe Analytics setup so we can map what carries over to CJA.' }, { '...': 'one per step' }],
+  engagementDetail: {
+    label: 'Medium', title: 'Modernization + Roadmap Development', duration: '4-12 weeks', model: 'Ultimate Success with Integrated Services', text: 'A Modernization activation to assess your current Adobe Analytics implementation…',
+  },
+};
 
 // ---------- overview ----------
 
@@ -474,7 +495,7 @@ const responsesApi = {
       id: 'responses-by-user',
       title: 'All answers for a person',
       method: 'GET',
-      summary: '`?op=answers&userId=<uuid>&responseId=<uuid>`. Every response (run) of one person, newest first, with each question’s text and help text (`help`, empty when the question has none) and each answer labelled from the question bank, plus status and result. The `responseId` is the secret: it must be one of that person\u2019s own responses, so a `userId` alone reads nothing.',
+      summary: '`?op=answers&userId=<uuid>&responseId=<uuid>`. Every response (run) of one person, newest first, with each question’s text and help text (`help`, empty when the question has none) and each answer labelled from the question bank, plus status and result. `result` keeps the stored IDs and adds labels: `readinessLabel`, `headlineLabel`, `nextSteps`, `engagementDetail`, and for each matched capability its `label`, `description` and the answers that matched it (`sectionTitle`, `questionText`, `optionLabel`, `choiceLabel`). The `responseId` is the secret: it must be one of that person\u2019s own responses, so a `userId` alone reads nothing.',
       fieldsLabel: 'Query parameters',
       fields: [
         ['op', '"answers"', 'yes', ''],
@@ -514,7 +535,7 @@ const responsesApi = {
               updatedAt: NOW,
               completedAt: null,
             },
-            { assessment: 'self-guided', status: 'completed', '...': 'another run (no responseId)' },
+            { assessment: 'self-guided', status: 'completed', result: LABELLED_RESULT, '...': 'another run (no responseId)' },
           ],
         }),
       },
@@ -729,7 +750,7 @@ const adminApi = {
       id: 'admin-profile-answers',
       title: 'Answers for one profile',
       method: 'GET',
-      summary: '`?dataset=profile-answers&submissionId=<uuid>`. Every response linked to that profile, newest first, each laid out against the whole question bank: all sections and questions in page order, with labelled values (empty when unanswered). Used by the profile panel.',
+      summary: '`?dataset=profile-answers&submissionId=<uuid>`. Every response linked to that profile, newest first, each laid out against the whole question bank: all sections and questions in page order, with labelled values (empty when unanswered). Used by the profile panel. `result` has the same labels as in the public answers API (`headlineLabel`, `nextSteps`, `engagementDetail`, capability `label`/`description`, labelled `reasons`).',
       fieldsLabel: 'Query parameters',
       fields: [
         ['dataset', '"profile-answers"', 'yes', ''],
@@ -744,8 +765,8 @@ const adminApi = {
           runs: [{
             responseId: '<responseId>',
             assessment: 'self-guided',
-            status: 'in_progress',
-            result: null,
+            status: 'completed',
+            result: LABELLED_RESULT,
             createdAt: NOW,
             sections: [{
               section: 'discovery',

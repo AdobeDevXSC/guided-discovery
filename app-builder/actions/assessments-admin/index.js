@@ -3,6 +3,7 @@ const assessments = require('../assessments/schema')
 const responses = require('../guided-discovery/schema')
 const { withDb, isNotFound, findOneOrNull, ensureIndexes } = require('../lib/db')
 const questions = require('../lib/questions')
+const { labelResult } = require('../lib/result')
 const settings = require('../lib/settings')
 const ai = require('../lib/ai')
 
@@ -242,7 +243,7 @@ async function profileAnswers (params) {
           assessment: r.assessment,
           status: r.status,
           progress: r.progress || { completed: [] },
-          result: r.result || null,
+          result: labelResult(r.assessment, r.result, banks.get(r.assessment)),
           createdAt: r.createdAt,
           updatedAt: r.updatedAt,
           completedAt: r.completedAt || null,

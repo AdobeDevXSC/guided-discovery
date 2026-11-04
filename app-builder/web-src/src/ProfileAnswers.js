@@ -27,7 +27,7 @@ function Run({ run, open, auth }) {
       </h4>
       <p className="muted small">
         {answered} of {total} questions answered
-        {r ? ` · ${words(r.headline)} · ${words(r.engagement)} engagement · ${(r.matchedCapabilities || []).length} capabilities` : ''}
+        {r ? ` · ${r.readinessLabel ? `${r.readinessLabel} ready · ` : ''}${r.headlineLabel || words(r.headline)} · ${(r.engagementDetail && r.engagementDetail.label) || words(r.engagement)} engagement · ${(r.matchedCapabilities || []).length} capabilities` : ''}
       </p>
       {run.status === 'completed' && <AiAnalyses responseId={run.responseId} auth={auth} />}
       {run.sections.map((s) => {
