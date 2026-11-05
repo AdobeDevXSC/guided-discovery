@@ -7,7 +7,7 @@ The AA to CJA Guided Discovery assessment: a public assessment page, the APIs it
 | Piece | Where |
 |---|---|
 | Public assessment page | `web-src/self-guided.html`, served at https://20409-157ochretakin-stage.adobeio-static.net/self-guided.html (no sign-in) |
-| Facilitator-led page | `web-src/facilitator-led.html`, served at https://20409-157ochretakin-stage.adobeio-static.net/facilitator-led.html (practitioner session; add `?view=executive` for an executive session). Saves as assessment `facilitator-led` with the session's `view` |
+| Facilitator-led pages | `web-src/facilitator-executive.html` and `web-src/facilitator-practitioner.html`, served at https://20409-157ochretakin-stage.adobeio-static.net/facilitator-executive.html and https://20409-157ochretakin-stage.adobeio-static.net/facilitator-practitioner.html. Both save as assessment `facilitator-led`, each with its own `view`. Built from the master HTML file with `node scripts/make-facilitator-pages.js <master.html>`; rebuild instead of editing them |
 | Admin viewer (profiles, questions, API reference) | `web-src/src/`, opened through Experience Cloud: `https://experience.adobe.com/?devMode=true#/custom-apps/?localDevUrl=https://20409-157ochretakin-stage.adobeio-static.net/index.html` |
 | Profiles API | `actions/assessments`: the assessment's initial form (`cja_assessments`, people in `cja_users`) |
 | Responses API | `actions/guided-discovery`: answers, progress and results (`assessment_responses`), plus `GET ?op=questions` |
