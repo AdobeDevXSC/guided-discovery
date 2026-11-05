@@ -11,7 +11,7 @@ const country = (p) => (p.country === 'Other' ? p.countryOther : p.country);
 const profile = (r) => r.profile || {};
 const fullName = (r) => `${profile(r).firstName || ''} ${profile(r).lastName || ''}`.trim() || '—';
 
-const LABELS = { 'self-guided': 'Self-guided assessment' };
+const LABELS = { 'self-guided': 'Self-guided assessment', 'facilitator-led': 'Facilitator-led assessment' };
 
 // The profile's latest linked run (attached by the admin action): started or in progress = in process.
 const isInProgress = (r) => Boolean(r.run && (r.run.status === 'started' || r.run.status === 'in_progress'));
@@ -111,6 +111,15 @@ export const ASSESSMENTS = {
     Body: ProfileBody,
     exportAnswers: true,
   },
+};
+
+// Facilitator-led collects the same initial form and the same questions (as an executive or a
+// practitioner session), so its tab lists the same profile fields.
+ASSESSMENTS['facilitator-led'] = {
+  ...ASSESSMENTS['self-guided'],
+  label: LABELS['facilitator-led'],
+  assessment: 'facilitator-led',
+  file: 'facilitator-led-assessment-profiles',
 };
 
 const words = (id) => (id ? String(id).replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase()) : '');

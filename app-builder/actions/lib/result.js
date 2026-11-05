@@ -3,7 +3,7 @@
 // the answers that matched it (section, question and option text from the question bank). Labels
 // come from the scoring rules (scoring-config.json); the stored result keeps IDs only.
 const questions = require('./questions')
-const SCORING = require('./scoring-config.json')
+const SCORING = require('./scoring-rules')
 
 const byId = (list, id) => (list || []).find((x) => x.id === id) || null
 

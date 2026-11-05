@@ -6,7 +6,7 @@
 // sends it with the chosen prompt and stores Claude's reply on the same record. Contact details
 // (name, email, phone) are never part of the input.
 const questions = require('./questions')
-const SCORING = require('./scoring-config.json')
+const SCORING = require('./scoring-rules')
 
 const ANALYSES_COLLECTION = 'ai_analyses'
 const ANALYSES_INDEXES = [
@@ -20,7 +20,11 @@ const MAX_TOKENS = 64000
 // A queued or running analysis older than this is reported as failed (the action timed out or died).
 const STALE_MS = 15 * 60 * 1000
 
-const ASSESSMENT_LABELS = { 'self-guided': 'Adobe Analytics to Customer Journey Analytics self-guided assessment' }
+const ASSESSMENT_LABELS = {
+  'self-guided': 'Adobe Analytics to Customer Journey Analytics self-guided assessment',
+  'facilitator-led': 'Adobe Analytics to Customer Journey Analytics facilitator-led assessment'
+}
+const VIEW_LABELS = { executive: 'executive session', practitioner: 'practitioner session' }
 const words = (id) => String(id || '').replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase())
 const labelOf = (list, id) => ((list || []).find((x) => x.id === id) || {}).label || words(id)
 
@@ -51,7 +55,7 @@ function resultLines (assessment, result) {
 function buildInput ({ assessment, response, sections }) {
   const sheet = questions.answerSheet(sections, response.sections)
   const out = [
-    `Assessment: ${ASSESSMENT_LABELS[assessment] || assessment}`,
+    `Assessment: ${ASSESSMENT_LABELS[assessment] || assessment}${response.view ? ` (${VIEW_LABELS[response.view] || response.view})` : ''}`,
     `Status: ${response.status}${response.completedAt ? `, completed ${response.completedAt}` : ''}`,
     ''
   ]
