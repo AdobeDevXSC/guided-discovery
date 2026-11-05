@@ -155,6 +155,18 @@ function validateProgress (input) {
   return { progress: { completed: completed.filter((p) => PAGE_RE.test(String(p))).slice(0, 40) }, errors: c.errors }
 }
 
+// Which version of the page ran, for assessments that have more than one. Facilitator-led runs as
+// an executive session or a practitioner session; the other assessments have no views.
+const VIEWS = { 'facilitator-led': ['executive', 'practitioner'] }
+
+/** { view, error }: the view for a new response of this assessment (null when it has none). */
+function validateView (assessment, input) {
+  const allowed = VIEWS[assessment]
+  if (!allowed) return input === undefined || input === null || input === '' ? { view: null } : { error: 'this assessment has no views' }
+  if (!allowed.includes(input)) return { error: `one of ${allowed.join(', ')}` }
+  return { view: input }
+}
+
 const INDEXES = [
   { spec: { responseId: 1 }, options: { unique: true } },
   { spec: { userId: 1, assessment: 1 }, options: {} },
@@ -164,6 +176,6 @@ const INDEXES = [
 ]
 
 module.exports = {
-  COLLECTION, LEGACY_COLLECTION, SCHEMA_VERSION, STATUSES, INDEXES,
-  leadRefId, cleanSource, validateProgress, sectionIdOf, validateStructured
+  COLLECTION, LEGACY_COLLECTION, SCHEMA_VERSION, STATUSES, INDEXES, VIEWS,
+  validateView, leadRefId, cleanSource, validateProgress, sectionIdOf, validateStructured
 }

@@ -190,7 +190,7 @@ const profileApi = {
         ['op', '"create"', 'yes', ''],
         ['profile', 'object', 'yes', 'The fields in the next table.'],
         ['consent', 'boolean', 'yes', 'Must be `true` (marketing contact consent). Anything else fails with `errors.consent`.'],
-        ['assessment', 'string', 'no', 'Which assessment. Defaults to `self-guided`, currently the only value; unknown values fail with `errors.assessment`.'],
+        ['assessment', 'string', 'no', 'Which assessment: `self-guided` (default) or `facilitator-led`. Unknown values fail with `errors.assessment`. Start the response with the same value, or it won\'t link to this profile.'],
         ['source', 'object | string', 'no', '`{ source, pageUrl, referrer, utm: { source, medium, campaign, term, content } }`. A plain string is taken as `source.source`. `source.source` must match `[\\w.:/\\- ]{0,100}` or it is stored empty; other values are truncated (500 / 100 characters).'],
         ['website', 'string', 'no', 'Honeypot. Leave it out.'],
       ],
@@ -311,7 +311,8 @@ const responsesApi = {
   action: 'guided-discovery',
   intro: [
     'The person\'s answers to an assessment run. Collection `assessment_responses`, one document per run. A response stores only a reference to the profile (`submissionId` and `userId`), never the profile itself.',
-    'Answers are checked against the question bank for that assessment (`self-guided`: sections discovery, data-foundations, segmentation, identity, governance, roles, strategy-adoption; list them with `GET ?op=questions`). Every answer value is an array of strings; see Answer value formats.',
+    'Two assessments share this API: `self-guided` (the public page) and `facilitator-led` (a facilitator runs it with the client, as an executive or a practitioner session). Each run records its `assessment`, and facilitator-led runs also record their `view`. Both have the same questions and scoring rules today, but each has its own question bank, edited separately.',
+    'Answers are checked against the question bank for that assessment (sections discovery, data-foundations, segmentation, identity, governance, roles, strategy-adoption; list them with `GET ?op=questions`). Every answer value is an array of strings; see Answer value formats.',
     'Responses carry `Cache-Control: no-store`. A POST may also be sent as `text/plain` (for example `navigator.sendBeacon` on tab close); the body is still parsed as JSON.',
   ],
   notes: [
@@ -325,7 +326,8 @@ const responsesApi = {
       summary: '`op: "start"`. Creates a response with status `started` and returns its `responseId`. Pass the profile\'s `submissionId` as `leadRef` to link them.',
       fields: [
         ['op', '"start"', 'yes', ''],
-        ['assessment', 'string', 'no', 'Defaults to `self-guided`. Unknown values fail with `errors.assessment`.'],
+        ['assessment', 'string', 'no', '`self-guided` (default) or `facilitator-led`. Unknown values fail with `errors.assessment`.'],
+        ['view', 'string', 'facilitator-led only', 'Which session ran: `executive` or `practitioner`. Required for `facilitator-led`, not accepted for `self-guided`. Stored on the response and returned by resume, `op=answers`, admin `profile-answers`, and the Send to AI input.'],
         ['leadRef', 'uuid | { submissionId }', 'no', 'The profile\'s `submissionId`. Linked only if that profile exists and belongs to the same assessment; otherwise the response starts unlinked (`linked: false`, no error).'],
         ['source', 'object | string', 'no', 'Same shape and cleaning as the profile `source`.'],
         ['contentVersion', 'string', 'no', 'Free-form label for the content the client rendered, up to 40 characters.'],
@@ -333,6 +335,8 @@ const responsesApi = {
       success: { status: 201, body: json({ ok: true, responseId: '<responseId>', sessionId: '<responseId>', linked: true }) },
       errors: [
         { status: 400, when: 'Unknown assessment', body: json({ ok: false, errors: { assessment: 'unknown assessment' } }) },
+        { status: 400, when: 'facilitator-led without a valid view', body: json({ ok: false, errors: { view: 'one of executive, practitioner' } }) },
+        { status: 400, when: 'self-guided with a view', body: json({ ok: false, errors: { view: 'this assessment has no views' } }) },
         { status: 400, when: 'Unknown op', body: json({ ok: false, error: 'op must be start, save, answer, link or complete' }) },
       ],
       curl: curlPost('guided-discovery', startBody),
@@ -501,7 +505,7 @@ const responsesApi = {
         ['op', '"answers"', 'yes', ''],
         ['userId', 'uuid', 'yes', 'From the profile `create` response.'],
         ['responseId', 'uuid', 'yes', 'Any response of this person (the resume token their browser keeps). Proves the caller is that person.'],
-        ['assessment', 'string', 'no', 'Only runs of this assessment, e.g. `self-guided`.'],
+        ['assessment', 'string', 'no', 'Only runs of this assessment: `self-guided` or `facilitator-led`.'],
       ],
       success: {
         status: 200,
@@ -606,7 +610,7 @@ const questionsApi = {
   intro: [
     'The question bank (collection `assessment_questions`) holds every question of an assessment: section, key, full text, answer type and options. The responses API checks answers against it, and the Questions page of this viewer edits it.',
     'Keys are the stable IDs stored with answers: `section` and `question` in `answer` / `save` calls, and option `key`s as values. Keys are fixed once saved; saved options can be relabelled but not removed, and a saved question\'s answer type cannot change.',
-    'Changes reach the responses API within about 30 seconds. Scoring thresholds and capability copy still come from the assessment\'s summary document in DA.',
+    'Changes reach the responses API within about 30 seconds. Scoring thresholds and capability copy come from `lib/scoring-config.json` (facilitator-led uses the self-guided rules, see `lib/scoring-rules.js`).',
   ],
   ops: [
     {
@@ -617,7 +621,7 @@ const questionsApi = {
       fieldsLabel: 'Query parameters',
       fields: [
         ['op', '"questions"', 'yes', ''],
-        ['assessment', 'string', 'no', 'Defaults to `self-guided`.'],
+        ['assessment', 'string', 'no', '`self-guided` (default) or `facilitator-led`.'],
       ],
       success: {
         status: 200,
@@ -645,7 +649,7 @@ const questionsApi = {
       fieldsLabel: 'Query parameters',
       fields: [
         ['dataset', '"questions"', 'yes', ''],
-        ['assessment', 'string', 'no', 'Defaults to `self-guided`.'],
+        ['assessment', 'string', 'no', '`self-guided` (default) or `facilitator-led`.'],
       ],
       success: {
         status: 200,
@@ -672,7 +676,7 @@ const questionsApi = {
       summary: '`op: "question-save"` on `assessments-admin`. Creates a question, or updates a saved one when `question.update` is true. Requires an Adobe IMS user token.',
       fields: [
         ['op', '"question-save"', 'yes', ''],
-        ['assessment', 'string', 'no', 'Defaults to `self-guided`.'],
+        ['assessment', 'string', 'no', '`self-guided` (default) or `facilitator-led`.'],
         ['question.questionId', 'string', 'yes', 'The key: lowercase letters, numbers and hyphens, up to 64. Fixed once saved.'],
         ['question.update', 'boolean', 'for updates', '`true` to update a saved question (404 if it does not exist). Without it the call creates, and a key that is already used is rejected.'],
         ['question.section', 'string', 'new only', 'Section key. An existing section, or a new one (then `sectionTitle` is required). Ignored on update.'],
@@ -721,7 +725,7 @@ const adminApi = {
       fieldsLabel: 'Query parameters',
       fields: [
         ['dataset', '"assessments" | "responses"', 'no', 'Defaults to `assessments`.'],
-        ['assessment', 'string', 'no', 'Filter by assessment, e.g. `self-guided`.'],
+        ['assessment', 'string', 'no', 'Filter by assessment: `self-guided` or `facilitator-led`.'],
         ['status', '"started" | "in_progress" | "completed"', 'no', 'Filter by status.'],
         ['limit', 'integer', 'no', '1 to 500, default 200.'],
         ['skip', 'integer', 'no', 'Records to skip, for paging. Default 0.'],
@@ -801,7 +805,7 @@ const adminApi = {
       fieldsLabel: 'Query parameters',
       fields: [
         ['dataset', '"answers-export"', 'yes', ''],
-        ['assessment', 'string', 'no', 'Defaults to `self-guided`.'],
+        ['assessment', 'string', 'no', '`self-guided` (default) or `facilitator-led`.'],
       ],
       success: {
         status: 200,

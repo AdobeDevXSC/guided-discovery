@@ -23,6 +23,7 @@ function Run({ run, open, auth }) {
     <section className="run">
       <h4>
         <span className={`pill ${run.status}`}>{run.status.replace('_', ' ')}</span>
+        {run.view ? ` ${words(run.view)} session ·` : ''}
         {' '}Started {fmt(run.createdAt)}{run.completedAt ? ` · completed ${fmt(run.completedAt)}` : ''}
       </h4>
       <p className="muted small">

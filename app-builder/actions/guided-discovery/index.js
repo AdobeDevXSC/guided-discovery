@@ -2,7 +2,7 @@ const crypto = require('crypto')
 const { computeSummary } = require('../lib/scoring')
 const {
   COLLECTION, SCHEMA_VERSION, INDEXES,
-  leadRefId, cleanSource, validateProgress, sectionIdOf, validateStructured
+  leadRefId, cleanSource, validateProgress, sectionIdOf, validateStructured, validateView
 } = require('./schema')
 const assessments = require('../assessments/schema')
 const { withCors } = require('../lib/cors')
@@ -17,8 +17,8 @@ const hasErrors = (errors) => Object.keys(errors).length > 0
 
 // Questions come from the question bank (collection assessment_questions, edited in the admin
 // viewer). Each assessment's scoring rules (readiness bands, engagement sizes, capabilities) are in
-// lib/scoring-config.json; an assessment exists when it has rules there.
-const SCORING = require('../lib/scoring-config.json')
+// lib/scoring-rules.js (scoring-config.json); an assessment exists when it has rules there.
+const SCORING = require('../lib/scoring-rules')
 
 // The recommendation, scored from the assessment's rules and the bank's questions.
 async function scoredResult (client, assessment, sections) {
@@ -50,7 +50,9 @@ function readBody (params) {
 
 // Public endpoint for assessment responses (collection assessment_responses). A response is
 // token-gated by its random responseId, which the browser keeps to autosave and resume.
-//   POST {op:'start', assessment?, leadRef?, source, contentVersion} -> 201 {responseId, linked}
+//   POST {op:'start', assessment?, view?, leadRef?, source, contentVersion} -> 201 {responseId, linked}
+//        assessment is self-guided (default) or facilitator-led; facilitator-led also needs view
+//        (executive or practitioner), the version of the page that ran
 //   POST {op:'link', responseId, leadRef}                    -> 200 {linked} (only if not yet linked)
 //   POST {op:'save', responseId, section, rev, data, progress?} -> 200 {rev, savedAt}; 409 if rev is stale
 //   POST {op:'save', responseId, progress}                   -> 200 (progress only)
@@ -161,6 +163,7 @@ async function listAnswers (params) {
         responses.push({
           ...(d.responseId === responseId ? { responseId } : {}),
           assessment: d.assessment,
+          ...(d.view ? { view: d.view } : {}),
           submissionId: d.submissionId || null,
           status: d.status,
           progress: d.progress || { completed: [] },
@@ -191,6 +194,8 @@ async function verifiedLead (client, input, assessment) {
 async function start (client, col, params) {
   const assessment = params.assessment || assessments.DEFAULT_ASSESSMENT
   if (!SCORING[assessment]) return reply(400, { ok: false, errors: { assessment: 'unknown assessment' } })
+  const { view, error } = validateView(assessment, params.view)
+  if (error) return reply(400, { ok: false, errors: { view: error } })
   const lead = await verifiedLead(client, params.leadRef, assessment)
   const now = new Date().toISOString()
   const responseId = crypto.randomUUID()
@@ -198,6 +203,7 @@ async function start (client, col, params) {
     responseId,
     schemaVersion: SCHEMA_VERSION,
     assessment,
+    ...(view ? { view } : {}),
     userId: lead ? lead.userId : null,
     submissionId: lead ? lead.submissionId : null,
     status: 'started',
@@ -379,6 +385,7 @@ async function resume (col, responseId) {
   const response = {
     responseId: doc.responseId,
     assessment: doc.assessment,
+    ...(doc.view ? { view: doc.view } : {}),
     status: doc.status,
     contentVersion: doc.contentVersion,
     linked: Boolean(doc.submissionId),

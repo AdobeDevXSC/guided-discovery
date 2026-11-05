@@ -242,6 +242,7 @@ async function profileAnswers (params) {
         out.push({
           responseId: r.responseId,
           assessment: r.assessment,
+          ...(r.view ? { view: r.view } : {}),
           status: r.status,
           progress: r.progress || { completed: [] },
           result: labelResult(r.assessment, r.result, banks.get(r.assessment)),

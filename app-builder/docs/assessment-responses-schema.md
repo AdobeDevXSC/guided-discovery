@@ -9,11 +9,11 @@ The answers someone gives in an assessment: one document per person per assessme
 Questions live in the **question bank**, collection `assessment_questions`. There's one document per question, in `actions/lib/questions.js`: `{ assessment, questionId, section, sectionTitle, sectionOrder, order, title, help, display, required, options:[{id, label, ...}], choices?, itemsFrom?, ..., createdAt, updatedAt, updatedBy }`.
 - **Editing:** the admin viewer's Questions page (admin op `question-save`). Keys are fixed once saved; saved options can be relabelled but not removed, and the answer type can't change.
 - **Reading:** `GET ?op=questions` on this action (public).
-- **Origin:** the bank was seeded on 2026-10-22 from the original section documents (23 questions). The seed script is in git history at tag `eds-final`.
+- **Origin:** the bank was seeded on 2026-10-22 from the original section documents (23 questions). The seed script is in git history at tag `eds-final`. On 2026-11-05 the 23 `self-guided` questions were copied to `facilitator-led`; since then each assessment's questions are edited separately.
 
 ## Scoring rules
 
-Each assessment's scoring rules live in `actions/lib/scoring-config.json`, keyed by assessment ID. An assessment exists when it has an entry there. The rules are:
+Each assessment's scoring rules live in `actions/lib/scoring-config.json`, keyed by assessment ID, and are read through `actions/lib/scoring-rules.js`. An assessment exists when it has rules there. `facilitator-led` has no entry of its own: `scoring-rules.js` gives it the `self-guided` rules (`SAME_AS`). The rules are:
 - **`sections`:** the sections scored, in order.
 - **`readinessFrom`:** the question whose share of picked options is the readiness score (`data-foundations.tracked`).
 - **`headlines`:** a band per `minReadiness`, with recommended next steps.
@@ -30,7 +30,8 @@ Answers are checked against the bank. Option and question IDs are the stable key
 {
   "responseId": "uuid",               // public resume token, unique; kept by the browser (localStorage gd:session)
   "schemaVersion": 2,
-  "assessment": "self-guided",        // same value as the profile's assessment
+  "assessment": "self-guided",        // self-guided | facilitator-led; same value as the profile's assessment
+  "view": "executive",                // facilitator-led only: executive | practitioner (the session that ran)
   "userId": "uuid | null",            // the person (cja_users), from the linked profile
   "submissionId": "uuid | null",      // the profile record that handed off (?lead=)
   "status": "started | in_progress | completed",
@@ -75,7 +76,7 @@ Each question stores a list of strings. What a value looks like depends on how t
 
 | Call | Request | Response |
 |---|---|---|
-| Start | `POST {op:"start", assessment?, leadRef?, source, contentVersion}` | `201 {responseId, linked}`. `assessment` defaults to `self-guided`; `leadRef` is the profile's `submissionId` |
+| Start | `POST {op:"start", assessment?, view?, leadRef?, source, contentVersion}` | `201 {responseId, linked}`. `assessment` is `self-guided` (default) or `facilitator-led`; `view` (`executive` or `practitioner`) is required for facilitator-led only; `leadRef` is the profile's `submissionId` |
 | Link | `POST {op:"link", responseId, leadRef}` | `200 {linked}` (only if not linked yet) |
 | Save | `POST {op:"save", responseId, section, rev, data:{answers}, progress?}` | `200 {rev, savedAt}`, `409` if `rev` is stale, `400 {errors}` |
 | Answer | `POST {op:"answer", responseId, userId?, section, question, value}` or `POST {op:"answer", responseId, userId?, answers:[{section, question, value}, …]}` | `200 {userId, saved:[{section, question}], revs:{section: rev}, savedAt}`, `400 {errors}`, `400` if the response isn't linked to a user, `404` (also when `userId` isn't the response's) |

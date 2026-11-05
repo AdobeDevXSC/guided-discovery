@@ -4,7 +4,7 @@ const COLLECTION = 'cja_assessments'
 // one document per person ({ userId, email }), so repeat submissions share a stable userId
 const USERS_COLLECTION = 'cja_users'
 // Which assessment a submission belongs to; more assessments will share this collection.
-const ASSESSMENT_IDS = ['self-guided']
+const ASSESSMENT_IDS = ['self-guided', 'facilitator-led']
 const DEFAULT_ASSESSMENT = 'self-guided'
 const SCHEMA_VERSION = 1
 const CONSENT_VERSION = '2026-adobe-marketing-v1'
