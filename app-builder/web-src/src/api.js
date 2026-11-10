@@ -122,6 +122,51 @@ export async function savePrompt({
   return postAdmin(token, org, { op: 'prompt-save', prompt, editor });
 }
 
+/** skill: { name, text } - the wrap-up skill sent to Claude as the system prompt. */
+export async function saveSkill({
+  token, org, skill, editor,
+}) {
+  return postAdmin(token, org, { op: 'skill-save', skill, editor });
+}
+
+/** The LLM log, newest first, without the long input/output. */
+export async function fetchLlmLog({
+  token, org, status, trigger, limit = 100, skip = 0,
+}) {
+  const qs = new URLSearchParams({ dataset: 'llm-log', limit: String(limit), skip: String(skip) });
+  if (status) qs.set('status', status);
+  if (trigger) qs.set('trigger', trigger);
+  return call(`${ENDPOINT}?${qs}`, { headers: authHeaders(token, org) });
+}
+
+/** One LLM log entry in full: system prompt, prompt, input and output. */
+export async function fetchLlmLogEntry({ token, org, analysisId }) {
+  const qs = new URLSearchParams({ dataset: 'llm-log', analysisId });
+  return call(`${ENDPOINT}?${qs}`, { headers: authHeaders(token, org) });
+}
+
 export async function deletePrompt({ token, org, promptId }) {
   return postAdmin(token, org, { op: 'prompt-delete', promptId });
+}
+
+export async function deleteLlmEntry({ token, org, analysisId }) {
+  return postAdmin(token, org, { op: 'llm-delete', analysisId });
+}
+
+export async function rerunLlmEntry({ token, org, analysisId, editor }) {
+  return postAdmin(token, org, { op: 'llm-rerun', analysisId, editor });
+}
+
+/** template: { text } - the HTML the wrap-up fills with Claude's JSON; clear: true removes it. */
+export async function saveTemplate({
+  token, org, template, clear, editor,
+}) {
+  return postAdmin(token, org, {
+    op: 'template-save', template, clear, editor,
+  });
+}
+
+/** The template filled with placeholder text -> { html, fields }; nothing is saved or sent to Claude. */
+export async function previewTemplate({ token, org, template }) {
+  return postAdmin(token, org, { op: 'template-preview', template });
 }

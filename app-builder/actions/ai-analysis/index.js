@@ -18,8 +18,9 @@ async function main (params) {
     if (doc.status !== 'queued') return { ok: false, error: `already ${doc.status}` }
     await col.updateOne({ analysisId }, { $set: { status: 'running', startedAt: new Date().toISOString() } })
 
+    const started = Date.now()
     const finish = async (fields) => {
-      await col.updateOne({ analysisId }, { $set: { ...fields, finishedAt: new Date().toISOString() } })
+      await col.updateOne({ analysisId }, { $set: { ...fields, latencyMs: Date.now() - started, finishedAt: new Date().toISOString() } })
       return { ok: fields.status === 'done', analysisId, status: fields.status }
     }
 
@@ -34,12 +35,25 @@ async function main (params) {
     }
 
     try {
-      const res = await ai.analyze({ apiKey, input: doc.input, promptText: doc.promptText })
+      const res = await ai.analyze({ apiKey, input: doc.input, promptText: doc.promptText, systemText: doc.systemText })
       console.log('ai-analysis', analysisId, res.model, res.stopReason, JSON.stringify(res.usage))
       if (res.stopReason === 'refusal') return finish({ status: 'failed', error: 'Claude declined this request.', model: res.model, stopReason: res.stopReason, usage: res.usage })
+      let output = ai.unfenceHtml(res.text)
+      let rawOutput = output !== res.text ? res.text : undefined
+      if (doc.templateText) {
+        // the reply is JSON; the document is the template filled with it
+        rawOutput = res.text
+        try {
+          output = require('../lib/template').render(doc.templateText, require('../lib/template').extractJson(res.text), doc.computed)
+        } catch (e) {
+          console.error('ai-analysis could not fill the template:', e.message)
+          return finish({ status: 'failed', error: `Claude's reply could not be placed in the template: ${e.message}.`, rawOutput, model: res.model, stopReason: res.stopReason, usage: res.usage })
+        }
+      }
       return finish({
         status: 'done',
-        output: res.text,
+        output,
+        ...(rawOutput !== undefined ? { rawOutput } : {}),
         model: res.model,
         stopReason: res.stopReason,
         usage: res.usage,

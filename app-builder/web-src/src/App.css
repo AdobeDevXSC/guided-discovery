@@ -218,3 +218,13 @@ button.inline { align-self: flex-start; padding: 2px 0; border: 0; background: n
 .prompt-row { width: 100%; text-align: left; display: flex; flex-direction: column; gap: 3px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: inherit; font: inherit; cursor: pointer; }
 .prompt-row:hover, .prompt-row.on { border-color: var(--accent); }
 .question-editor textarea.prompt-text { font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; min-height: 220px; }
+
+/* LLM log */
+.llm-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.llm-table th, .llm-table td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); }
+.llm-table tr.on { background: var(--surface); }
+.llm-meta { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; font-size: 13px; margin: 0 0 12px; }
+.llm-meta dt { color: var(--muted); }
+.llm-meta dd { margin: 0; overflow-wrap: anywhere; }
+.llm-pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; max-height: 360px; overflow: auto; border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; }
+.file-pick { cursor: pointer; }

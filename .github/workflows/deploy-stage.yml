@@ -1,0 +1,88 @@
+# Deploys app-builder to the STAGE workspace on every push to a branch other than main.
+# main is deployed to production by deploy-prod.yml.
+#
+# Secrets live in the GitHub Environment "stage" (Settings > Environments). See app-builder/docs/ci-cd.md
+# for the list, and app-builder/scripts/set-ci-secrets.js to load them from your local config.
+name: Deploy to stage
+
+on:
+  push:
+    branches-ignore: [main]
+    paths:
+      - 'app-builder/**'
+      - '.github/workflows/deploy-stage.yml'
+
+permissions:
+  contents: read
+
+# Every branch deploys to the same stage workspace, so deploys run one at a time, newest last.
+concurrency:
+  group: deploy-stage
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Test and deploy to stage
+    runs-on: ubuntu-latest
+    environment: stage
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: app-builder
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app-builder/package-lock.json
+
+      - run: npm ci
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Set up the aio CLI
+        uses: adobe/aio-cli-setup-action@1.3.0
+        with:
+          os: ubuntu-latest
+          version: 10.x.x
+
+      # OAuth server-to-server credentials of the workspace; lets the CLI deploy (and provision the database)
+      - name: Sign in to Adobe I/O
+        uses: adobe/aio-apps-action@4.1.0
+        with:
+          os: ubuntu-latest
+          command: oauth_sts
+          CLIENTID: ${{ secrets.CLIENTID }}
+          CLIENTSECRET: ${{ secrets.CLIENTSECRET }}
+          TECHNICALACCOUNTID: ${{ secrets.TECHNICALACCOUNTID }}
+          TECHNICALACCOUNTEMAIL: ${{ secrets.TECHNICALACCOUNTEMAIL }}
+          IMSORGID: ${{ secrets.IMSORGID }}
+          SCOPES: ${{ secrets.SCOPES }}
+
+      # app.config.yaml reads the ADMIN_IMS_* and AI_KEY_* values from the environment
+      - name: Deploy
+        run: aio app deploy --no-publish
+        env:
+          AIO_RUNTIME_NAMESPACE: ${{ secrets.AIO_RUNTIME_NAMESPACE }}
+          AIO_RUNTIME_AUTH: ${{ secrets.AIO_RUNTIME_AUTH }}
+          AIO_PROJECT_ID: ${{ secrets.AIO_PROJECT_ID }}
+          AIO_PROJECT_NAME: ${{ secrets.AIO_PROJECT_NAME }}
+          AIO_PROJECT_ORG_ID: ${{ secrets.AIO_PROJECT_ORG_ID }}
+          AIO_PROJECT_ORG_IMS__ORG__ID: ${{ secrets.IMSORGID }}
+          AIO_PROJECT_WORKSPACE_ID: ${{ secrets.AIO_PROJECT_WORKSPACE_ID }}
+          AIO_PROJECT_WORKSPACE_NAME: ${{ secrets.AIO_PROJECT_WORKSPACE_NAME }}
+          AIO_PROJECT_WORKSPACE_DETAILS_SERVICES: ${{ secrets.AIO_PROJECT_WORKSPACE_DETAILS_SERVICES }}
+          ADMIN_IMS_CLIENT_ID: ${{ secrets.CLIENTID }}
+          ADMIN_IMS_CLIENT_SECRET: ${{ secrets.ADMIN_IMS_CLIENT_SECRET }}
+          ADMIN_IMS_ORG_ID: ${{ secrets.IMSORGID }}
+          ADMIN_IMS_SCOPES: ${{ secrets.ADMIN_IMS_SCOPES }}
+          AI_KEY_PUBLIC: ${{ secrets.AI_KEY_PUBLIC }}
+          AI_KEY_PRIVATE: ${{ secrets.AI_KEY_PRIVATE }}
+
+      - name: Deployed to
+        run: echo "Stage https://${AIO_RUNTIME_NAMESPACE}.adobeio-static.net/index.html" >> "$GITHUB_STEP_SUMMARY"
+        env:
+          AIO_RUNTIME_NAMESPACE: ${{ secrets.AIO_RUNTIME_NAMESPACE }}

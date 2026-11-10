@@ -92,7 +92,86 @@ const publicPrompt = (d) => ({
   promptId: d.promptId, name: d.name, text: d.text, createdAt: d.createdAt, updatedAt: d.updatedAt, updatedBy: d.updatedBy || ''
 })
 
+// The wrap-up skill: instructions (SKILL.md-style text) sent to Claude as the system prompt when a
+// user finishes the assessment. One document in app_settings, key 'skill'.
+const SKILL_KEY = 'skill'
+
+// The wrap-up template: HTML with {{fields}} that Claude's JSON reply is filled into (see lib/template.js).
+// One document in app_settings, key 'template'. Without one, the wrap-up output is Claude's reply as it is.
+const TEMPLATE_KEY = 'template'
+
+/** Checks a template update: { text }. */
+function validateTemplate (input) {
+  const errors = {}
+  const text = input && typeof input.text === 'string' ? input.text.replace(/\r\n/g, '\n') : ''
+  try { require('./template').check(text) } catch (e) { errors.text = e.message }
+  return { text, errors }
+}
+
+/** The template as the browser may see it; null when none is saved. */
+const publicTemplate = (d) => (d && d.text ? { text: d.text, updatedAt: d.updatedAt || null, updatedBy: d.updatedBy || '' } : null)
+
+const SKILL_MAX_FILES = 40
+const SKILL_MAX_FILE_CHARS = 100000
+const SKILL_MAX_TOTAL_CHARS = 400000
+
+/** A resource path from a zip: relative, forward slashes, no '..'; '' when unusable. */
+function cleanSkillPath (p) {
+  const path = String(p || '').replace(/\\/g, '/').replace(/^\/+/, '')
+  if (!path || path.length > 200 || path.split('/').some((seg) => seg === '..' || seg === '')) return ''
+  return path
+}
+
+/** Checks a skill update: { name, text, files: [{ path, text }] } (files = extra resources from a zip). */
+function validateSkill (input) {
+  const errors = {}
+  const s = input && typeof input === 'object' ? input : {}
+  const name = str(s.name)
+  if (!name) errors.name = 'required'
+  else if (name.length > 120) errors.name = 'at most 120 characters'
+  const text = typeof s.text === 'string' ? s.text.replace(/\r\n/g, '\n').trim() : ''
+  if (!text) errors.text = 'required'
+  else if (text.length > 50000) errors.text = 'at most 50,000 characters'
+
+  const files = []
+  const seen = new Set()
+  const list = Array.isArray(s.files) ? s.files : []
+  if (list.length > SKILL_MAX_FILES) errors.files = `at most ${SKILL_MAX_FILES} resource files`
+  let total = text.length
+  for (const f of list.slice(0, SKILL_MAX_FILES)) {
+    const path = cleanSkillPath(f && f.path)
+    const body = f && typeof f.text === 'string' ? f.text.replace(/\r\n/g, '\n') : ''
+    if (!path || !body.trim() || seen.has(path)) { errors.files = errors.files || `unusable or duplicate resource file: ${String((f && f.path) || '').slice(0, 80)}`; continue }
+    if (body.length > SKILL_MAX_FILE_CHARS) { errors.files = `${path} is over ${SKILL_MAX_FILE_CHARS.toLocaleString('en-US')} characters`; continue }
+    total += body.length
+    seen.add(path)
+    files.push({ path, text: body })
+  }
+  if (total > SKILL_MAX_TOTAL_CHARS && !errors.files) errors.files = `the skill and its resources are over ${SKILL_MAX_TOTAL_CHARS.toLocaleString('en-US')} characters in total`
+  return { name, text, files, errors }
+}
+
+/** The skill as the browser may see it; null when none is saved. */
+const publicSkill = (d) => (d && d.text
+  ? { name: d.name || '', text: d.text, files: d.files || [], updatedAt: d.updatedAt || null, updatedBy: d.updatedBy || '' }
+  : null)
+
+/** The system prompt sent to Claude: the instructions, then every resource file with its path. */
+function skillSystemText (skill) {
+  const files = (skill && skill.files) || []
+  if (!files.length) return skill.text
+  const parts = files.map((f) => `<resource path="${f.path}">\n${f.text}\n</resource>`)
+  return `${skill.text}\n\nThe skill's resource files follow. Refer to them by path when the instructions mention them.\n\n<resources>\n${parts.join('\n\n')}\n</resources>`
+}
+
 module.exports = {
+  SKILL_KEY,
+  validateSkill,
+  publicSkill,
+  skillSystemText,
+  TEMPLATE_KEY,
+  validateTemplate,
+  publicTemplate,
   SETTINGS_COLLECTION,
   PROMPTS_COLLECTION,
   SETTINGS_INDEXES,

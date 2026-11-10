@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wrap-up handoff mock</title>
+<style>
+:root{--ink:#1f2328;--soft:#5b6470;--line:#d9dde3;--bg:#f7f8fa;--accent:#3b63fb;--card:#222}
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.5 system-ui,sans-serif;color:var(--ink);background:var(--bg)}
+header{padding:14px 24px;border-bottom:1px solid var(--line);background:#fff}
+header h1{margin:0;font-size:16px}
+header p{margin:2px 0 0;color:var(--soft);font-size:13px}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:22px;padding:22px 24px;max-width:1200px;margin:0 auto;align-items:start}
+@media(max-width:860px){.wrap{grid-template-columns:1fr}}
+.panel{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:16px}
+.panel h2{margin:0 0 8px;font-size:14px;text-transform:uppercase;letter-spacing:.05em;color:var(--soft)}
+label{display:block;margin:6px 0;font-size:14px}
+button{font:inherit;border-radius:20px;border:1px solid var(--line);background:#fff;padding:8px 16px;cursor:pointer}
+button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+button:disabled{opacity:.55;cursor:not-allowed}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;background:#f1f3f6;border-radius:6px;padding:8px 10px;max-height:260px;overflow:auto;margin:6px 0 0}
+.log div{font:12px/1.5 ui-monospace,monospace;border-bottom:1px solid var(--line);padding:3px 0}
+/* the real guide card, as on the modernization-guide page */
+.mg-status-card{background:var(--card);color:#fff;border-radius:18px;padding:26px 30px;position:sticky;top:16px}
+.mg-status-kicker{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:rgba(255,255,255,.65)}
+.mg-status-title{font-size:22px;font-weight:700;line-height:1.25;margin:10px 0 8px}
+.mg-status-copy{font-size:15px;line-height:1.55;color:rgba(255,255,255,.76);margin:0}
+.mg-progress{height:4px;border-radius:4px;background:rgba(255,255,255,.18);overflow:hidden;margin:20px 0}
+.mg-progress-bar{height:100%;width:38%;border-radius:4px;background:#6c8bff;animation:mg 1.4s ease-in-out infinite}
+@keyframes mg{0%{margin-left:-40%}100%{margin-left:100%}}
+.mg-status-card[data-status="idle"] .mg-progress,.mg-status-card[data-status="ready"] .mg-progress,.mg-status-card[data-status="error"] .mg-progress{display:none}
+.mg-status-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.mg-status-actions .btn{border-radius:20px;border:0;padding:9px 18px;font-weight:600;cursor:pointer}
+.btn-primary{background:var(--accent);color:#fff}.btn-ghost{background:#fff;color:#000}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.sr-only{position:absolute;left:-9999px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Wrap-up handoff mock</h1>
+  <p>Runs the real <code>wrapup-guide.snippet.js</code> against a fake server. Nothing is saved and no LLM is called.</p>
+</header>
+<div class="wrap">
+  <main>
+    <div class="panel">
+      <h2>Scenario</h2>
+      <label><input type="radio" name="sc" value="ok" checked> Success (about 6 seconds)</label>
+      <label><input type="radio" name="sc" value="slow"> Slow success (about 20 seconds)</label>
+      <label><input type="radio" name="sc" value="failed"> Claude fails</label>
+      <label><input type="radio" name="sc" value="noskill"> No skill configured (400)</label>
+      <label><input type="radio" name="sc" value="existing"> A guide already finished (returns existing)</label>
+      <p><button class="primary" id="go">Finish &amp; Wrap Up</button> <button id="reset">Reset</button></p>
+    </div>
+    <div class="panel"><h2>Requests the page makes</h2><div class="log" id="log"><div>(none yet)</div></div></div>
+    <div class="panel"><h2>Assessment text sent to Claude (sample)</h2><pre id="input"></pre></div>
+    <div class="panel"><h2>Reply used for the download</h2><pre id="reply">(nothing yet)</pre></div>
+  </main>
+  <aside class="mg-status-card" id="mg-status-card" data-status="idle">
+    <div class="mg-status-kicker">Modernization Guide</div>
+    <div class="mg-status-title" id="mg-status-title">Preparing your guide</div>
+    <p class="mg-status-copy" id="mg-status-copy">Press Finish &amp; Wrap Up to start.</p>
+    <div class="mg-progress" id="mg-progress" aria-hidden="true"><div class="mg-progress-bar"></div></div>
+    <div class="mg-status-actions"></div>
+    <div id="mg-status-announcement" class="sr-only" role="status" aria-live="polite"></div>
+  </aside>
+</div>
+
+<script>
+/* ---- stand-ins for what the real page and its sync block provide ---- */
+const CONFIG = { client: { name: 'Acme' } };
+const MODERNIZATION_GUIDE = { status: 'idle', downloadUrl: '', fileName: '', fileType: '', error: '' };
+const state = { responseId: '11111111-1111-4111-8111-111111111111', completed: false };
+const $ = (id) => document.getElementById(id);
+const logEl = $('log');
+const log = (t) => { if (logEl.firstChild && logEl.firstChild.textContent === '(none yet)') logEl.innerHTML = ''; const d = document.createElement('div'); d.textContent = new Date().toLocaleTimeString() + '  ' + t; logEl.appendChild(d); };
+
+const SAMPLE_INPUT = `## Profile\n\nCompany: Acme\nJob title: VP Analytics\n\nAssessment: Adobe Analytics to Customer Journey Analytics facilitator-led assessment (practitioner session)\nStatus: completed\n\n## Connected Data\n\nQuestion: Which data sources do you track today?\nAnswer:\n- Web\n- Mobile app\nNot selected:\n- Call center\n\n## Result\n\nReadiness: 62%\nRecommended engagement: Standard`;
+const SAMPLE_REPLY = `# Acme Analytics Modernization Guide\n\n## Where you are today\nYou track web and mobile and have a partial view of identity.\n\n## What to do next\n1. Connect call-center data.\n2. Stitch identities across devices.\n3. Agree who owns governance.\n`;
+$('input').textContent = SAMPLE_INPUT;
+
+let scenario = 'ok', polls = 0, sendAt = 0;
+const needed = () => ({ ok: 6000, slow: 20000, failed: 6000, existing: 0 }[scenario]);
+
+async function save() { log('save() answers (mock, no-op)'); }
+async function api(path, method = 'GET', body) {
+  await new Promise((r) => setTimeout(r, 250));
+  if (method === 'POST') {
+    log('POST /guided-discovery ' + JSON.stringify(body));
+    if (scenario === 'noskill') throw Object.assign(Error('HTTP 400: "no wrap-up skill is configured"'), { status: 400 });
+    sendAt = Date.now(); polls = 0;
+    return scenario === 'existing'
+      ? { ok: true, analysisId: 'aaaa', status: 'done', existing: true }
+      : { ok: true, analysisId: 'aaaa', status: 'queued' };
+  }
+  polls += 1;
+  const elapsed = Date.now() - sendAt;
+  const status = elapsed < needed() ? (elapsed < 1500 ? 'queued' : 'running') : (scenario === 'failed' ? 'failed' : 'done');
+  log('GET ' + path.replace(/&responseId=[^&]*/, '').replace('/guided-discovery', '') + '  -> ' + status);
+  return { ok: true, analysisId: 'aaaa', status, output: status === 'done' ? SAMPLE_REPLY : '', error: status === 'failed' ? 'Amazon Bedrock rate limit reached. Try again in a minute.' : '' };
+}
+
+/* the page's own simulated guide, which the snippet keeps when there is no connected response */
+async function generateModernizationGuide() {}
+function renderOnePager() {}
+function renderModernizationGuidePage() {
+  const card = $('mg-status-card');
+  const s = MODERNIZATION_GUIDE.status;
+  card.dataset.status = s;
+  const actions = card.querySelector('.mg-status-actions');
+  if (s === 'ready') {
+    $('mg-status-title').textContent = 'Your guide is ready';
+    $('mg-status-copy').textContent = 'Your discovery signals have been brought together. Continue to your results to review the highlights and next steps.';
+    actions.innerHTML = '<button class="btn btn-primary">Continue to results</button> <button class="btn btn-ghost" id="dl">Download guide</button>';
+    $('dl').onclick = () => { const a = document.createElement('a'); a.href = MODERNIZATION_GUIDE.downloadUrl; a.download = MODERNIZATION_GUIDE.fileName; a.click(); };
+    window.WRAPUP_GUIDE && ($('reply').textContent = window.WRAPUP_GUIDE.text || '(nothing yet)');
+  } else if (s === 'error') {
+    $('mg-status-title').textContent = 'Your results are still available';
+    $('mg-status-copy').textContent = MODERNIZATION_GUIDE.error;
+    actions.innerHTML = '<button class="btn btn-primary" id="retry">Try again</button> <button class="btn btn-ghost">Continue to results</button>';
+    $('retry').onclick = () => window.generateModernizationGuide();
+  } else if (s === 'generating') {
+    $('mg-status-title').textContent = 'Preparing your guide';
+    $('mg-status-copy').textContent = "We're connecting your discovery responses, modernization priorities, and CJA considerations into a personalized guide.";
+    actions.innerHTML = '<button class="btn btn-primary" disabled>Preparing results...</button>';
+  }
+}
+
+/* ---- load the REAL snippet and run it with the stand-ins above ---- */
+fetch('wrapup-guide.snippet.js').then((r) => r.text()).then((code) => {
+  // the page's functions are globals there; here they are declared above, so expose them on window
+  Object.assign(window, { generateModernizationGuide, renderModernizationGuidePage, renderOnePager, CONFIG, MODERNIZATION_GUIDE, URL });
+  new Function('state', 'api', 'save', 'MODERNIZATION_GUIDE', 'CONFIG', 'renderModernizationGuidePage', 'renderOnePager', code)(
+    state, api, save, MODERNIZATION_GUIDE, CONFIG, renderModernizationGuidePage, renderOnePager
+  );
+  log('snippet loaded');
+}).catch((e) => log('could not load snippet: ' + e.message + ' (serve this folder over http)'));
+
+$('go').onclick = () => { scenario = document.querySelector('input[name=sc]:checked').value; window.generateModernizationGuide(); };
+$('reset').onclick = () => { MODERNIZATION_GUIDE.status = 'idle'; MODERNIZATION_GUIDE.error = ''; $('mg-status-card').dataset.status = 'idle'; $('mg-status-title').textContent = 'Preparing your guide'; $('mg-status-copy').textContent = 'Press Finish & Wrap Up to start.'; $('reply').textContent = '(nothing yet)'; logEl.innerHTML = '<div>(none yet)</div>'; };
+</script>
+</body>
+</html>

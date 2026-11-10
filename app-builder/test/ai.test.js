@@ -64,6 +64,93 @@ describe('ai input', () => {
     const Anthropic = require('@anthropic-ai/sdk')
     const denied = (Message) => new Anthropic.PermissionDeniedError(403, { Message }, `403 ${Message}`, new Headers())
     expect(ai.failureText(denied('Authentication failed: Please make sure your API Key is valid.'))).toMatch(/^The API key was rejected by Amazon Bedrock/)
-    expect(ai.failureText(denied("You don't have access to the model with the specified model ID."))).toMatch(/not allowed to use anthropic\.claude-opus-5-5 in us-east-2/)
+    expect(ai.failureText(denied("You don't have access to the model with the specified model ID."))).toMatch(/not allowed to use us\.anthropic\.claude-sonnet-5-5 in us-east-2/)
+  })
+})
+
+describe('wrap-up skill with resource files', () => {
+  const settings = require('../actions/lib/settings')
+  test('resources follow the instructions, each labelled with its path', () => {
+    const text = settings.skillSystemText({ text: 'Do it.', files: [{ path: 'references/a.md', text: 'AAA' }] })
+    expect(text.startsWith('Do it.')).toBe(true)
+    expect(text).toContain('<resource path="references/a.md">\nAAA\n</resource>')
+    expect(settings.skillSystemText({ text: 'Do it.' })).toBe('Do it.')
+  })
+  test('unsafe, duplicate and oversized resources are rejected', () => {
+    const ok = settings.validateSkill({ name: 'n', text: 't', files: [{ path: 'a/b.md', text: 'x' }] })
+    expect(ok.errors).toEqual({})
+    expect(ok.files).toEqual([{ path: 'a/b.md', text: 'x' }])
+    expect(settings.validateSkill({ name: 'n', text: 't', files: [{ path: '../x.md', text: 'x' }] }).errors.files).toBeTruthy()
+    expect(settings.validateSkill({ name: 'n', text: 't', files: [{ path: 'a.md', text: 'x' }, { path: 'a.md', text: 'y' }] }).errors.files).toBeTruthy()
+    expect(settings.validateSkill({ name: 'n', text: 't', files: [{ path: 'a.md', text: 'x'.repeat(100001) }] }).errors.files).toBeTruthy()
+  })
+})
+
+describe('guide PDF', () => {
+  test('Markdown becomes a PDF, tables, lists and odd characters included', async () => {
+    const { markdownToPdf } = require('../actions/lib/pdf')
+    const buf = await markdownToPdf('# Title\n\nText with **bold** and a → arrow ☃.\n\n- a\n- b\n\n| x | y |\n|---|---|\n| 1 | 2 |\n', { footer: 'Guide' })
+    expect(buf.slice(0, 5).toString()).toBe('%PDF-')
+    expect(buf.length).toBeGreaterThan(1000)
+  })
+})
+
+describe('wrap-up template', () => {
+  const tpl = require('../actions/lib/template')
+  const T = '<h1>{{headline}}</h1><p>{{computed.company}} {{computed.readinessPct}}%</p>{{#each priorities}}<li>{{add @index 1}}. {{title}}: {{detail}}</li>{{/each}}{{#each steps}}<i>{{this}}</i>{{/each}}{{#if note}}<em>{{note}}</em>{{/if}}'
+  test('the fields Claude fills are listed, computed ones are not', () => {
+    expect(tpl.skeleton(T)).toEqual({ headline: '<headline>', priorities: [{ title: '<title>', detail: '<detail>' }], steps: ['<steps>'], note: '<note>' })
+  })
+  test('filled with escaped text and computed facts', () => {
+    const html = tpl.render(T, { headline: 'A <b>big</b> win', priorities: [{ title: 'One', detail: 'x' }, { title: 'Two', detail: 'y' }], steps: ['go'], computed: { company: 'HACK' } }, { company: 'Acme', readinessPct: 62 })
+    expect(html).toContain('<h1>A &lt;b&gt;big&lt;/b&gt; win</h1>')
+    expect(html).toContain('Acme 62%')
+    expect(html).toContain('1. One: x')
+    expect(html).toContain('2. Two: y')
+    expect(html).toContain('<i>go</i>')
+  })
+  test('raw output and broken templates are refused', () => {
+    expect(() => tpl.check('{{{headline}}}')).toThrow(/raw output/)
+    expect(() => tpl.check('{{#each a}}no end')).toThrow(/template error/)
+  })
+  test('Claude\'s reply can be fenced or have text around it', () => {
+    expect(tpl.extractJson('```json\n{"a":1}\n```')).toEqual({ a: 1 })
+    expect(tpl.extractJson('Here you go: {"a":{"b":2}} done')).toEqual({ a: { b: 2 } })
+    expect(() => tpl.extractJson('no json here')).toThrow()
+  })
+})
+
+describe('wrap-up template helpers and hints', () => {
+  const tpl = require('../actions/lib/template')
+  const T = '{{!-- field kind: "existing" or "proposed" --}}{{#each nodes}}{{!-- field kind: "existing" or "proposed" --}}<b class="{{#if (eq kind "proposed")}}dash{{/if}}">{{text}}</b>{{/each}}{{!-- field tags: a short label --}}{{#each tags}}{{this}}{{/each}}'
+  test('a hint replaces the placeholder and a comparison works', () => {
+    expect(tpl.skeleton(T)).toEqual({ nodes: [{ kind: '"existing" or "proposed"', text: '<text>' }], tags: ['a short label'] })
+    const html = tpl.render(T, { nodes: [{ kind: 'Proposed', text: 'x' }, { kind: 'existing', text: 'y' }], tags: [] }, {})
+    expect(html).toBe('<b class="dash">x</b><b class="">y</b>')
+  })
+})
+
+describe('wrap-up deck template', () => {
+  const fs = require('fs')
+  const tpl = require('../actions/lib/template')
+  const text = fs.readFileSync(`${__dirname}/../templates/analytics-modernization-deck.html`, 'utf8')
+  const sample = JSON.parse(fs.readFileSync(`${__dirname}/../templates/analytics-modernization-deck.sample.json`, 'utf8'))
+
+  test('the sample answer fills every slide of the deck', () => {
+    const html = tpl.render(text, sample, { company: 'Acme & Sons' })
+    expect(html.match(/class="slide-wrap"/g)).toHaveLength(20)
+    expect(html).toContain('Acme &amp; Sons | Analytics modernization assessment')
+    expect(html).not.toMatch(/\{\{|undefined/)
+    expect(html).toContain('<span class="lvl l2">')
+    expect(html).toContain('class="node prop"')
+  })
+  test('the fields asked of Claude match the sample, and computed facts are not among them', () => {
+    expect(Object.keys(tpl.skeleton(text)).sort()).toEqual(Object.keys(sample).sort())
+    expect(tpl.outputInstructions(text)).not.toContain('computed')
+  })
+  test('a deck inside a code fence is unwrapped, notes after it are dropped', () => {
+    const ai = require('../actions/lib/ai')
+    expect(ai.unfenceHtml('```html\n<!DOCTYPE html><html></html>\n```\n\nNotes: x')).toBe('<!DOCTYPE html><html></html>')
+    expect(ai.unfenceHtml('```js\nconsole.log(1)\n```')).toBe('```js\nconsole.log(1)\n```')
   })
 })

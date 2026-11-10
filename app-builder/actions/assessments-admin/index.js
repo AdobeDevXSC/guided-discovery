@@ -43,12 +43,20 @@ const DATASETS = {
 //        the API key is never returned, only whether one is saved and its last 4 characters
 //   POST {op:'settings-save', ai:{apiKey} | {clearKey:true}, editor?} -> { ok, ai }
 //        stores the key encrypted with the public key; this action cannot decrypt it
+//   POST {op:'skill-save', skill:{name, text}, editor?} -> { ok, skill } the wrap-up skill (system prompt for
+//        the guide generated when a user finishes the assessment); GET settings returns it as `skill`
+//   GET ?dataset=llm-log &status= &trigger=manual|wrapup &limit= &skip= -> { ok, total, items } every LLM query,
+//        newest first, without the long input/output; &analysisId=... -> { ok, entry } one in full
 //   GET ?dataset=ai-analyses&responseId=... -> { ok, analyses } AI replies for one response, newest first
 //   POST {op:'ai-send', responseId, promptId, editor?} -> 201 { ok, analysis } sends a completed
 //        response (full question text and answers, no contact details) with a stored prompt to
 //        Claude in the background (action ai-analysis); poll the list until status is done/failed
 //   POST {op:'prompt-save', prompt:{promptId?, name, text}, editor?} -> { ok, prompt, created }
 //   POST {op:'prompt-delete', promptId} -> { ok, deleted }
+//   POST {op:'llm-rerun', analysisId, editor?} -> 201 { ok, analysis } sends that query again as a new entry (a wrap-up uses the
+//        skill as saved now); 409 while a query for the same assessment is running
+//   POST {op:'llm-delete', analysisId} -> { ok, deleted } removes one LLM log entry (wrap-up or admin query), by id only;
+//        409 while it is queued or running. Deleting a wrap-up lets that response be wrapped up again.
 //   GET ?dataset=answers-export&assessment=self-guided -> { ok, columns, rows } for the CSV export:
 //        columns = every bank question in page order; rows = { submissionId: latest run's status,
 //        result and answers as text } for every profile with a linked response
@@ -61,7 +69,10 @@ async function main (params) {
   if (params.dataset === 'profile-answers') return profileAnswers(params)
   if (params.dataset === 'ai-analyses' || params.op === 'ai-send') return aiAnalyses(params)
   if (params.dataset === 'answers-export') return answersExport(params)
-  if (params.dataset === 'settings' || ['settings-save', 'prompt-save', 'prompt-delete'].includes(params.op)) return appSettings(params)
+  if (params.dataset === 'llm-log') return llmLog(params)
+  if (params.op === 'llm-delete') return llmDelete(params)
+  if (params.op === 'llm-rerun') return llmRerun(params)
+  if (params.dataset === 'settings' || ['settings-save', 'prompt-save', 'prompt-delete', 'skill-save', 'template-save', 'template-preview'].includes(params.op)) return appSettings(params)
   const dataset = params.dataset || 'assessments'
   const ds = DATASETS[dataset]
   if (!ds) return reply(400, { ok: false, error: 'invalid dataset' })
@@ -145,6 +156,7 @@ async function aiAnalyses (params) {
         promptId: prompt.promptId,
         promptName: prompt.name,
         promptText: prompt.text,
+        trigger: 'manual',
         model: ai.MODEL,
         input: ai.buildInput({ assessment: response.assessment, response, sections: await questions.sectionsOf(client, response.assessment) }),
         status: 'queued',
@@ -164,6 +176,152 @@ async function aiAnalyses (params) {
     })
   } catch (e) {
     console.error('assessments-admin ai-analyses failed:', e.name, e.httpStatusCode, e.message)
+    return reply(500, { ok: false, error: 'internal error' })
+  }
+}
+
+// Sends an earlier LLM query again as a new entry: the same assessment text, and for a wrap-up the wrap-up skill
+// as it is saved now (so an edited skill can be tried on the same answers); an admin query repeats its saved
+// prompt text. The old entry is kept. A new finished wrap-up is what the user's page receives next.
+//   POST {op:'llm-rerun', analysisId, editor?} -> 201 { ok, analysis }
+async function llmRerun (params) {
+  if ((params.__ow_method || 'get').toLowerCase() !== 'post') return reply(405, { ok: false, error: 'method not allowed' })
+  const analysisId = String(params.analysisId || '')
+  if (!UUID_RE.test(analysisId)) return reply(400, { ok: false, error: 'invalid analysisId' })
+  try {
+    return await withDb(params, async (client) => {
+      const col = client.collection(ai.ANALYSES_COLLECTION)
+      await ensureIndexes(col, ai.ANALYSES_INDEXES)
+      const old = await findOneOrNull(col, { analysisId })
+      if (!old) return reply(404, { ok: false, error: 'not found' })
+      if (!old.input || !old.promptText) return reply(400, { ok: false, error: 'this query has nothing to send again' })
+      const store = client.collection(settings.SETTINGS_COLLECTION)
+      if (!settings.hasKey(await findOneOrNull(store, { key: settings.AI_KEY }))) return reply(400, { ok: false, error: 'no API key is saved; add one on the Settings page' })
+      const pending = (await col.find({ responseId: old.responseId, status: { $in: ['queued', 'running'] } }).limit(10).toArray())
+        .map((d) => ai.publicAnalysis(d)).filter((d) => d.status !== 'failed')
+      if (pending.length) return reply(409, { ok: false, error: 'a query for this assessment is already running' })
+
+      let systemText = old.systemText
+      let templateText = null // a wrap-up uses the template as saved now, filled with the same computed facts
+      let skillName = old.skillName || ''
+      if (old.trigger === 'wrapup') {
+        const skill = await findOneOrNull(store, { key: settings.SKILL_KEY })
+        if (!skill || !skill.text) return reply(400, { ok: false, error: 'no wrap-up skill is configured' })
+        systemText = settings.skillSystemText(skill)
+        skillName = skill.name || ''
+        const tplDoc = await findOneOrNull(store, { key: settings.TEMPLATE_KEY })
+        if (tplDoc && tplDoc.text) {
+          templateText = tplDoc.text
+          systemText += require('../lib/template').outputInstructions(templateText)
+        }
+      }
+      const doc = {
+        analysisId: crypto.randomUUID(),
+        responseId: old.responseId,
+        submissionId: old.submissionId || null,
+        assessment: old.assessment,
+        trigger: old.trigger || 'manual',
+        ...(old.promptId ? { promptId: old.promptId } : {}),
+        promptName: old.promptName,
+        promptText: old.promptText,
+        ...(systemText ? { systemText } : {}),
+        skillName,
+        rerunOf: old.analysisId,
+        ...(templateText ? { templateText, computed: old.computed || {} } : {}),
+        model: ai.MODEL,
+        input: old.input,
+        status: 'queued',
+        createdAt: new Date().toISOString(),
+        createdBy: editorOf(params)
+      }
+      await col.insertOne(doc)
+      try {
+        await require('openwhisk')().actions.invoke({ name: 'marketingprototype/ai-analysis', blocking: false, params: { analysisId: doc.analysisId } })
+      } catch (e) {
+        console.error('assessments-admin could not start ai-analysis:', e.name, e.message)
+        await col.updateOne({ analysisId: doc.analysisId }, { $set: { status: 'failed', error: 'The analysis could not be started.', finishedAt: new Date().toISOString() } })
+        return reply(500, { ok: false, error: 'the analysis could not be started' })
+      }
+      console.log('assessments-admin re-ran LLM query', old.analysisId, 'as', doc.analysisId)
+      return reply(201, { ok: true, analysis: ai.publicAnalysis(doc) })
+    })
+  } catch (e) {
+    console.error('assessments-admin llm-rerun failed:', e.name, e.httpStatusCode, e.message)
+    return reply(500, { ok: false, error: 'internal error' })
+  }
+}
+
+// Facts shown in a template preview (a real wrap-up computes them from the scoring rules)
+const SAMPLE_COMPUTED = {
+  company: 'Sample company', date: 'January 1, 2027', readinessPct: 62, band: 'Building your case',
+  engagement: { label: 'Standard', title: 'Standard engagement', duration: '6 weeks' },
+  capabilities: [{ label: 'Connected Data', description: 'Sample description' }, { label: 'Journey Mapping', description: 'Sample description' }],
+  capabilityCount: 2
+}
+
+// Deletes one LLM log entry (e.g. a wrap-up) by its explicit analysisId. Never by filter. A query that is
+// still queued or running is refused so its result is not written to a missing record.
+//   POST {op:'llm-delete', analysisId} -> { ok, deleted:1 }
+async function llmDelete (params) {
+  if ((params.__ow_method || 'get').toLowerCase() !== 'post') return reply(405, { ok: false, error: 'method not allowed' })
+  const analysisId = String(params.analysisId || '')
+  if (!UUID_RE.test(analysisId)) return reply(400, { ok: false, error: 'invalid analysisId' })
+  try {
+    return await withDb(params, async (client) => {
+      const col = client.collection(ai.ANALYSES_COLLECTION)
+      const doc = await findOneOrNull(col, { analysisId })
+      if (!doc) return reply(404, { ok: false, error: 'not found' })
+      const status = ai.publicAnalysis(doc).status
+      if (status === 'queued' || status === 'running') return reply(409, { ok: false, error: 'this query is still running' })
+      const res = await col.deleteOne({ analysisId })
+      if (!res || !res.deletedCount) return reply(404, { ok: false, error: 'not found' })
+      console.log('assessments-admin deleted LLM log entry', analysisId, doc.trigger || '')
+      return reply(200, { ok: true, deleted: 1 })
+    })
+  } catch (e) {
+    console.error('assessments-admin llm-delete failed:', e.name, e.httpStatusCode, e.message)
+    return reply(500, { ok: false, error: 'internal error' })
+  }
+}
+
+// LLM log: every query sent to the model (admin "Send to AI" and the wrap-up on the public page),
+// newest first. The list leaves out the long input and output; ?analysisId=... returns one in full.
+async function llmLog (params) {
+  if ((params.__ow_method || 'get').toLowerCase() !== 'get') return reply(405, { ok: false, error: 'method not allowed' })
+  const filter = {}
+  if (params.analysisId) {
+    if (!UUID_RE.test(String(params.analysisId))) return reply(400, { ok: false, error: 'invalid analysisId' })
+    filter.analysisId = params.analysisId
+  }
+  if (params.status) {
+    if (!ai.STATUSES.includes(params.status)) return reply(400, { ok: false, error: 'invalid status' })
+    filter.status = params.status
+  }
+  if (params.trigger) {
+    if (!ai.TRIGGERS.includes(params.trigger)) return reply(400, { ok: false, error: 'invalid trigger' })
+    filter.trigger = params.trigger
+  }
+  const limit = Math.min(Math.max(parseInt(params.limit, 10) || 100, 1), 200)
+  const skip = Math.max(parseInt(params.skip, 10) || 0, 0)
+  try {
+    return await withDb(params, async (client) => {
+      const col = client.collection(ai.ANALYSES_COLLECTION)
+      await ensureIndexes(col, ai.ANALYSES_INDEXES)
+      if (params.analysisId) {
+        const d = await findOneOrNull(col, filter)
+        if (!d) return reply(404, { ok: false, error: 'not found' })
+        return reply(200, { ok: true, entry: { ...ai.publicAnalysis(d), systemText: d.systemText || '', promptText: d.promptText || '', rawOutput: d.rawOutput || '' } })
+      }
+      const total = await col.countDocuments(filter)
+      const docs = total ? await col.find(filter).sort('createdAt', -1).skip(skip).limit(limit).toArray() : []
+      const items = docs.map((d) => {
+        const { input, output, ...rest } = ai.publicAnalysis(d)
+        return { ...rest, inputChars: (input || '').length, outputChars: (output || '').length, submissionId: d.submissionId || null }
+      })
+      return reply(200, { ok: true, dataset: 'llm-log', total, count: items.length, items })
+    })
+  } catch (e) {
+    console.error('assessments-admin llm-log failed:', e.name, e.httpStatusCode, e.message)
     return reply(500, { ok: false, error: 'internal error' })
   }
 }
@@ -334,9 +492,48 @@ async function appSettings (params) {
         const ai = await findOneOrNull(store, { key: settings.AI_KEY })
         const list = await prompts.find({}).limit(500).toArray()
         list.sort((a, b) => String(a.name).localeCompare(String(b.name)))
-        return reply(200, { ok: true, ai: settings.publicAi(ai), prompts: list.map(settings.publicPrompt) })
+        const skill = await findOneOrNull(store, { key: settings.SKILL_KEY })
+        const template = await findOneOrNull(store, { key: settings.TEMPLATE_KEY })
+        return reply(200, { ok: true, ai: settings.publicAi(ai), prompts: list.map(settings.publicPrompt), skill: settings.publicSkill(skill), template: settings.publicTemplate(template) })
       }
       if (method !== 'post') return reply(405, { ok: false, error: 'method not allowed' })
+
+      if (params.op === 'template-preview') {
+        // fills the template with placeholder text (or sample data) so it can be seen without calling Claude
+        const { text, errors } = settings.validateTemplate(params.template)
+        if (Object.keys(errors).length) return reply(400, { ok: false, errors })
+        const tpl = require('../lib/template')
+        const shape = tpl.skeleton(text)
+        const fill = (v, key) => (Array.isArray(v) ? [0, 1].map(() => fill(v[0], key)) : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, fill(x, k)])) : `Sample ${String(key || 'text').replace(/_/g, ' ')}`)
+        const html = tpl.render(text, fill(shape), SAMPLE_COMPUTED)
+        return reply(200, { ok: true, html, fields: shape })
+      }
+
+      if (params.op === 'template-save') {
+        if (params.clear === true) {
+          await store.deleteOne({ key: settings.TEMPLATE_KEY })
+          return reply(200, { ok: true, template: null })
+        }
+        const { text, errors } = settings.validateTemplate(params.template)
+        if (Object.keys(errors).length) return reply(400, { ok: false, errors })
+        const existing = await findOneOrNull(store, { key: settings.TEMPLATE_KEY })
+        const fields = { text, updatedAt: now, updatedBy: editor }
+        if (existing) await store.updateOne({ key: settings.TEMPLATE_KEY }, { $set: fields })
+        else await store.insertOne({ key: settings.TEMPLATE_KEY, ...fields, createdAt: now })
+        console.log('assessments-admin saved the wrap-up template,', text.length, 'characters')
+        return reply(200, { ok: true, template: settings.publicTemplate(await findOneOrNull(store, { key: settings.TEMPLATE_KEY })) })
+      }
+
+      if (params.op === 'skill-save') {
+        const { name, text, files, errors } = settings.validateSkill(params.skill)
+        if (Object.keys(errors).length) return reply(400, { ok: false, errors })
+        const existing = await findOneOrNull(store, { key: settings.SKILL_KEY })
+        const fields = { name, text, files, updatedAt: now, updatedBy: editor }
+        if (existing) await store.updateOne({ key: settings.SKILL_KEY }, { $set: fields })
+        else await store.insertOne({ key: settings.SKILL_KEY, ...fields, createdAt: now })
+        console.log('assessments-admin saved the wrap-up skill', name)
+        return reply(200, { ok: true, skill: settings.publicSkill(await findOneOrNull(store, { key: settings.SKILL_KEY })) })
+      }
 
       if (params.op === 'settings-save') {
         const { set, unset, errors } = settings.validateAi(params.ai, params.aiKeyPublic)

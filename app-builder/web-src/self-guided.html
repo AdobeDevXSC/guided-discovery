@@ -5140,6 +5140,80 @@ $('ab-check').addEventListener('click',async()=>{
  }catch(e){status('Read-back failed: '+e.message,true);}
 });
 window.addEventListener('beforeunload',e=>{if(state.responseId&&pending){e.preventDefault();e.returnValue='';}if(state.responseId)backgroundSave({keepalive:true});});
+/* ---- wrap-up guide (Finish & Wrap Up): the guide is written by Claude, not simulated ----
+   Source of truth for the block that goes at the END of the App Builder sync IIFE in the page
+   (just before its closing `})();`), because it uses that block's private state, api and save.
+   Copy it into the master HTML so the facilitator pages are rebuilt with it.
+
+   Flow: save answers -> POST /guided-discovery {op:'wrapup-send'}: the server completes the
+   response, sends the answers and profile (no contact details) to Claude with the wrap-up skill from
+   Settings, and returns an analysisId -> poll GET ?op=wrapup-status until done or failed. The reply
+   (Markdown) becomes the downloadable guide behind the "Your guide is ready" card. Without a
+   connected response (state.responseId) the page's original simulated behaviour is kept. */
+{
+  const priorGenerate = window.generateModernizationGuide;
+  const POLL_MS = 4000;
+  const GIVE_UP_MS = 11 * 60 * 1000; // a little over the 10 minute action timeout
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  window.WRAPUP_GUIDE = { text: '', analysisId: '' };
+
+  window.generateModernizationGuide = async function generateModernizationGuide() {
+    if (!state.responseId) return priorGenerate.apply(this, arguments);
+    if (MODERNIZATION_GUIDE.status === 'generating' || MODERNIZATION_GUIDE.status === 'ready') return undefined;
+    MODERNIZATION_GUIDE.status = 'generating';
+    MODERNIZATION_GUIDE.error = '';
+    renderModernizationGuidePage();
+    try {
+      await save();
+      const sent = await api('/guided-discovery', 'POST', { op: 'wrapup-send', responseId: state.responseId });
+      state.completed = true;
+      const started = Date.now();
+      let res;
+      for (;;) {
+        res = await api('/guided-discovery?op=wrapup-status&responseId=' + encodeURIComponent(state.responseId)
+          + '&analysisId=' + encodeURIComponent(sent.analysisId));
+        if (res.status === 'done' || res.status === 'failed') break;
+        if (Date.now() - started > GIVE_UP_MS) throw new Error('The guide is taking longer than expected. Please try again.');
+        await sleep(POLL_MS);
+      }
+      if (res.status === 'failed') throw new Error('We could not write your guide right now. Please try again.');
+      if (!res.output) throw new Error('The guide came back empty. Please try again.');
+      window.WRAPUP_GUIDE = { text: res.output, analysisId: sent.analysisId };
+      if (MODERNIZATION_GUIDE.downloadUrl && MODERNIZATION_GUIDE.downloadUrl.startsWith('blob:')) URL.revokeObjectURL(MODERNIZATION_GUIDE.downloadUrl);
+      MODERNIZATION_GUIDE.downloadUrl = URL.createObjectURL(new Blob([res.output], { type: 'text/markdown' }));
+      MODERNIZATION_GUIDE.fileName = CONFIG.client.name.replace(/\s+/g, '-') + '-Analytics-Modernization-Guide.md';
+      MODERNIZATION_GUIDE.fileType = 'text/markdown';
+      MODERNIZATION_GUIDE.status = 'ready';
+    } catch (err) {
+      MODERNIZATION_GUIDE.status = 'error';
+      // server errors carry HTTP details; show people a plain message and keep the detail in the console
+      MODERNIZATION_GUIDE.error = err instanceof Error && !err.status ? err.message : 'We could not prepare your guide right now. Please try again.';
+      console.error('Wrap-up guide error:', err);
+    }
+    renderModernizationGuidePage();
+    if (window.CURRENT_PAGE_ID === 'onepager') renderOnePager();
+    return undefined;
+  };
+}
+
+/* ---- test hook: ?wrapupTest=<responseId> opens straight onto the last step for an existing,
+   completed response (see scripts/seed-wrapup-test.js), skipping the contact form and every
+   section, and runs the real wrap-up for it. Remove before the page goes to real users. ---- */
+{
+  const testId = new URLSearchParams(window.location.search).get('wrapupTest');
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(testId || '')) {
+    state.responseId = testId;
+    state.completed = true;
+    GATE_PASSED = true;
+    const gate = document.getElementById('gate-screen');
+    if (gate) gate.classList.remove('open');
+    CONFIG.client.name = 'Test organization';
+    if (typeof applyConfig === 'function') applyConfig();
+    setTimeout(() => window.beginFinalization(), 300);
+  }
+}
+
 })();
 </script>
 </body>
