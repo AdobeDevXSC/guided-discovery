@@ -40,3 +40,12 @@ A new workspace has its own empty database. After the first production deploy, o
 Bedrock API key, the wrap-up skill and template, and the prompts. Questions and assessment data are not copied from Stage.
 
 Deploys use the `oauth_sts` sign-in from `adobe/aio-apps-action`; check the first run's log if Adobe changes it.
+
+## Keep the aio CLI and the Parcel plugins in step
+
+CI installs a fresh `aio` CLI (`10.x.x`). Its bundled Parcel version must equal the `@parcel/*` plugins pinned in
+`package.json` (currently `2.16.4`), or the web-asset build fails with "Could not find module ... satisfying ...".
+A CLI installed long ago on a laptop can bundle an older Parcel; reinstall it
+(`npm uninstall -g @adobe/aio-cli && npm install -g @adobe/aio-cli@10`) so local deploys match CI.
+CLI 9.x installed fresh also fails when uploading web assets (`identity.expiration.getTime is not a function`), which is
+why the workflows use 10.
