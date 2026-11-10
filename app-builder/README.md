@@ -2,6 +2,15 @@
 
 The AA to CJA Guided Discovery assessment: a public assessment page, the APIs it saves to, and an admin viewer, all on Adobe App Builder with the App Builder database. Run every command from this folder.
 
+**Environments.** Each workspace has its own endpoint and its own database (settings, questions and responses are not shared):
+
+| | Host | API base |
+|---|---|---|
+| Stage | https://20409-157ochretakin-stage.adobeio-static.net | https://20409-157ochretakin-stage.adobeio-static.net/api/v1/web/marketingprototype/&lt;action&gt; |
+| Production | https://20409-157ochretakin.adobeio-static.net | https://20409-157ochretakin.adobeio-static.net/api/v1/web/marketingprototype/&lt;action&gt; |
+
+Stage deploys from every branch push and Production from `main` (see `docs/ci-cd.md`). The admin app's API reference shows the endpoint of the environment it is opened from. The URLs below are Stage's; replace the host with Production's.
+
 **Stage:** project `marketingprototype`, workspace Stage, org `adobe-lamont-crook`.
 
 | Piece | Where |

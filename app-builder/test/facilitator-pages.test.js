@@ -25,6 +25,8 @@ test('each page is fixed to its view and saves as facilitator-led', () => {
     assert.ok(html.includes('let GATE_PASSED = false;'))
     assert.ok(html.includes("const ASSESSMENT='facilitator-led';"))
     assert.ok(html.includes('view:VIEW_PROFILE'))
+    // the API base follows the host serving the page, so Stage and Production use the same file
+    assert.ok(html.includes("const BASE=(location.hostname.endsWith('.adobeio-static.net')?location.origin:"))
     assert.ok(!/assessment:'self-guided'|assessment=self-guided/.test(html))
   }
 })

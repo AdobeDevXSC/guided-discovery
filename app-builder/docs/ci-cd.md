@@ -33,6 +33,13 @@ Secrets are kept in two GitHub Environments, `stage` and `production`, under the
 | `ADMIN_IMS_CLIENT_SECRET`, `ADMIN_IMS_SCOPES` | read by `app.config.yaml` as the actions' database credentials |
 | `AI_KEY_PUBLIC`, `AI_KEY_PRIVATE` | the key pair that encrypts and decrypts the Bedrock API key saved in Settings |
 
+## A new workspace's database
+
+The CI deploy does not create the App Builder database (the `database: auto-provision` setting in `app.config.yaml` is only
+acted on by newer CLIs). `scripts/copy-settings.js` requests it when missing and copies the Stage settings over:
+`node scripts/copy-settings.js --prod-file 157OchreTakin-20409-Production.json --provision` (add `--dry-run` first; it only
+adds what is missing and never deletes; `--questions` also copies the question bank).
+
 ## What a deploy does not carry over
 
 A new workspace has its own empty database. After the first production deploy, open the admin UI there and re-enter the

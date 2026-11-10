@@ -2,15 +2,18 @@
 const ALLOWED_ORIGIN_PATTERNS = [
   // the Adobe landing-page host
   /^https:\/\/landing\.adobe\.com$/,
-  // this app's own static host (Stage), which serves the public self-guided.html page
-  /^https:\/\/20409-157ochretakin-stage\.adobeio-static\.net$/,
   // local development (e.g. Live Server or aio app run) on localhost or 127.0.0.1 (Origin is spoofable
   // by non-browsers anyway, so this adds no exposure)
   /^http:\/\/localhost:\d{2,5}$/,
   /^http:\/\/127\.0\.0\.1:\d{2,5}$/
 ]
 
-const isAllowedOrigin = origin => typeof origin === 'string' && ALLOWED_ORIGIN_PATTERNS.some(re => re.test(origin))
+// This app's own static host, which serves the public pages: https://<runtime namespace>.adobeio-static.net.
+// Taken from the runtime, so Stage allows Stage's host and Production allows Production's with the same code.
+const ownHost = () => (process.env.__OW_NAMESPACE ? `https://${process.env.__OW_NAMESPACE}.adobeio-static.net` : '')
+
+const isAllowedOrigin = origin => typeof origin === 'string' &&
+  (ALLOWED_ORIGIN_PATTERNS.some(re => re.test(origin)) || (ownHost() !== '' && origin === ownHost()))
 
 const originOf = params => {
   const h = params.__ow_headers || {}

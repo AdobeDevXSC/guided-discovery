@@ -7,7 +7,17 @@
 //              success: { status, body }, errors: [{ status, when, body }], curl, fetch, notes?: [text] }
 // Text strings may contain `code` spans (backticks), rendered as <code>.
 
-export const BASE_URL = 'https://20409-157ochretakin-stage.adobeio-static.net/api/v1/web/marketingprototype';
+// The two environments. The reference shows the API of the one this admin app is served from, so Production's
+// docs show the Production endpoint and Stage's show Stage's (anywhere else, e.g. local development: Stage).
+export const ENVIRONMENTS = [
+  { name: 'Stage', host: 'https://20409-157ochretakin-stage.adobeio-static.net' },
+  { name: 'Production', host: 'https://20409-157ochretakin.adobeio-static.net' },
+];
+const here = typeof window !== 'undefined' ? window.location.origin : '';
+const APP_HOST = (ENVIRONMENTS.find((e) => e.host === here) || ENVIRONMENTS[0]).host;
+const API_PATH = '/api/v1/web/marketingprototype';
+export const ENV_NAME = (ENVIRONMENTS.find((e) => e.host === APP_HOST) || {}).name;
+export const BASE_URL = APP_HOST + API_PATH;
 
 const json = (v) => JSON.stringify(v, null, 2);
 const indent = (s, n) => s.split('\n').map((l, i) => (i ? ' '.repeat(n) + l : l)).join('\n');
@@ -62,7 +72,7 @@ const PROFILE = {
 };
 const SOURCE = {
   source: 'self-guided-page',
-  pageUrl: 'https://20409-157ochretakin-stage.adobeio-static.net/self-guided.html',
+  pageUrl: APP_HOST + '/self-guided.html',
   referrer: '',
   utm: { campaign: 'cja-migration' },
 };
@@ -115,7 +125,7 @@ export const OVERVIEW = {
     intro: 'The public actions accept browser calls only from these origins:',
     origins: [
       '`https://landing.adobe.com`',
-      '`https://20409-157ochretakin-stage.adobeio-static.net` (this app, e.g. the public `self-guided.html` page)',
+      '`' + APP_HOST + '` (this app, e.g. the public `self-guided.html` page; each environment allows its own host)',
       '`http://localhost:<port>` (local development)',
       '`http://127.0.0.1:<port>` (local development)',
     ],
