@@ -1,0 +1,671 @@
+{
+  "event_line": "Wednesday, December 2, 2026; San Jose",
+  "summary": {
+    "title": "Fix identity first, then act on segments",
+    "subhead": "Acme Retail (test) wants one connected customer view, and a license renewal sets the deadline.",
+    "challenge": "Data is siloed across channels, and cross-device behavior cannot be seen. Drop-off between consideration and purchase is visible, but the team does not fully trust the segment data.",
+    "opportunity": "Modernize measurement in stages. Strengthen identity first, rebuild priority segments on connected data, and then add journey analysis and a unified identity graph.",
+    "outcomes": "Faster decisions and an improved customer experience, with personalization and better segmentation as the main drivers.",
+    "findings": "Three of six readiness areas are developing and three need attention: data & architecture, insights & measurement, and activation & actionability.",
+    "decision": "Sponsor agreement on priorities, a confirmed renewal date, and a clear owner for next steps."
+  },
+  "readiness": {
+    "title": "Three areas developing, three need attention",
+    "subhead": "Identity, governance, and people are developing, and data, insights, and activation need attention.",
+    "rows": [
+      {
+        "dimension": "Data & architecture",
+        "level": "1",
+        "level_text": "Needs attention (provisional)",
+        "evidence": "4 of 24 items are tracked, all low complexity. Visitor ID, CRM ID, orders, and cart adds were not marked as tracked.",
+        "confidence": "Low"
+      },
+      {
+        "dimension": "Identity & customer understanding",
+        "level": "2",
+        "level_text": "Developing",
+        "evidence": "A deterministic login stitch is in place. The target is a unified identity graph, two stages away.",
+        "confidence": "Medium"
+      },
+      {
+        "dimension": "Insights & measurement",
+        "level": "1",
+        "level_text": "Needs attention (provisional)",
+        "evidence": "Data is siloed, cross-device behavior is not visible, and segment data is not fully trusted.",
+        "confidence": "Medium"
+      },
+      {
+        "dimension": "Activation & actionability",
+        "level": "1",
+        "level_text": "Needs attention (provisional)",
+        "evidence": "Segment changes take days to notice. Next-step ownership is unclear, and the team has a skills gap.",
+        "confidence": "Medium"
+      },
+      {
+        "dimension": "Governance & trust",
+        "level": "2",
+        "level_text": "Developing",
+        "evidence": "Access controls and consent governance are in place. Governance labels and usage labels are gaps.",
+        "confidence": "High"
+      },
+      {
+        "dimension": "People & adoption",
+        "level": "2",
+        "level_text": "Developing",
+        "evidence": "All four roles have named owners, and the model is hybrid. External support and skills are needed.",
+        "confidence": "Medium"
+      }
+    ],
+    "strengths": "Access controls and consent governance in place. Named owners for all four roles. Stakeholders across marketing, IT, and leadership.",
+    "attention": "Visibility of tracked data, cross-device identity, trust in segments, and ownership of next steps.",
+    "discovery": "Which untracked items are in use. Whether visitor and customer IDs are captured. Which tools consume segments.",
+    "note": "Provisional levels based on workshop answers. They are not a score or an Adobe-approved maturity model."
+  },
+  "objectives": {
+    "title": "Faster decisions from a connected view",
+    "subhead": "The team wants faster decisions and a better experience through personalization and segmentation.",
+    "rows": [
+      {
+        "objective": "One connected customer view",
+        "challenge": "Data is siloed across channels, and cross-device behavior cannot be seen.",
+        "outcome": "Identity resolved across channels and devices into one view of each person.",
+        "value": "Fewer blind spots and a base for every later use case."
+      },
+      {
+        "objective": "Trusted segments for personalization",
+        "challenge": "Segment drop-off is visible, but the team does not fully trust the data.",
+        "outcome": "Priority segments rebuilt on connected data and tied to personalization.",
+        "value": "Personalization aimed at the right groups."
+      },
+      {
+        "objective": "Faster decisions and action",
+        "challenge": "Segment changes take days to notice, and ownership of next steps is unclear.",
+        "outcome": "Named owners and a defined path from insight to action.",
+        "value": "Faster decisions and an improved customer experience."
+      }
+    ],
+    "note": "Objectives are ordered by how strongly the workshop answers support them."
+  },
+  "gaps": {
+    "title": "Four gaps stand between data and action",
+    "subhead": "Identity, trust in segments, governance labels, and ownership of next steps need to close first.",
+    "rows": [
+      {
+        "gap": "Identity does not yet span devices",
+        "why": "Cross-device behavior cannot be seen, so one person can look like several.",
+        "response": "Register identity namespaces, set stitching priority, and extend in stages. A unified graph needs Real-Time CDP, to be validated.",
+        "basis": "Confirmed"
+      },
+      {
+        "gap": "Segment data is not trusted",
+        "why": "Drop-off between consideration and purchase is visible, but the team does not fully trust the data.",
+        "response": "Rebuild priority segments on connected data and document the intent of each. Depends on a segment inventory.",
+        "basis": "Confirmed"
+      },
+      {
+        "gap": "Governance labels are missing",
+        "why": "Governance labels and usage labels are gaps. Connecting more data without them could add risk.",
+        "response": "Design labels with the schema and review them before identity is extended. Depends on the IT and governance admin.",
+        "basis": "Confirmed"
+      },
+      {
+        "gap": "Next steps have no clear owner",
+        "why": "Segment changes take days to notice, and a skills gap slows action.",
+        "response": "Define workflows and owners for acting on segments, and plan external support. The tools that consume segments are not yet known.",
+        "basis": "Validate"
+      }
+    ]
+  },
+  "target": {
+    "subhead": "A connected foundation lets Acme Retail (test) move from siloed data to confident action.",
+    "bands": [
+      {
+        "name": "Connect",
+        "tagline": "Trusted, connected, governed customer data",
+        "nodes": [
+          {
+            "text": "Website data in Adobe Analytics",
+            "status": "existing"
+          },
+          {
+            "text": "Deterministic login stitch",
+            "status": "existing"
+          },
+          {
+            "text": "Graph-based stitching across devices",
+            "status": "proposed"
+          },
+          {
+            "text": "Connected foundation: data schema, identity namespaces, and governance labels",
+            "status": "proposed"
+          }
+        ]
+      },
+      {
+        "name": "Decide",
+        "tagline": "Cross-channel insight and confident decisions",
+        "nodes": [
+          {
+            "text": "Connected event-level data across sources",
+            "status": "proposed"
+          },
+          {
+            "text": "Journey view from consideration to purchase",
+            "status": "proposed"
+          },
+          {
+            "text": "Rebuilt priority segments on connected data",
+            "status": "proposed"
+          },
+          {
+            "text": "AI-assisted analysis (scope to be validated)",
+            "status": "proposed"
+          }
+        ]
+      },
+      {
+        "name": "Act",
+        "tagline": "Measurable business action",
+        "nodes": [
+          {
+            "text": "Personalization for priority segments",
+            "status": "proposed"
+          },
+          {
+            "text": "Named owners for next steps",
+            "status": "proposed"
+          },
+          {
+            "text": "Acting on segments in downstream tools (to be validated)",
+            "status": "proposed"
+          }
+        ]
+      }
+    ],
+    "note": "Analysis and audience definition happen in Customer Journey Analytics. Acting on segments depends on integrations that must be validated."
+  },
+  "opportunities": {
+    "title": "Three opportunities for measurable value",
+    "subhead": "Each ties a current challenge to a capability and a measure the team can baseline today.",
+    "items": [
+      {
+        "timing": "Near-term after foundation",
+        "timing_kind": "ready",
+        "name": "Drop-off visibility",
+        "challenge": "Most people are lost between consideration and purchase, and cross-device behavior is hidden.",
+        "capability": "A journey view across touchpoints that shows where people stall.",
+        "objective": "Reduce drop-off between consideration and purchase.",
+        "kpi": "Consideration-to-purchase conversion. Baseline required.",
+        "prerequisites": "Data schema, Web SDK, and identity namespaces for login."
+      },
+      {
+        "timing": "Depends on identity foundation",
+        "timing_kind": "dependent",
+        "name": "Priority segments",
+        "challenge": "Segment data is not fully trusted, and changes take days to notice.",
+        "capability": "Rebuilt segments (started but not finished, high-value, and multi-channel engaged) on stitched identity.",
+        "objective": "Better-targeted personalization.",
+        "kpi": "Time to notice a segment change (days today). Baseline required.",
+        "prerequisites": "Segment inventory, identity stitching, and governance labels."
+      },
+      {
+        "timing": "Longer-term expansion",
+        "timing_kind": "dependent",
+        "name": "Unified identity graph",
+        "challenge": "A login stitch covers known customers only, and cross-device behavior is hidden.",
+        "capability": "A graph that resolves every identifier into one person across devices and channels.",
+        "objective": "Improve the customer experience across touchpoints.",
+        "kpi": "Cross-device journeys linked to one person. Baseline required.",
+        "prerequisites": "Real-Time CDP, consent in the identity graph, and offline sources connected."
+      }
+    ],
+    "note": "No improvement targets are shown. Baselines come first."
+  },
+  "roadmap": {
+    "title": "Three stages with a decision between each",
+    "subhead": "The sequence follows the typical path from foundation to parity to expansion, with no dates set.",
+    "stages": [
+      {
+        "name": "Foundation",
+        "bullets": [
+          "Design the data schema",
+          "Register identity namespaces",
+          "Apply governance labels to fields",
+          "Implement the Web and Mobile SDK",
+          "Build and validate the first Data View"
+        ]
+      },
+      {
+        "name": "Parity",
+        "bullets": [
+          "Rebuild segments and calculated metrics",
+          "Recreate key dashboards",
+          "Train analysts and marketers",
+          "Run Adobe Analytics and Customer Journey Analytics in parallel"
+        ]
+      },
+      {
+        "name": "Expansion",
+        "bullets": [
+          "Extend identity toward a unified graph",
+          "Turn on multi-touch attribution",
+          "Retire Adobe Analytics reporting once parity is confirmed"
+        ]
+      }
+    ],
+    "gates": [
+      "Gate after stage 1: approve priorities and owners.",
+      "Gate before retiring Adobe Analytics reporting: confirm parity."
+    ],
+    "note": "Stages are typical and are not scheduled, sized, or approved. The renewal date is an input to the sequence."
+  },
+  "team": {
+    "title": "What it takes on the team's side",
+    "subhead": "Roles, owners, and technical groups the team needs to line up before any build starts.",
+    "roles": [
+      "Analyst: Pat Lee",
+      "Marketer / campaign manager: Sam Rivera",
+      "Data engineer: Jordan Kim",
+      "IT and governance admin: Casey Moore"
+    ],
+    "ownership": "Next steps after insight have no clear owner, and an executive sponsor is not yet named.",
+    "complexity": "4 tracked items retain and map. Of the 20 untracked items, 6 retain and map, 9 reconfigure or rebuild, and 5 extend. Use of each needs confirming.",
+    "governance": "Governance labels and usage labels are gaps. Access controls and consent governance need review as identity extends.",
+    "enablement": "Hybrid operating model. External support is needed for change management and training, and a skills gap slows action.",
+    "note": "Findings are preliminary and subject to technical validation. This document is not a statement of work or contractual commitment."
+  },
+  "actions": {
+    "title": "Five actions to move forward",
+    "subhead": "Each action closes a gap or confirms an assumption from the findings.",
+    "rows": [
+      {
+        "action": "Confirm sponsor and renewal date",
+        "who": "VP, Digital Analytics",
+        "input": "Priorities and the renewal date",
+        "unlocks": "A confirmed order of stages"
+      },
+      {
+        "action": "Name an owner for next steps",
+        "who": "Sam Rivera",
+        "input": "A named owner and a path from segment to campaign",
+        "unlocks": "Clear action on priority segments"
+      },
+      {
+        "action": "Confirm which untracked items are in use",
+        "who": "Pat Lee",
+        "input": "Status of visitor ID, CRM ID, orders, and cart adds",
+        "unlocks": "A complete technical inventory"
+      },
+      {
+        "action": "Plan governance labels with the schema",
+        "who": "Casey Moore",
+        "input": "Fields that need labels and who approves them",
+        "unlocks": "Labels in place before identity extends"
+      },
+      {
+        "action": "Capture baselines for priority measures",
+        "who": "Pat Lee and Sam Rivera",
+        "input": "Today's conversion and time to notice changes",
+        "unlocks": "Measurable targets later"
+      }
+    ],
+    "next_step": "Confirm sponsor support and the renewal date, and name an owner for next steps.",
+    "note": "Questions: Lea Alderson, Sr. Manager, ACS Growth Marketing | Jake Tenenbaum, Principal Strategic Account Marketing Manager, ACS Growth Marketing. Findings are preliminary and subject to technical validation. This document is not a statement of work or contractual commitment."
+  },
+  "answers_1": {
+    "left": [
+      {
+        "heading": "Discovery",
+        "items": [
+          {
+            "question": "Focus",
+            "answer": "Both"
+          },
+          {
+            "question": "What is driving this",
+            "answer": "Personalization and better segmentation"
+          },
+          {
+            "question": "Success looks like",
+            "answer": "Faster decisions and improved customer experience"
+          },
+          {
+            "question": "Most pain today",
+            "answer": "Data is siloed across channels, and cross-device behavior cannot be seen"
+          },
+          {
+            "question": "One thing to fix",
+            "answer": "Identity / stitching"
+          },
+          {
+            "question": "Who else cares",
+            "answer": "Marketing, IT / Engineering, and executive leadership"
+          },
+          {
+            "question": "Where people are lost",
+            "answer": "Consideration to purchase"
+          },
+          {
+            "question": "Segments dropping off more",
+            "answer": "Yes, but we don't fully trust the data"
+          },
+          {
+            "question": "Data gap or segmentation gap",
+            "answer": "Both"
+          },
+          {
+            "question": "Time to notice a change",
+            "answer": "Days"
+          },
+          {
+            "question": "Urgency",
+            "answer": "Contract / license renewal"
+          }
+        ]
+      }
+    ],
+    "right": [
+      {
+        "heading": "Segmentation and identity",
+        "items": [
+          {
+            "question": "Segments worth rebuilding",
+            "answer": "Started, didn't finish; high-value / high-loyalty customers; and multi-channel engaged"
+          },
+          {
+            "question": "Identity today",
+            "answer": "Deterministic login stitch"
+          },
+          {
+            "question": "Identity target",
+            "answer": "Unified identity graph"
+          }
+        ]
+      },
+      {
+        "heading": "Governance and access",
+        "items": [
+          {
+            "question": "Data governance labels",
+            "answer": "Gap for us"
+          },
+          {
+            "question": "Access control groups / sandboxes",
+            "answer": "Already in place"
+          },
+          {
+            "question": "Data usage labels",
+            "answer": "Gap for us"
+          },
+          {
+            "question": "Consent & identity governance",
+            "answer": "Already in place"
+          }
+        ]
+      }
+    ]
+  },
+  "answers_2": {
+    "left": [
+      {
+        "heading": "Data foundations: 4 of 24 items tracked",
+        "items": [
+          {
+            "question": "Tracked",
+            "answer": "Product / SKU eVar, Order ID eVar, Campaign / tracking code eVar, and Page Name prop"
+          },
+          {
+            "question": "Multiple in use",
+            "answer": "Product / SKU eVar and Campaign / tracking code eVar"
+          },
+          {
+            "question": "One in use",
+            "answer": "Order ID eVar"
+          },
+          {
+            "question": "Not sure how many",
+            "answer": "Page Name prop"
+          },
+          {
+            "question": "Not tracked",
+            "answer": "The other 20 items, including Marketing Cloud Visitor ID, CRM ID, Orders, Cart Adds, Segments, and Calculated Metrics"
+          }
+        ]
+      }
+    ],
+    "right": [
+      {
+        "heading": "Roles and stakeholders",
+        "items": [
+          {
+            "question": "Analyst",
+            "answer": "Pat Lee"
+          },
+          {
+            "question": "Marketer / campaign manager",
+            "answer": "Sam Rivera"
+          },
+          {
+            "question": "Data engineer / implementation",
+            "answer": "Jordan Kim"
+          },
+          {
+            "question": "IT / governance admin",
+            "answer": "Casey Moore"
+          }
+        ]
+      },
+      {
+        "heading": "Strategy and adoption",
+        "items": [
+          {
+            "question": "Operating model",
+            "answer": "Hybrid model"
+          },
+          {
+            "question": "Appetite for change",
+            "answer": "We'll need external support"
+          },
+          {
+            "question": "What gets in the way of acting",
+            "answer": "Unclear ownership of next steps and a skills gap on the team"
+          },
+          {
+            "question": "AI-driven workflows",
+            "answer": "Actively exploring"
+          },
+          {
+            "question": "What would help most now",
+            "answer": "Connected Data, Graph-Based Stitching, and Journey Mapping Visualization"
+          }
+        ]
+      }
+    ]
+  },
+  "tracked": {
+    "subhead": "All four tracked items are low complexity and carry into the new design with a direct mapping.",
+    "rows": [
+      {
+        "item": "Product / SKU eVar",
+        "quantity": "Multiple",
+        "approach": "Product field in the Commerce schema field group",
+        "prerequisite": "Commerce field group enabled"
+      },
+      {
+        "item": "Order ID eVar",
+        "quantity": "One",
+        "approach": "Order ID in the Commerce schema field group",
+        "prerequisite": "Commerce field group enabled"
+      },
+      {
+        "item": "Campaign / tracking code eVar",
+        "quantity": "Multiple",
+        "approach": "Marketing field group, tracking code",
+        "prerequisite": "None identified"
+      },
+      {
+        "item": "Page Name prop",
+        "quantity": "Not sure",
+        "approach": "Web field group, page name",
+        "prerequisite": "Web SDK implemented"
+      }
+    ],
+    "note": "Quantities come from the workshop answers. The Page Name prop count needs confirming."
+  },
+  "untracked": {
+    "subhead": "Twenty items were not marked as tracked. Whether each is unused or just unreported needs confirming.",
+    "rows": [
+      {
+        "group": "Retain and map if in use",
+        "items": "Marketing Cloud Visitor ID, Orders, Cart Adds, Site Section prop, custom conversion event, and Debugger / validation tooling",
+        "approach": "Direct mapping to field groups, the ECID namespace, and Web SDK validation",
+        "complexity": "Low"
+      },
+      {
+        "group": "Reconfigure",
+        "items": "CRM ID / Customer ID, Virtual Report Suites, and mobile app data",
+        "approach": "Custom identity namespace, Connections and Data Views, and the Mobile SDK on Edge Network",
+        "complexity": "Medium"
+      },
+      {
+        "group": "Rebuild",
+        "items": "Custom conversion eVar, Processing Rules, Classifications, Segments, Calculated Metrics, and media / video tracking",
+        "approach": "Schema extension, Data Prep rules, lookup datasets, CJA segments, and derived fields",
+        "complexity": "Medium"
+      },
+      {
+        "group": "Extend",
+        "items": "Cross-device analysis, offline / CRM batch upload, last-touch attribution, anomaly detection, and Data Warehouse / FTP exports",
+        "approach": "Identity graph, batch ingestion, multi-touch attribution, Intelligent Alerts, and Query Service",
+        "complexity": "Medium or high"
+      }
+    ],
+    "note": "Target approaches are preliminary and need technical validation."
+  },
+  "identity": {
+    "subhead": "Where the team is today, where it wants to be, and what has to be true in between.",
+    "rows": [
+      {
+        "area": "Identity",
+        "current": "Deterministic login stitch. Visitor ID and CRM ID were not marked as tracked, which needs confirming.",
+        "target": "Unified identity graph, reached through cross-channel stitching of mobile and offline data.",
+        "dependencies": "Mobile and offline sources connected. Real-Time CDP provisioned and consent integrated into the graph. Licensing and product support to be validated."
+      },
+      {
+        "area": "Governance",
+        "current": "Access controls and consent governance are in place. Governance labels and usage labels are gaps.",
+        "target": "All four controls in place and owned before identity is extended.",
+        "dependencies": "Labels designed with the schema, usage policies set for activation, and input from the IT and governance admin."
+      }
+    ],
+    "note": "Governance controls are enforced at the field level by Adobe Experience Platform. Consent flags are stored against the identity graph and checked before data is used downstream."
+  },
+  "stakeholders": {
+    "rows": [
+      {
+        "role": "Analyst",
+        "owner": "Pat Lee",
+        "change": "Moves to Workspace with cross-channel Data Views and thinks in person, event, and session containers.",
+        "win": "The first rebuilt Data View answers a cross-channel question that was impossible before."
+      },
+      {
+        "role": "Marketer or campaign manager",
+        "owner": "Sam Rivera",
+        "change": "Builds segments that already reflect every channel instead of stitching audiences by hand.",
+        "win": "A segment reaches a campaign tool in minutes instead of days."
+      },
+      {
+        "role": "Data engineer",
+        "owner": "Jordan Kim",
+        "change": "Designs the schema, moves classifications, and manages identity namespaces.",
+        "win": "Schema design starts before any tag rebuild."
+      },
+      {
+        "role": "IT and governance admin",
+        "owner": "Casey Moore",
+        "change": "Designs sandboxes, access, labels, and consent management up front.",
+        "win": "A development sandbox on day one."
+      },
+      {
+        "role": "Executive sponsor",
+        "owner": "Not yet named",
+        "change": "Approves priorities and owners.",
+        "win": "A short pre-read: slides 2 and 3 of this deck."
+      }
+    ],
+    "note": "Owners come from the workshop answers. Follow-up flags were not recorded. Responsibilities are typical for each role, and time commitments are not set in this document."
+  },
+  "assumptions": {
+    "assumptions": [
+      "Workshop answers were not independently verified.",
+      "No facilitator notes were provided, so findings rest on the answers alone.",
+      "Items not marked as tracked are treated as not in use until confirmed.",
+      "Readiness levels are provisional, and no area is rated above level 2 because higher levels are not yet defined.",
+      "Later stages are not scheduled, sized, or approved."
+    ],
+    "questions": [
+      "When is the license renewal, and how does it shape the sequence?",
+      "Are visitor ID and CRM ID captured, given the login stitch?",
+      "Which of the 20 untracked items are in use?",
+      "How many report suites are in scope?",
+      "Who is the executive sponsor?",
+      "Which roles need a follow-up conversation?",
+      "What are the baselines for the priority measures?",
+      "Is a unified identity graph in scope under current licensing?"
+    ]
+  },
+  "terms": {
+    "left": [
+      {
+        "term": "Adobe Analytics (AA)",
+        "definition": "The web and app reporting tool the team uses today."
+      },
+      {
+        "term": "Customer Journey Analytics (CJA)",
+        "definition": "Adobe's reporting tool that joins data from every channel into one view of each person."
+      },
+      {
+        "term": "eVar and prop",
+        "definition": "Custom tracking fields in Adobe Analytics."
+      },
+      {
+        "term": "ECID",
+        "definition": "The anonymous ID Adobe uses to recognize a browser or device before someone logs in."
+      },
+      {
+        "term": "Identity graph",
+        "definition": "A map that connects every known ID back to one person."
+      },
+      {
+        "term": "Real-Time CDP",
+        "definition": "Adobe's platform for building and activating audiences in real time."
+      }
+    ],
+    "right": [
+      {
+        "term": "Data schema",
+        "definition": "An agreed structure for how data is named and stored."
+      },
+      {
+        "term": "Web SDK and Mobile SDK",
+        "definition": "Newer data collection code for the website and the app."
+      },
+      {
+        "term": "Data View",
+        "definition": "The set of fields and measures the team reports on in CJA."
+      },
+      {
+        "term": "Identity namespace",
+        "definition": "A labeled type of ID, such as the visitor ID or the CRM customer ID."
+      },
+      {
+        "term": "Deterministic and probabilistic matching",
+        "definition": "Deterministic matching uses a known ID such as a login. Probabilistic matching uses statistical signals."
+      },
+      {
+        "term": "Baseline",
+        "definition": "Today's number for a measure, used to compare against later."
+      }
+    ]
+  }
+}

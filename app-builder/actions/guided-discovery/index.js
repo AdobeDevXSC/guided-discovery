@@ -9,6 +9,8 @@ const { withCors } = require('../lib/cors')
 const { withDb, findOneOrNull, ensureIndexes } = require('../lib/db')
 const questions = require('../lib/questions')
 const { labelResult } = require('../lib/result')
+const settings = require('../lib/settings')
+const ai = require('../lib/ai')
 
 const headers = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
 const reply = (statusCode, body) => ({ statusCode, headers, body })
@@ -63,6 +65,10 @@ function readBody (params) {
 //        string or an array of strings; null or [] clears the question. Only responses with a userId
 //        (started with leadRef, or linked) take answers; userId, if sent, must be theirs (else 404)
 //   POST {op:'complete', responseId}                         -> 200 {result}
+//   POST {op:'wrapup-send', responseId, retry?}              -> 202 {analysisId, status}; completes the response and sends
+//        the answers to Claude with the wrap-up skill (Settings) in the background; 200 with existing:true if one
+//        is already queued/running/done; 400 if no skill or API key is configured; 429 after 5 attempts
+//   GET  ?op=wrapup-status&responseId=...&analysisId=...     -> 200 {status: queued|running|done|failed, output, error}
 //   GET  ?responseId=...                                     -> 200 {response}
 //   GET  ?op=questions&assessment=self-guided                -> 200 {sections:[{section, title, questions}]}
 //   GET  ?op=answers&userId=...&responseId=...&assessment=?  -> 200 {userId, responses:[...]} every run of
@@ -76,9 +82,10 @@ async function handle (raw) {
   // honeypot: real users never fill this hidden field
   if (params.website) return reply(200, { ok: true })
   if (method !== 'get' && method !== 'post') return reply(405, { ok: false, error: 'method not allowed' })
-  if (method === 'post' && !['start', 'save', 'answer', 'complete', 'link'].includes(params.op)) {
-    return reply(400, { ok: false, error: 'op must be start, save, answer, link or complete' })
+  if (method === 'post' && !['start', 'save', 'answer', 'complete', 'link', 'wrapup-send'].includes(params.op)) {
+    return reply(400, { ok: false, error: 'op must be start, save, answer, link, complete or wrapup-send' })
   }
+  if (method === 'get' && params.op === 'wrapup-status') return wrapupStatus(params)
   if (method === 'get' && params.op === 'questions') return listQuestions(params)
   if (method === 'get' && params.op === 'answers') return listAnswers(params)
   const responseId = params.responseId || params.sessionId
@@ -95,6 +102,7 @@ async function handle (raw) {
       if (params.op === 'save') return save(client, col, responseId, params)
       if (params.op === 'link') return link(client, col, responseId, params)
       if (params.op === 'answer') return answer(client, col, responseId, params)
+      if (params.op === 'wrapup-send') return wrapupSend(client, col, responseId, params)
       return complete(client, col, responseId, params)
     })
   } catch (e) {
@@ -373,6 +381,103 @@ async function complete (client, col, responseId, params) {
     { $set: { status: 'completed', result, completedAt: doc.completedAt || now, updatedAt: now } }
   )
   return reply(200, { ok: true, result })
+}
+
+// "Finish & Wrap Up": completes the response, then sends the user's answers (the same profile + answer
+// sheet the admin viewer's profile-answers dataset shows, minus contact details) to Claude with the
+// wrap-up skill from Settings as the system prompt. Runs in the background (action ai-analysis); the
+// page polls wrapup-status. The responseId is the caller's secret. Sending again while one is
+// queued or running returns that one; a finished one is not re-sent unless params.retry is true.
+async function wrapupSend (client, col, responseId, params) {
+  const doc = await findOneOrNull(col, { responseId })
+  if (!doc) return reply(404, { ok: false, error: 'not found' })
+  const analyses = client.collection(ai.ANALYSES_COLLECTION)
+  await ensureIndexes(analyses, ai.ANALYSES_INDEXES)
+  const mine = (await analyses.find({ responseId, trigger: 'wrapup' }).limit(50).toArray())
+    .map((d) => ai.publicAnalysis(d)).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))
+  const latest = mine[0]
+  if (latest && (latest.status === 'queued' || latest.status === 'running' || (latest.status === 'done' && params.retry !== true))) {
+    return reply(200, { ok: true, analysisId: latest.analysisId, status: latest.status, existing: true })
+  }
+  if (mine.length >= 5) return reply(429, { ok: false, error: 'too many attempts for this assessment' })
+
+  const store = client.collection(settings.SETTINGS_COLLECTION)
+  const skill = await findOneOrNull(store, { key: settings.SKILL_KEY })
+  if (!skill || !skill.text) return reply(400, { ok: false, error: 'no wrap-up skill is configured' })
+  if (!settings.hasKey(await findOneOrNull(store, { key: settings.AI_KEY }))) return reply(400, { ok: false, error: 'no API key is configured' })
+
+  // answers must be scored before they are sent
+  const done = await complete(client, col, responseId, params)
+  if (done.statusCode !== 200) return done
+  const response = await findOneOrNull(col, { responseId })
+
+  const profile = response.submissionId
+    ? await findOneOrNull(client.collection(assessments.COLLECTION), { submissionId: response.submissionId })
+    : null
+  const sections = await questions.sectionsOf(client, response.assessment)
+  const lines = ai.profileLines(profile && profile.profile)
+  const input = (lines.length ? ['## Profile', '', ...lines, ''].join('\n') + '\n' : '') +
+    ai.buildInput({ assessment: response.assessment, response, sections })
+
+  // with a saved template Claude returns only the content as JSON and the template is filled from it
+  const tpl = await findOneOrNull(store, { key: settings.TEMPLATE_KEY })
+  const templated = tpl && tpl.text
+    ? {
+        templateText: tpl.text,
+        computed: ai.computedFacts({ assessment: response.assessment, response, profile: profile && profile.profile })
+      }
+    : {}
+
+  const now = new Date().toISOString()
+  const rec = {
+    analysisId: crypto.randomUUID(),
+    responseId,
+    submissionId: response.submissionId || null,
+    assessment: response.assessment,
+    trigger: 'wrapup',
+    skillName: skill.name || '',
+    systemText: settings.skillSystemText(skill) + (templated.templateText ? require('../lib/template').outputInstructions(templated.templateText) : ''),
+    ...templated,
+    promptName: 'Wrap-up guide',
+    promptText: ai.WRAPUP_PROMPT,
+    model: ai.MODEL,
+    input,
+    status: 'queued',
+    createdAt: now,
+    createdBy: 'wrapup'
+  }
+  await analyses.insertOne(rec)
+  try {
+    await require('openwhisk')().actions.invoke({ name: 'marketingprototype/ai-analysis', blocking: false, params: { analysisId: rec.analysisId } })
+  } catch (e) {
+    console.error('guided-discovery could not start ai-analysis:', e.name, e.message)
+    await analyses.updateOne({ analysisId: rec.analysisId }, { $set: { status: 'failed', error: 'The analysis could not be started.', finishedAt: new Date().toISOString() } })
+    return reply(500, { ok: false, error: 'the guide could not be started' })
+  }
+  console.log('guided-discovery queued wrap-up analysis', rec.analysisId, 'for', responseId)
+  return reply(202, { ok: true, analysisId: rec.analysisId, status: 'queued' })
+}
+
+// Poll for the wrap-up reply. Needs both ids, so an analysisId alone reads nothing.
+async function wrapupStatus (params) {
+  const { responseId, analysisId } = params
+  if (!UUID_RE.test(responseId || '') || !UUID_RE.test(analysisId || '')) return reply(400, { ok: false, error: 'responseId and analysisId are required' })
+  try {
+    return await withDb(params, async (client) => {
+      const d = await findOneOrNull(client.collection(ai.ANALYSES_COLLECTION), { analysisId })
+      if (!d || d.responseId !== responseId || d.trigger !== 'wrapup') return reply(404, { ok: false, error: 'not found' })
+      const a = ai.publicAnalysis(d)
+      const body = { ok: true, analysisId, status: a.status, output: a.status === 'done' ? a.output : '', error: a.status === 'failed' ? a.error : '' }
+      // format=pdf: the reply typeset as a PDF (base64), only once it is done
+      if (params.format === 'pdf' && a.status === 'done' && a.output && !/^\s*(```(html)?\s*)?(<!doctype html|<html[\s>])/i.test(a.output)) {
+        body.pdf = (await require('../lib/pdf').markdownToPdf(a.output, { title: 'Analytics Modernization Guide', footer: 'Analytics Modernization Guide' })).toString('base64')
+      }
+      return reply(200, body)
+    })
+  } catch (e) {
+    console.error('guided-discovery wrapup-status failed:', e.name, e.httpStatusCode, e.message)
+    return reply(500, { ok: false, error: 'internal error' })
+  }
 }
 
 // What the browser needs to resume: answers and revisions per section, progress and the result.
