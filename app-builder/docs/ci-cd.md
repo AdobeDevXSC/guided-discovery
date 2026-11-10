@@ -15,12 +15,11 @@ Secrets are kept in two GitHub Environments, `stage` and `production`, under the
 
 1. **Stage:** `node scripts/set-ci-secrets.js stage` (from `app-builder/`). It reads `.env` and `.aio`, creates the
    environment and sets all 18 secrets. Add `--dry-run` first to see what it found. Values are never printed.
-2. **Production:** the downloaded workspace file (`157OchreTakin-20409-Production.json`) has the namespace and project ids
-   but **no credential**. In the Developer Console, open the Production workspace and add the **OAuth Server-to-Server**
-   credential (and the same API services as Stage). Then run `aio app use <that file>` in a scratch copy, or copy the
-   credential values into an env file (same variable names as `.env`), and run
-   `node scripts/set-ci-secrets.js production --env-file <env file> --aio-file ../157OchreTakin-20409-Production.json`.
-   Use a **new** `AI_KEY_PUBLIC` / `AI_KEY_PRIVATE` pair for production.
+2. **Production:** download the Production workspace file from the Developer Console (it must include the
+   **OAuth Server-to-Server** credential and the **App Builder Data Services** API; the credential's scopes must include
+   `adobeio.abdata.manage`, `.read` and `.write`, as Stage's do) and keep it in `app-builder/` (git-ignored). Create
+   `.env.production` with a **new** `AI_KEY_PUBLIC` / `AI_KEY_PRIVATE` pair (the command is in the README), then run
+   `node scripts/set-ci-secrets.js production --env-file .env.production --aio-file 157OchreTakin-20409-Production.json`.
 3. In GitHub: Settings > Environments > `production` > add **required reviewers** if a merge should wait for approval.
 
 ### Secrets (per environment)

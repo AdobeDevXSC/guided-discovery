@@ -3,7 +3,8 @@
 // Values are piped to `gh secret set` and never printed.
 //
 //   node scripts/set-ci-secrets.js stage                      # from ./.env and ./.aio (your stage workspace)
-//   node scripts/set-ci-secrets.js production --env-file .env.production --aio-file ../157OchreTakin-20409-Production.json
+//   node scripts/set-ci-secrets.js production --env-file .env.production --aio-file 157OchreTakin-20409-Production.json
+//     (the workspace file supplies the credential and runtime values; .env.production only needs AI_KEY_PUBLIC and AI_KEY_PRIVATE)
 //   add --dry-run to list what would be set without changing anything
 //
 // Needs the GitHub CLI signed in with permission to manage this repository's environments and secrets.
@@ -38,14 +39,17 @@ const list = (v) => { if (v === undefined) return undefined; try { const a = JSO
 // the OAuth server-to-server credential saved by `aio app use`: AIO_ims_contexts_<name>_client__id ...
 const ctx = Object.keys(envVars).map((k) => k.match(/^(AIO_ims_contexts_.+_)client__id$/)).find(Boolean)
 const c = (suffix) => (ctx ? envVars[ctx[1] + suffix] : undefined)
+// a downloaded workspace file carries the same credential: details.credentials[].oauth_server_to_server
+const s2s = (((ws.details || {}).credentials || []).find((x) => x.oauth_server_to_server) || {}).oauth_server_to_server || {}
+const join = (v) => (Array.isArray(v) ? v.join(',') : v)
 
 const secrets = {
-  CLIENTID: c('client__id'),
-  CLIENTSECRET: list(c('client__secrets')),
-  TECHNICALACCOUNTID: c('technical__account__id'),
-  TECHNICALACCOUNTEMAIL: c('technical__account__email'),
+  CLIENTID: c('client__id') || s2s.client_id,
+  CLIENTSECRET: list(c('client__secrets')) || join(s2s.client_secrets),
+  TECHNICALACCOUNTID: c('technical__account__id') || s2s.technical_account_id,
+  TECHNICALACCOUNTEMAIL: c('technical__account__email') || s2s.technical_account_email,
   IMSORGID: c('ims__org__id') || (project.org || {}).ims_org_id,
-  SCOPES: list(c('scopes')),
+  SCOPES: list(c('scopes')) || join(s2s.scopes),
   AIO_RUNTIME_NAMESPACE: envVars.AIO_runtime_namespace || (ns[0] || {}).name,
   AIO_RUNTIME_AUTH: envVars.AIO_runtime_auth || (ns[0] || {}).auth,
   AIO_PROJECT_ID: project.id,
@@ -54,8 +58,8 @@ const secrets = {
   AIO_PROJECT_WORKSPACE_ID: ws.id,
   AIO_PROJECT_WORKSPACE_NAME: ws.name,
   AIO_PROJECT_WORKSPACE_DETAILS_SERVICES: (ws.details || {}).services ? JSON.stringify(ws.details.services) : undefined,
-  ADMIN_IMS_CLIENT_SECRET: envVars.ADMIN_IMS_CLIENT_SECRET,
-  ADMIN_IMS_SCOPES: envVars.ADMIN_IMS_SCOPES || list(c('scopes')),
+  ADMIN_IMS_CLIENT_SECRET: envVars.ADMIN_IMS_CLIENT_SECRET || (s2s.client_secrets || [])[0],
+  ADMIN_IMS_SCOPES: envVars.ADMIN_IMS_SCOPES || list(c('scopes')) || join(s2s.scopes),
   AI_KEY_PUBLIC: envVars.AI_KEY_PUBLIC,
   AI_KEY_PRIVATE: envVars.AI_KEY_PRIVATE
 }
