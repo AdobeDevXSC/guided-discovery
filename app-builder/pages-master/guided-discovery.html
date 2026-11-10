@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Guided Discovery: Adobe Analytics to CJA Migration · Practitioner session</title>
+<title>Guided Discovery: Adobe Analytics to CJA Migration</title>
 <link rel="stylesheet" href="https://use.typekit.net/aaz7dvd.css">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap');
@@ -1852,10 +1852,7 @@ div#guided-card-back[aria-hidden="true"] {
                     the technical framing instead of the ROI pillars.
                     Facilitator-led, so no gate/orientation needed.
    ================================================================ */
-/* FACILITATOR-LED PAGE (web-src/facilitator-practitioner.html), built by scripts/make-facilitator-pages.js; edit the
-   master file and rebuild instead of editing this one. Saves as assessment "facilitator-led" with
-   view "practitioner". The contact form is shown here too, so each session is linked to the client's profile. */
-const VIEW_PROFILE = "practitioner";
+const VIEW_PROFILE = "selfguided";
 
 const PROFILE_PAGES = {
   selfguided:   ["overview","discovery","hub","data-foundations","segmentation","identity","governance","roles","strategy-adoption","summary","crosswalk","architecture"],
@@ -2084,7 +2081,7 @@ const CONFIG = {
    lead has context without re-asking.
    ================================================================ */
 const LEAD = { firstName:"", lastName:"", email:"", phone:"", jobTitle:"", department:"", org:"", country:"", state:"", zip:"", product:"", industry:"" };
-let GATE_PASSED = false; // facilitator-led pages show the contact form too: answers are saved against that profile
+let GATE_PASSED = (VIEW_PROFILE !== "selfguided"); // facilitator-led profiles skip the gate entirely
 
 
 /* Per-industry example data used across Segmentation Rebuild + Crosswalk pages.
@@ -5137,7 +5134,7 @@ function buildResponsePayload(){
     sectionsCompleted: workflowPages().filter(p=>p!=='summary' && COMPLETED.has(p)),
     sectionsTotal: workflowPages().filter(p=>p!=='summary')
   };
-  if(LEAD.email){
+  if(VIEW_PROFILE==='selfguided'){
     payload.lead = { firstName:LEAD.firstName, lastName:LEAD.lastName, email:LEAD.email, phone:LEAD.phone, jobTitle:LEAD.jobTitle, department:LEAD.department, org:LEAD.org, country:LEAD.country, state:LEAD.state, zip:LEAD.zip, product:LEAD.product, industry:LEAD.industry };
   }
   if(pages.includes('discovery')){
@@ -5365,7 +5362,7 @@ function renderSummary(){
 
   let html = '';
 
-  if(LEAD.email){
+  if(VIEW_PROFILE==='selfguided'){
     const fullName = [LEAD.firstName, LEAD.lastName].filter(Boolean).join(' ');
     html += `<div class="sum-block"><div class="sum-block-title">Contact</div>
       ${sumRow('Name', fullName || '<span class="sum-empty">Not provided</span>')}
@@ -5715,7 +5712,7 @@ function autoSubmitOnCompletion(){
 
 async function submitToAdobeServer(){
   if(SUBMITTED) return;
-  if(!LEAD.email){
+  if(VIEW_PROFILE==='selfguided' && !LEAD.email){
     return;
   }
   const payload = buildResponsePayload();
@@ -5804,8 +5801,7 @@ if(!GATE_PASSED){
 <script>
 /* APP BUILDER STAGING INTEGRATION. No API secrets in browser.
  *
- * Flow: profile form -> POST /assessments {op:create, assessment:'facilitator-led'}
- * -> POST /guided-discovery {op:start, assessment:'facilitator-led', view, leadRef}
+ * Flow: profile form -> POST /assessments {op:create} -> POST /guided-discovery {op:start, leadRef}
  * -> answers posted with {op:answer} (merged per question) as they change -> section progress
  * with {op:save, progress} -> {op:complete} when the summary is reached.
  *
@@ -5818,11 +5814,8 @@ if(!GATE_PASSED){
  */
 (function(){
 'use strict';
-const BASE=(location.hostname.endsWith('.adobeio-static.net')?location.origin:'https://20409-157ochretakin-stage.adobeio-static.net')+'/api/v1/web/marketingprototype'; // the API of the environment serving this page (Stage when opened from anywhere else);
-// every profile, response and answer from this page is stored as the facilitator-led assessment,
-// with this page's view ("practitioner") on the response
-const ASSESSMENT='facilitator-led';
-const SOURCE='app-builder:/facilitator-practitioner.html';
+const API_HOST_OUTSIDE_APP_BUILDER='https://20409-157ochretakin-stage.adobeio-static.net'; // when hosted outside App Builder: set to https://20409-157ochretakin.adobeio-static.net for production
+const BASE=(location.hostname.endsWith('.adobeio-static.net')?location.origin:API_HOST_OUTSIDE_APP_BUILDER)+'/api/v1/web/marketingprototype';
 const $=id=>document.getElementById(id);
 const state={submissionId:null,userId:null,responseId:null,catalog:null,busy:false,again:false,sent:new Map(),progressSent:'',completed:false};
 // the seven sections the API knows, as the page's page ids (they are the same keys)
@@ -5898,7 +5891,7 @@ function collect(){
 
 /* ---- profile + response ---- */
 async function fetchCatalog(){
- const data=await api('/guided-discovery?op=questions&assessment='+ASSESSMENT);
+ const data=await api('/guided-discovery?op=questions&assessment=self-guided');
  if(!Array.isArray(data.sections)||!data.sections.length)throw Error('No published questions returned.');
  state.catalog=data;
 }
@@ -5907,10 +5900,10 @@ async function initProfile(){
  state.busy=true;const btn=$('gate-submit-btn');btn.disabled=true;status('Creating your profile…');
  try{
   const industryName=(INDUSTRY_EXAMPLES[LEAD.industry]||INDUSTRY_EXAMPLES.generic).label;
-  const data=await api('/assessments','POST',{op:'create',consent:true,assessment:ASSESSMENT,source:SOURCE,profile:{firstName:LEAD.firstName,lastName:LEAD.lastName,email:LEAD.email,phone:LEAD.phone,jobTitle:LEAD.jobTitle,department:LEAD.department,organization:LEAD.org,country:LEAD.country,state:LEAD.state,postalCode:LEAD.zip,primaryProduct:LEAD.product,industry:industryName}});
+  const data=await api('/assessments','POST',{op:'create',consent:true,assessment:'self-guided',source:'aem-eds:/acs/cja-migration-assessment',profile:{firstName:LEAD.firstName,lastName:LEAD.lastName,email:LEAD.email,phone:LEAD.phone,jobTitle:LEAD.jobTitle,department:LEAD.department,organization:LEAD.org,country:LEAD.country,state:LEAD.state,postalCode:LEAD.zip,primaryProduct:LEAD.product,industry:industryName}});
   state.submissionId=data.submissionId;state.userId=data.userId;
   // leadRef links the response to the profile; answers are only accepted for linked responses
-  const started=await api('/guided-discovery','POST',{op:'start',assessment:ASSESSMENT,view:VIEW_PROFILE,leadRef:state.submissionId,source:SOURCE,contentVersion:'structured-content'});
+  const started=await api('/guided-discovery','POST',{op:'start',assessment:'self-guided',leadRef:state.submissionId,source:'aem-eds:/acs/cja-migration-assessment',contentVersion:'structured-content'});
   if(!started.linked)throw Error('The response was not linked to the profile.');
   state.responseId=started.responseId;
   await fetchCatalog();
@@ -6090,6 +6083,7 @@ $('ab-check').addEventListener('click',async()=>{
  }catch(e){status('Read-back failed: '+e.message,true);}
 });
 window.addEventListener('beforeunload',e=>{if(state.responseId&&pending){e.preventDefault();e.returnValue='';}if(state.responseId)backgroundSave({keepalive:true});});
+/* >>> app-builder wrap-up: managed by scripts/build-pages.js, do not edit here (source: web-src/wrapup-guide.snippet.js) */
 /* ---- wrap-up guide (Finish & Wrap Up): the guide is written by Claude, not simulated ----
    Source of truth for the block that goes at the END of the App Builder sync IIFE in the page
    (just before its closing `})();`), because it uses that block's private state, api and save.
@@ -6242,7 +6236,7 @@ window.addEventListener('beforeunload',e=>{if(state.responseId&&pending){e.preve
     setTimeout(() => window.beginFinalization(), 300);
   }
 }
-
+/* <<< app-builder wrap-up */
 })();
 </script>
 </body>

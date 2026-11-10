@@ -16,7 +16,8 @@ Stage deploys from every branch push and Production from `main` (see `docs/ci-cd
 | Piece | Where |
 |---|---|
 | Public assessment page | `web-src/self-guided.html`, served at https://20409-157ochretakin-stage.adobeio-static.net/self-guided.html (no sign-in) |
-| Facilitator-led pages | `web-src/facilitator-executive.html` and `web-src/facilitator-practitioner.html`, served at https://20409-157ochretakin-stage.adobeio-static.net/facilitator-executive.html and https://20409-157ochretakin-stage.adobeio-static.net/facilitator-practitioner.html. Both save as assessment `facilitator-led`, each with its own `view`. Built from the master HTML file with `node scripts/make-facilitator-pages.js <master.html>`; rebuild instead of editing them |
+| Facilitator-led page | `web-src/facilitator.html`, served at https://20409-157ochretakin-stage.adobeio-static.net/facilitator.html. The link picks the session: `?view=practitioner` (the default) or `?view=executive`; each saves as assessment `facilitator-led` with that `view`, and shows the pages of that version. |
+| Page master | `pages-master/guided-discovery.html` is the source of both pages. `web-src/self-guided.html` and `web-src/facilitator.html` are built from it with `node scripts/build-pages.js` (App Builder's API base and the wrap-up code are added there); change the master or the script and rebuild, never edit the built pages. A test fails if they are out of date. |
 | Admin viewer (profiles, questions, API reference) | `web-src/src/`, opened through Experience Cloud: `https://experience.adobe.com/?devMode=true#/custom-apps/?localDevUrl=https://20409-157ochretakin-stage.adobeio-static.net/index.html` |
 | Profiles API | `actions/assessments`: the assessment's initial form (`cja_assessments`, people in `cja_users`) |
 | Responses API | `actions/guided-discovery`: answers, progress and results (`assessment_responses`), plus `GET ?op=questions` |

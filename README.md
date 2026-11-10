@@ -7,6 +7,6 @@ The AA to CJA Guided Discovery assessment, built on Adobe App Builder. Everythin
 
 Public page (Stage): https://20409-157ochretakin-stage.adobeio-static.net/self-guided.html
 
-Facilitator-led pages (Stage): https://20409-157ochretakin-stage.adobeio-static.net/facilitator-executive.html (executive session) and https://20409-157ochretakin-stage.adobeio-static.net/facilitator-practitioner.html (practitioner session)
+Facilitator-led page (Stage): https://20409-157ochretakin-stage.adobeio-static.net/facilitator.html?view=practitioner (practitioner session, the default) or `?view=executive` (executive session)
 
 Until 2026-10-26 this repo also held an AEM Edge Delivery Services site for the same assessment. It was retired in favour of the single-page app. The last EDS version is tagged [`eds-final`](../../tree/eds-final).

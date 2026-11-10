@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Guided Discovery: Adobe Analytics to CJA Migration · Executive session</title>
+<title>Guided Discovery: Adobe Analytics to CJA Migration · Facilitator session</title>
 <link rel="stylesheet" href="https://use.typekit.net/aaz7dvd.css">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap');
@@ -1852,10 +1852,10 @@ div#guided-card-back[aria-hidden="true"] {
                     the technical framing instead of the ROI pillars.
                     Facilitator-led, so no gate/orientation needed.
    ================================================================ */
-/* FACILITATOR-LED PAGE (web-src/facilitator-executive.html), built by scripts/make-facilitator-pages.js; edit the
-   master file and rebuild instead of editing this one. Saves as assessment "facilitator-led" with
-   view "executive". The contact form is shown here too, so each session is linked to the client's profile. */
-const VIEW_PROFILE = "executive";
+/* FACILITATOR-LED PAGE (web-src/facilitator.html), built by scripts/build-pages.js; edit the master and rebuild instead
+   of editing this one. Saves as assessment "facilitator-led" with the view from the link: ?view=executive or
+   ?view=practitioner (default). The contact form is shown here too, so each session is linked to the client's profile. */
+const VIEW_PROFILE = new URLSearchParams(location.search).get('view') === 'executive' ? 'executive' : 'practitioner';
 
 const PROFILE_PAGES = {
   selfguided:   ["overview","discovery","hub","data-foundations","segmentation","identity","governance","roles","strategy-adoption","summary","crosswalk","architecture"],
@@ -5818,11 +5818,12 @@ if(!GATE_PASSED){
  */
 (function(){
 'use strict';
-const BASE=(location.hostname.endsWith('.adobeio-static.net')?location.origin:'https://20409-157ochretakin-stage.adobeio-static.net')+'/api/v1/web/marketingprototype'; // the API of the environment serving this page (Stage when opened from anywhere else);
+const API_HOST_OUTSIDE_APP_BUILDER='https://20409-157ochretakin-stage.adobeio-static.net'; // when hosted outside App Builder: set to https://20409-157ochretakin.adobeio-static.net for production
+const BASE=(location.hostname.endsWith('.adobeio-static.net')?location.origin:API_HOST_OUTSIDE_APP_BUILDER)+'/api/v1/web/marketingprototype';
 // every profile, response and answer from this page is stored as the facilitator-led assessment,
-// with this page's view ("executive") on the response
+// with this page's view (executive or practitioner, from the link) on the response
 const ASSESSMENT='facilitator-led';
-const SOURCE='app-builder:/facilitator-executive.html';
+const SOURCE='app-builder:/facilitator.html';
 const $=id=>document.getElementById(id);
 const state={submissionId:null,userId:null,responseId:null,catalog:null,busy:false,again:false,sent:new Map(),progressSent:'',completed:false};
 // the seven sections the API knows, as the page's page ids (they are the same keys)
@@ -6090,6 +6091,7 @@ $('ab-check').addEventListener('click',async()=>{
  }catch(e){status('Read-back failed: '+e.message,true);}
 });
 window.addEventListener('beforeunload',e=>{if(state.responseId&&pending){e.preventDefault();e.returnValue='';}if(state.responseId)backgroundSave({keepalive:true});});
+/* >>> app-builder wrap-up: managed by scripts/build-pages.js, do not edit here (source: web-src/wrapup-guide.snippet.js) */
 /* ---- wrap-up guide (Finish & Wrap Up): the guide is written by Claude, not simulated ----
    Source of truth for the block that goes at the END of the App Builder sync IIFE in the page
    (just before its closing `})();`), because it uses that block's private state, api and save.
@@ -6242,7 +6244,7 @@ window.addEventListener('beforeunload',e=>{if(state.responseId&&pending){e.preve
     setTimeout(() => window.beginFinalization(), 300);
   }
 }
-
+/* <<< app-builder wrap-up */
 })();
 </script>
 </body>

@@ -11,7 +11,7 @@ const options = require('../actions/assessments/options.json')
 
 const BASE = process.env.GD_BASE || 'https://20409-157ochretakin-stage.adobeio-static.net/api/v1/web/marketingprototype'
 const SOURCE = 'seed:wrapup-test'
-const PAGE = process.env.GD_PAGE || 'https://20409-157ochretakin-stage.adobeio-static.net/facilitator-practitioner.html'
+const PAGE = process.env.GD_PAGE || 'https://20409-157ochretakin-stage.adobeio-static.net/facilitator.html?view=practitioner'
 
 const pick = (list, re, fallback) => list.find((x) => re.test(x)) || fallback || list[0]
 
@@ -122,7 +122,7 @@ async function main () {
     console.log(`${r.name}: ${r.answers} answers, completed`)
     console.log(`  submissionId ${r.submissionId}`)
     console.log(`  responseId   ${r.responseId}`)
-    console.log(`  last step    ${PAGE}?wrapupTest=${r.responseId}\n`)
+    console.log(`  last step    ${PAGE}${PAGE.includes('?') ? '&' : '?'}wrapupTest=${r.responseId}\n`)
   }
 }
 

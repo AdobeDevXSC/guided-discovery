@@ -53,7 +53,7 @@
      error/delete/warning, which made checkmarks and selected cards look like
      something was wrong rather than confirmed. Kept as a fixed blue regardless
      of client branding, since it's a usability choice, not a brand choice. */
-  --c-select-600:#1473E6;
+  --c-select-600:#3b63fb;
   --c-select-100:#E6F1FD;
   /* Primary/CTA button fill. v2 revision: reuses the SAME blue already used
      for "selected/complete" (--c-select-600) rather than introducing a second
@@ -61,7 +61,7 @@
      interaction color (selection, focus, primary action, progress, links)
      instead of two similar-but-different blues competing on screen. */
   --c-btn-blue:var(--c-select-600);
-  --c-btn-blue-hover:#0F5EC4; /* manually darkened variant of #1473E6 for :hover */
+  --c-btn-blue-hover:#274dea; /* manually darkened variant of #1473E6 for :hover */
   --c-amber-600:#E8A33D;
   --c-amber-100:#FCF0DC;
   --c-purple-600:#6952C4;
@@ -75,7 +75,7 @@
   --c-surface-alt:#EEF1F5;
   --c-line:#DDE2EA;
   --c-line-strong:#C4CBD6;
-  --c-text:#182233;
+  --c-text:#2c2c2c;
   --c-text-soft:#5B6474;
   --c-text-faint:#6B7280;
 
@@ -92,12 +92,13 @@
 }
 
 *{box-sizing:border-box;font-family: 'adobe-clean', arial, sans-serif;}
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 html,body{height:100%;font-family: 'adobe-clean', arial, sans-serif;}
 /* Visible keyboard-focus ring on every interactive element. Explicit rather than
    relying on the browser default, since the default outline color varies and can
    get lost against the new blue buttons. Dark ring on light surfaces, light ring
    on the dark topbar/sidebar so it's always visible against its background. */
-:focus-visible{outline:2px solid var(--c-ink-900);outline-offset:2px;border-radius:4px}
+:focus-visible{border-radius:6px;outline:2px solid var(--c-surface-alt)}
 .topbar :focus-visible,.sidebar :focus-visible{outline-color:#fff}
 body{
   margin:0;
@@ -106,6 +107,37 @@ body{
   background:var(--c-paper);
   -webkit-font-smoothing:antialiased;
   overflow:hidden;
+}
+.question-display select , select {
+      appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 240px;
+  padding-right: 40px;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none'><path d='M6 9l6 6 6-6' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>")!important;
+  background-repeat: no-repeat!important;
+  background-position: right 12px center!important;
+  background-size: 16px 16px!important;
+}
+   button.leadsubmit-btn{
+    display: block;
+    margin: 0 auto; }
+button.btn-primary:not(.leadsubmit-btn):after{
+        content: "";
+    display: inline-block;
+    background-image:url(https://main--guided-discovery--adobedevxsc.aem.page/media_1be49b5be94b1fadcb26627497eed6fecf2efaad1.png);
+    background-size: contain;
+    background-repeat: no-repeat;
+    width: 7px;
+    height: 11px;
+    vertical-align: middle;
+}
+.modal-list button:after  {
+  display: none!important;
+}
+.card-swap button::after {
+    display: none!important;
 }
 h1,h2,h3,h4{font-family:var(--font-display);margin:0;letter-spacing:-.01em}
 code,.mono{font-family:var(--font-mono)}
@@ -126,7 +158,7 @@ a{color:var(--c-select-600)}
 }
 .hamburger-btn{
   background:none;border:none;color:#fff;font-size:20px;line-height:1;
-  padding:8px 10px;border-radius:8px;margin-right:8px;
+  padding:0px 10px;border-radius:8px;margin-right:8px;min-height:56px;
 }
 .hamburger-btn:hover{background:rgba(255,255,255,.1)}
 .brand{
@@ -251,7 +283,23 @@ a{color:var(--c-select-600)}
 }
 .sidebar-close{background:none;border:none;color:rgba(255,255,255,.7);font-size:20px;padding:4px 8px;border-radius:6px}
 .sidebar-close:hover{color:#fff;background:rgba(255,255,255,.1)}
-.sidebar-nav{display:flex;flex-direction:column;gap:2px;padding:10px;overflow-y:auto}
+.sidebar-nav{display:flex;flex-direction:column;gap:2px;padding:0px;overflow-y:auto}
+.sidebar-grp button.nav-link {
+    padding: 11px 30px;
+    border-bottom: 1px solid rgba(255, 255, 255, .14);
+    border-radius: 0;
+    font-size: 14px;
+}
+button.nav-link.profile-menu svg {
+    stroke: rgba(255,255,255,.68);
+}
+
+button.nav-link.profile-menu {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+        padding-right: 20px;
+}
 .nav-link{
   background:none;border:none;color:rgba(255,255,255,.68);text-align:left;
   font-size:15px;font-weight:500;padding:11px 14px;border-radius:8px;
@@ -294,12 +342,32 @@ a{color:var(--c-select-600)}
 /* ── Page shell ── */
 .page{display:none;flex:1;overflow-y:auto;flex-direction:column}
 .page.active{display:flex}
-.page-inner{max-width:1180px;margin:0 auto;padding:40px 40px 80px;width:100%}
-.page-inner--wide{max-width:1400px}
+/* .page-inner{max-width:1180px;margin:0 auto;padding:40px 40px 80px;width:100%} */
+.page-inner{max-width:100%;margin:0 auto;padding:65px 65px 80px;width:100%}
+/* .page-inner--wide{max-width:1400px} */
 
 .eyebrow{
   font-size:13px;font-weight:700;letter-spacing:-.01em;
   color:var(--c-teal-600);margin-bottom:10px;
+}
+.section-title{
+  font-size:13px;font-weight:700;letter-spacing:-.01em;
+  color:var(--c-ink-900);margin:0;
+}
+.section-page-header{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  gap:16px;flex-wrap:nowrap;
+}
+.section-page-title-group{display:flex;align-items:baseline;gap:14px;min-width:0}
+.section-page-actions{display:flex;gap:10px;align-items:center;flex-shrink:0}
+.back-to-profile{
+  border:0;background:none;padding:0;color:var(--c-select-600);
+  font:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;
+}
+.back-to-profile:hover{text-decoration:underline}
+@media(max-width:700px){
+  .section-page-header{flex-wrap:wrap}
+  .section-page-title-group{flex-wrap:wrap}
 }
 .gd-h1{font-size:34px;font-weight:800;line-height:1.15;color:var(--c-ink-900);max-width:820px}
 .gd-h2{font-size:22px;font-weight:600;color:var(--c-ink-900);margin-bottom:6px}
@@ -360,7 +428,7 @@ a{color:var(--c-select-600)}
 .badge-neutral{background:var(--c-surface-alt);color:var(--c-text-soft)}
 
 .btn{
-  border-radius:999px;padding:10px 18px;font-size:15px;font-weight:600;border:1px solid transparent;
+  border-radius:999px;padding:4px 25px;font-size:15px;font-weight:600;border:1px solid transparent;
   display:inline-flex;align-items:center;gap:8px;transition:.15s;
 }
 .btn-primary{background:var(--c-btn-blue);color:#fff}
@@ -375,10 +443,10 @@ a{color:var(--c-select-600)}
    flow-advancing action (Start, Continue, Mark section complete, Submit),
    not just the Overview page's own buttons. Full pill radius matches
    business.adobe.com's own button convention (radius >= half button height). */
-.btn-lg{padding:15px 30px;font-size:16px;border-radius:999px;min-height:48px}
+.btn-lg{padding:7px 25px;font-size:16px;border-radius:999px;min-height:40px}
 
 .input,.select,textarea{
-  border:1px solid var(--c-line-strong);border-radius:8px;padding:9px 12px;font-size:15px;
+  border:1px solid var(--c-line-strong);border-radius:6px;padding:9px 12px;font-size:15px;    box-shadow: inset 0 2px 3px 0 #ddd;
   font-family:inherit;background:var(--c-surface);color:var(--c-text);
 }
 textarea{width:100%;resize:vertical;min-height:70px}
@@ -410,7 +478,7 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
 
 /* ── filter bar ── */
 .filterbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
-.filterbar .input{min-width:220px}
+.filterbar .input{min-width:280px}
 .result-count{font-size:14px;color:var(--c-text-faint);margin-left:auto}
 
 /* ── tabs (secondary) ── */
@@ -420,9 +488,9 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
 
 /* ── wizard ── */
 /* ── persistent step/progress header (v2) ── */
-.global-stepper{background:var(--c-surface);border-bottom:1px solid var(--c-line);padding:14px 40px;flex-shrink:0}
-.global-stepper-row{display:flex;align-items:center;flex-wrap:wrap;gap:2px;overflow-x:auto}
-.gstep{display:inline-flex;align-items:center;gap:8px;background:none;border:none;padding:6px 8px;border-radius:8px;color:var(--c-text-faint);font-weight:600;font-size:14px;cursor:pointer;white-space:nowrap}
+.global-stepper{background:var(--c-surface);border-bottom:1px solid var(--c-line);padding:14px 65px;flex-shrink:0}
+.global-stepper-row{display:flex;align-items:center;flex-wrap:wrap;gap:12px;overflow-x:auto;margin-left:-10px}
+.gstep{display:inline-flex;align-items:center;gap:8px;background:none;border:none;padding:6px 10px;border-radius:8px;color:var(--c-text-faint);font-weight:600;font-size:14px;cursor:pointer;white-space:nowrap}
 .gstep:hover{background:var(--c-surface-alt)}
 .gstep-num{width:22px;height:22px;border-radius:50%;background:var(--c-surface-alt);color:var(--c-text-soft);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:var(--font-mono);flex-shrink:0}
 .gstep.active{color:var(--c-ink-900)}
@@ -490,7 +558,7 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
 /* ── drag-and-drop assignment zones (Identity, Governance) ── */
 .dnd-zones{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
 @media(max-width:800px){.dnd-zones{grid-template-columns:1fr}}
-.dnd-zone{border:2px dashed var(--c-line-strong);border-radius:var(--radius-lg);padding:16px;min-height:96px;background:var(--c-surface-alt);transition:.15s}
+.dnd-zone{border:2px dashed var(--c-line-strong);border-radius:var(--radius-lg);padding:16px;min-height:96px;background:var(--c-surface-alt);transition:.15s;margin-bottom:15px}
 .dnd-zone.drag-over{border-color:var(--c-select-600);background:var(--c-select-100)}
 .dnd-zone-label{font-size:13px;text-transform:uppercase;letter-spacing:.05em;font-weight:700;color:var(--c-text-soft);margin-bottom:10px}
 .dnd-zone-count{color:var(--c-select-600);font-weight:700}
@@ -533,7 +601,7 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
 .prompt-item{padding:14px 0;border-bottom:1px solid var(--c-line);display:flex;gap:14px;align-items:flex-start}
 .progress-item{padding:12px 0;border-bottom:1px solid var(--c-line);display:flex;gap:12px;align-items:center;cursor:pointer}
 .progress-bar-track{height:8px;border-radius:5px;background:var(--c-surface-alt);overflow:hidden}
-.progress-bar-fill{height:100%;background:var(--c-teal-600);border-radius:5px;transition:width .25s ease}
+.progress-bar-fill{height:100%;background:var(--c-btn-blue);border-radius:5px;transition:width .25s ease}
 .progress-item:last-child{border-bottom:none}
 .progress-item:hover .progress-label{color:var(--c-ink-900)}
 .progress-check{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--c-line-strong);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:700}
@@ -591,14 +659,14 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
 .cslider-hitzone{padding:8px 0;cursor:pointer;touch-action:none;outline:none}
 .cslider-track{position:relative;height:22px;margin-top:6px;pointer-events:none}
 .cslider-track::before{content:'';position:absolute;top:50%;left:11px;right:11px;height:6px;background:var(--c-line-strong);border-radius:3px;transform:translateY(-50%)}
-.cslider-fill{position:absolute;top:50%;left:11px;height:6px;background:var(--c-select-600);border-radius:3px;transform:translateY(-50%);pointer-events:none;transition:width .05s linear,opacity .15s ease}
+.cslider-fill{position:absolute;top:50%;left:11px;height:6px;background:var(--c-select-600);border-radius:3px;transform:translateY(-50%);pointer-events:none;transition:opacity .15s ease}
 .cslider-tick{position:absolute;top:50%;width:6px;height:6px;border-radius:50%;background:var(--c-surface);border:1.5px solid var(--c-line-strong);transform:translate(-50%,-50%);pointer-events:none}
-.cslider-thumb{position:absolute;top:50%;width:22px;height:22px;border-radius:50%;background:var(--c-select-600);border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.28);transform:translate(-50%,-50%);pointer-events:none;transition:left .05s linear,opacity .15s ease}
+.cslider-thumb{position:absolute;top:50%;width:22px;height:22px;border-radius:50%;background:var(--c-select-600);border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.28);transform:translate(-50%,-50%);pointer-events:none;transition:opacity .15s ease}
 .cslider-endcap{position:absolute;top:-10px;bottom:-10px;width:36px;pointer-events:auto;cursor:pointer;z-index:2}
 .cslider-endcap-left{left:0}
 .cslider-endcap-right{right:0}
 .cslider-hitzone:focus-visible{box-shadow:0 0 0 2px var(--c-select-100);border-radius:8px}
-.cslider-labels{height:34px;margin-top:8px;font-size:12px;color:var(--c-text-soft)}
+.cslider-labels{height:50px;margin-top:0px;font-size:12px;color:var(--c-text-soft)}
 .cslider-labels-inner{position:relative;height:100%}
 .cslider-labels-inner span{position:absolute;top:0;max-width:110px;line-height:1.3}
 .spectrum-track-row{display:flex;align-items:center;gap:18px}
@@ -612,7 +680,7 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
 .spectrum-labels span{flex:1;text-align:center}
 .spectrum-labels span:first-child{text-align:left}
 .spectrum-labels span:last-child{text-align:right}
-.spectrum-caption{font-size:14px;color:var(--c-text-soft);margin-top:10px;min-height:20px;font-style:italic}
+.spectrum-caption{font-size:14px;color:var(--c-text-soft);margin-top:10px;min-height:20px;font-style:italic;min-height: 50px;}
 .spectrum-escape-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
 .spectrum-escape-btn{font-size:13px;font-weight:500;padding:7px 14px;border-radius:14px;border:1.5px solid var(--c-line-strong);background:var(--c-surface);color:var(--c-text-soft);cursor:pointer;transition:.12s}
 .spectrum-escape-btn.selected{background:var(--c-ink-900);border-color:var(--c-ink-900);color:#fff}
@@ -620,12 +688,13 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
 /* Swipe mode: an optional alternative to scanning a large checklist grid -
    the grid itself always stays as the primary, fully-visible view; this is
    purely an additive, more game-like way to move through the same items. */
-#swipe-card-stack{position:relative;height:300px;max-width:400px;margin:0 auto}
+#swipe-card-stack{position:relative;height:352px;max-width:400px;margin:0 auto}
+#guided-modal-overlay #swipe-card-stack{position:relative;height:500px;max-width:500px;}
 .swipe-card{
   position:absolute;inset:0;background:var(--c-surface);border:2px solid var(--c-line-strong);
-  border-radius:16px;padding:26px;display:flex;flex-direction:column;justify-content:center;
+  border-radius:16px;padding:20px;display:flex;flex-direction:column;justify-content:center;
   align-items:center;text-align:center;cursor:grab;user-select:none;touch-action:none;
-  overflow-y:auto;transition:transform .25s ease,opacity .25s ease,border-color .15s ease;
+  transition:transform .25s ease,opacity .25s ease,border-color .15s ease;
 }
 .swipe-card:active{cursor:grabbing}
 .swipe-card-cat{font-size:12.5px;font-weight:700;color:var(--c-text-soft);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px}
@@ -644,7 +713,7 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
 .answer-chip.selected{background:var(--c-select-600);color:#fff;border-color:var(--c-select-600);font-weight:600}
 
 /* ── glossary ── */
-.gterm{border-bottom:1.5px dotted var(--c-text-soft);cursor:help;text-underline-offset:2px}
+.gterm{border-bottom:1.5px dotted var(--c-select-600);cursor:help;text-underline-offset:2px; color: #3b63fb;}
 .gterm:hover{border-bottom-color:var(--c-select-600);color:var(--c-select-600)}
 .glossary-btn{
   font-size:14px;color:rgba(255,255,255,.95);border:1px solid rgba(255,255,255,.4);
@@ -675,7 +744,7 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
 .gate-step{flex:1;min-width:150px;background:var(--c-surface);border:1px solid var(--c-line);border-radius:var(--radius-md);padding:16px;font-size:14px;color:var(--c-text-soft);line-height:1.5}
 .gate-step-num{width:24px;height:24px;border-radius:50%;background:var(--c-ink-900);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:11px;font-weight:700;margin-bottom:10px}
 .gate-form{background:var(--c-surface);border:1px solid var(--c-line);border-radius:var(--radius-lg);padding:28px;box-shadow:var(--shadow-md)}
-.gate-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.gate-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
 @media(max-width:560px){.gate-row{grid-template-columns:1fr}}
 .gate-form .input, .gate-form .select{width:100%}
 .gate-legal{font-size:14px;color:var(--c-text-soft);line-height:1.6;margin:18px 0}
@@ -693,14 +762,80 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
 }
 @keyframes slideInPanel{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}
 .modal-box{
-  background:var(--c-surface);border-radius:var(--radius-lg);width:100%;max-width:640px;
-  max-height:80vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);
+  background:var(--c-surface);border-radius:var(--radius-lg);width:100%;max-width: 700px;
+    max-height: calc(100dvh - 100px);display:flex;flex-direction:column;box-shadow:var(--shadow-lg);
 }
 .modal-head{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;border-bottom:1px solid var(--c-line)}
 .modal-close{background:none;border:none;font-size:20px;color:var(--c-text-soft);line-height:1;padding:4px}
 .modal-close:hover{color:var(--c-text)}
 .modal-search{padding:14px 22px;border-bottom:1px solid var(--c-line)}
 .modal-list{overflow-y:auto;padding:6px 22px 20px}
+.guided-modal-active #app{visibility:hidden}
+.guided-modal-box{max-width: 700px;max-height: calc(100dvh - 100px);position:relative;}
+.guided-modal-head{padding-right:72px}
+.guided-modal-close{
+  position:absolute;top:14px;right:14px;width:36px;height:36px;border-radius:50%;
+  border:1px solid var(--c-line);background:var(--c-surface);color:var(--c-text-soft);
+  display:flex;align-items:center;justify-content:center;font-size:22px;line-height:1;
+  cursor:pointer;z-index:2;
+}
+.guided-modal-close:hover{color:var(--c-ink-900);border-color:var(--c-line-strong);background:var(--c-surface-alt)}
+.guided-modal-body{overflow-y:auto;padding:20px 22px;}
+.guided-modal-body.card-swap{animation:guidedCardFade .16s ease}
+@keyframes guidedCardFade{from{opacity:.45}to{opacity:1}}
+.guided-card-scene{display:grid;width:100%;perspective:1200px}
+.guided-card-flipper{
+  display:grid;grid-area:1/1;width:100%;transform-style:preserve-3d;
+  transition:transform .3s ease;
+}
+.guided-card-flipper.is-flipped{transform:rotateY(180deg)}
+.guided-card-face{
+  grid-area:1/1;min-width:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+}
+.guided-card-face[aria-hidden="true"]{pointer-events:none}
+.guided-card-back{
+  transform:rotateY(180deg);background:var(--c-surface);border:1px solid var(--c-line);
+  border-radius:var(--radius-md);padding:22px;text-align:left;align-self:stretch;
+}
+.swipe-card div.guided-card-back {
+  display: block;
+}
+.guided-detail-section{margin-bottom:10px}
+.guided-detail-section:last-child{margin-bottom:0}
+.guided-detail-label{font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--c-text-soft);margin-bottom:5px}
+.guided-detail-copy{font-size:14px;line-height:1.55;color:var(--c-text)}
+.guided-detail-list{margin:5px 0 0;padding-left:20px;font-size:15px;line-height:1.6;color:var(--c-text)}
+.swipe-card .guided-card-scene{height:100%}
+.swipe-card .guided-card-face{display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:100%}
+.swipe-card .guided-card-back{align-items:stretch;justify-content:flex-start;overflow-y:auto}
+@media(prefers-reduced-motion:reduce){
+  .guided-card-flipper{transform:none!important;transition:opacity .15s ease}
+  .guided-card-face{transition:opacity .15s ease}
+  .guided-card-flipper:not(.is-flipped) .guided-card-back{opacity:0}
+  .guided-card-flipper.is-flipped .guided-card-front{opacity:0}
+  .guided-card-flipper.is-flipped .guided-card-back{opacity:1;transform:none}
+}
+.guided-modal-filter{font-size:12.5px;color:var(--c-select-600);font-weight:600;margin-top:2px}
+.guided-modal-instructions{font-size:13.5px;color:var(--c-text-soft);text-align:center;margin-bottom:14px}
+.guided-modal-error{
+  display:none;margin:0 22px 14px;padding:10px 12px;border-radius:8px;
+  background:var(--c-red-100);color:var(--c-red-600);font-size:14px;font-weight:600;line-height:1.45;
+}
+.guided-modal-error.open{display:block}
+.guided-modal-note{
+  display:none;margin:0 22px 14px;padding:10px 12px;border-radius:8px;
+  background:var(--c-select-100);color:var(--c-select-600);font-size:14px;font-weight:600;line-height:1.45;
+}
+.guided-modal-note.open{display:block}
+.guided-modal-footer{
+  display:flex;justify-content:space-between;align-items:center;gap:12px;
+  padding:16px 22px;border-top:1px solid var(--c-line);
+}
+.guided-modal-footer-main{display:flex;gap:10px;align-items:center;margin-left:auto}
+.guided-yes-no-actions{display:flex;justify-content:center;gap:20px;padding:24px 0 8px}
+.guided-modal-interstitial{padding:28px 8px;text-align:left}
+.guided-modal-interstitial p{font-size:15px;color:var(--c-text-soft);line-height:1.6;margin:0 0 18px}
+.guided-modal-interstitial-actions{display:flex;gap:10px;flex-wrap:wrap}
 .gloss-item{padding:13px 0;border-bottom:1px solid var(--c-line)}
 .gloss-item:last-child{border-bottom:none}
 .gloss-term{font-weight:700;font-size:15px;color:var(--c-ink-900);font-family:var(--font-display)}
@@ -748,6 +883,95 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
 .op-contact-name{font-size:16px;font-weight:600;color:var(--c-ink-900)}
 .op-contact-role{font-size:14px;color:var(--c-text-soft)}
 .op-disclaimer{font-size:12px;color:var(--c-text-faint);line-height:1.6;margin-top:18px;padding-top:14px;border-top:1px solid var(--c-line)}
+
+/* Modernization Guide transition and artifact */
+.mg-hero{max-width:760px;margin-bottom:26px}
+.mg-eyebrow{font-size:13px;font-weight:700;color:var(--c-accent-600);margin-bottom:10px}
+.mg-layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr);gap:22px;align-items:start}
+.mg-status-card{
+  background:var(--c-ink-900);color:#fff;border-radius:var(--radius-lg);padding:26px;
+  box-shadow:var(--shadow-md);position:sticky;top:24px
+}
+.mg-status-kicker{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:rgba(255,255,255,.65)}
+.mg-status-title{font-family:var(--font-display);font-size:22px;font-weight:700;line-height:1.25;margin:10px 0 8px}
+.mg-status-copy{font-size:15px;line-height:1.55;color:rgba(255,255,255,.76);margin:0}
+.mg-progress{height:4px;border-radius:4px;background:rgba(255,255,255,.18);overflow:hidden;margin:20px 0}
+.mg-progress-bar{height:100%;width:38%;border-radius:4px;background:var(--c-select-600);animation:mgProgress 1.4s ease-in-out infinite}
+@keyframes mgProgress{0%{transform:translateX(-120%)}50%{transform:translateX(105%)}100%{transform:translateX(280%)}}
+.mg-status-card[data-status="idle"] .mg-progress,
+.mg-status-card[data-status="ready"] .mg-progress,
+.mg-status-card[data-status="error"] .mg-progress{display:none}
+.mg-status-card[data-status="ready"]{background:var(--c-ink-800)}
+.mg-status-card[data-status="error"]{background:var(--c-ink-800)}
+.mg-status-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.mg-status-actions .btn:disabled{opacity:.55;cursor:not-allowed}
+.mg-content{min-width:0}
+.mg-section{margin-bottom:30px}
+.mg-section-title{font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--c-ink-900);margin-bottom:14px}
+.mg-pillars{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.mg-pillar{background:var(--c-surface);border:1px solid var(--c-line);border-radius:var(--radius-md);padding:18px;min-height:172px}
+.mg-pillar-num{font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--c-select-600);margin-bottom:14px}
+.mg-pillar-title{font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--c-ink-900);margin-bottom:7px}
+.mg-pillar-copy{font-size:14px;color:var(--c-text-soft);line-height:1.55}
+.mg-sequence{background:var(--c-surface);border:1px solid var(--c-line);border-radius:var(--radius-lg);padding:8px 22px}
+.mg-sequence-step{display:grid;grid-template-columns:34px 1fr;gap:13px;padding:17px 0;border-bottom:1px solid var(--c-line)}
+.mg-sequence-step:last-child{border-bottom:none}
+.mg-sequence-num{width:28px;height:28px;border-radius:50%;background:var(--c-select-100);color:var(--c-select-600);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.mg-sequence-title{font-size:15.5px;font-weight:700;color:var(--c-ink-900);margin-bottom:3px}
+.mg-sequence-copy{font-size:14px;line-height:1.5;color:var(--c-text-soft)}
+.mg-document{
+  display:grid;grid-template-columns:74px minmax(0,1fr) auto;gap:16px;align-items:center;
+  background:linear-gradient(135deg,var(--c-surface) 0%,var(--c-surface-alt) 100%);
+  border:1px solid var(--c-line);border-radius:var(--radius-lg);padding:22px
+}
+.mg-document-icon{width:62px;height:76px;border-radius:8px;background:#fff;border:1px solid var(--c-line);box-shadow:var(--shadow-sm);position:relative}
+.mg-document-icon::before{content:"";position:absolute;left:13px;right:13px;top:20px;height:3px;background:var(--c-accent-600);box-shadow:0 10px 0 var(--c-line-strong),0 20px 0 var(--c-line-strong),0 30px 0 var(--c-line-strong)}
+.mg-document-title{font-family:var(--font-display);font-size:19px;font-weight:700;color:var(--c-ink-900)}
+.mg-document-meta{font-size:14px;color:var(--c-text-soft);line-height:1.55;margin-top:5px}
+.mg-ready-badge{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--c-sage-600);margin-top:9px}
+.mg-resource-callout{background:var(--c-select-100);border-radius:var(--radius-md);padding:18px 20px;margin-top:14px}
+.mg-resource-callout-title{font-size:16px;font-weight:700;color:var(--c-ink-900);margin-bottom:5px}
+.mg-resource-callout-copy{font-size:14px;color:var(--c-text-soft);line-height:1.55}
+@media(max-width:900px){
+  .mg-layout{grid-template-columns:1fr}
+  .mg-status-card{position:static}
+}
+@media(max-width:620px){
+  .mg-pillars{grid-template-columns:1fr}
+  .mg-document{grid-template-columns:58px 1fr}
+  .mg-document-icon{width:50px;height:64px}
+  .mg-document .btn{grid-column:1/-1;width:100%}
+}
+@media(prefers-reduced-motion:reduce){.mg-progress-bar{animation:none;width:100%;opacity:.75}}
+
+/* custom css */
+.question-display p {
+    margin: 0px 0px 6px;
+    font-size: 16px;
+    line-height: 20px;
+}
+
+/* Targeted modal and Connected Data layout corrections */
+/* .guided-modal-box{width:min(100%,1100px);max-width:1100px;height:min(900px,calc(100dvh - 48px));max-height:calc(100dvh - 48px);overflow:hidden} */
+.guided-modal-body{flex:1;min-height:0;}
+.guided-modal-head,.guided-modal-footer{flex-shrink:0}
+.guided-card-scene,.guided-card-flipper,.guided-card-face{min-width:0}
+
+div#guided-card-back[aria-hidden="true"] {
+    height: 0px;overflow: hidden;
+}
+/* div#guided-card-back {
+    display: none;
+}
+.is-flipped div#guided-card-back {display: block;} */
+.cslider-hitzone{touch-action:none;cursor:pointer;min-height:44px;display:flex;align-items:center}
+.cslider-hitzone .cslider-track{width:100%;margin-top:0}
+.cslider-endcap{z-index:3}
+#page-data-foundations .section-page-header{margin-bottom:20px}
+#page-data-foundations #df-steps{margin:0 0 20px!important;padding:16px 20px!important;border:0}
+#page-data-foundations .page-inner{padding-top:28px}
+#guided-modal-overlay #swipe-card-stack{height:min(460px,52vh)}
+@media(max-width:700px){.modal-overlay{padding:12px}.guided-modal-box{height:calc(100dvh - 24px)}.cslider-labels-inner span{font-size:11px;max-width:84px}}
 </style>
 </head>
 <body>
@@ -781,17 +1005,27 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
     </div>
 
     <div class="gate-form">
-      <div style="font-weight:700;font-size:16px;margin-bottom:16px;color:var(--c-text)">Let's get started - just a few details first:</div>
+      <div style="font-weight:700;font-size:20px;margin-bottom:16px;color:var(--c-text)">Let's get started - just a few details first:</div>
       <div class="gate-row">
-        <input class="input" id="gate-first" placeholder="First name*" oninput="gateValidate()">
-        <input class="input" id="gate-last" placeholder="Last name*" oninput="gateValidate()">
+        <div class="question-display"><p>First name<span style="color:#eb1000">*</span></p>
+        <input class="input" id="gate-first"  oninput="gateValidate()">
+        </div>
+        <div class="question-display"><p>Last name<span style="color:#eb1000">*</span></p>
+        <input class="input" id="gate-last"  oninput="gateValidate()">
+        </div>
       </div>
       <div class="gate-row">
-        <input class="input" id="gate-email" placeholder="Business email*" oninput="gateValidate()">
-        <input class="input" id="gate-phone" placeholder="Business phone*" oninput="gateValidate()">
+        <div class="question-display"><p>Business email<span style="color:#eb1000">*</span></p>
+        <input class="input" id="gate-email"  oninput="gateValidate()">
+        </div>
+        <div class="question-display"><p>Business phone<span style="color:#eb1000">*</span></p>
+        <input class="input" id="gate-phone"  oninput="gateValidate()">
+        </div>
       </div>
       <div class="gate-row">
-        <select class="select" id="gate-jobtitle" onchange="gateValidate()">
+        <div class="question-display"><p>Job title or role<span style="color:#eb1000">*</span></p>
+        <input class="input" id="gate-jobtitle"  oninput="gateValidate()">
+        <!-- <select class="select" id="gate-jobtitle" onchange="gateValidate()">
           <option value="" disabled selected>Job title or role*</option>
           <option>C-Suite Executive</option>
           <option>Vice President</option>
@@ -799,8 +1033,11 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
           <option>Manager</option>
           <option>Individual Contributor / Practitioner</option>
           <option>Other</option>
-        </select>
-        <select class="select" id="gate-department" onchange="gateValidate()">
+        </select> -->
+        </div>
+        <div class="question-display"><p>Department<span style="color:#eb1000">*</span></p>
+        <input class="input" id="gate-department"  oninput="gateValidate()">
+        <!-- <select class="select" id="gate-department" onchange="gateValidate()">
           <option value="" disabled selected>Department*</option>
           <option>Marketing</option>
           <option>Analytics / Insights</option>
@@ -808,11 +1045,16 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
           <option>Sales</option>
           <option>Customer Experience</option>
           <option>Other</option>
-        </select>
+        </select> -->
+        </div>
       </div>
       <div class="gate-row">
-        <input class="input" id="gate-org" placeholder="Organization name*" oninput="gateValidate()">
+         <div class="question-display"><p>Organization name<span style="color:#eb1000">*</span></p>
+        <input class="input" id="gate-org"  oninput="gateValidate()">
+        </div>
+         <div class="question-display"><p>Country<span style="color:#eb1000">*</span></p>
         <select class="select" id="gate-country" onchange="gateValidate()">
+          <option value="" disabled selected>Country</option>
           <option>United States</option>
           <option>Canada</option>
           <option>United Kingdom</option>
@@ -823,18 +1065,25 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
           <option>India</option>
           <option>Other</option>
         </select>
+        </div>
       </div>
       <div class="gate-row">
-        <select class="select" id="gate-state" onchange="gateValidate()">
+        <div class="question-display"><p>State/province<span style="color:#eb1000">*</span></p>
+        <input class="input" id="gate-state"  oninput="gateValidate()">
+        </div>
+        <!-- <select class="select" id="gate-state" onchange="gateValidate()">
           <option value="" disabled selected>State/province*</option>
           <option>Alabama</option><option>Alaska</option><option>Arizona</option><option>Arkansas</option><option>California</option><option>Colorado</option><option>Connecticut</option><option>Delaware</option><option>Florida</option><option>Georgia</option><option>Hawaii</option><option>Idaho</option><option>Illinois</option><option>Indiana</option><option>Iowa</option><option>Kansas</option><option>Kentucky</option><option>Louisiana</option><option>Maine</option><option>Maryland</option><option>Massachusetts</option><option>Michigan</option><option>Minnesota</option><option>Mississippi</option><option>Missouri</option><option>Montana</option><option>Nebraska</option><option>Nevada</option><option>New Hampshire</option><option>New Jersey</option><option>New Mexico</option><option>New York</option><option>North Carolina</option><option>North Dakota</option><option>Ohio</option><option>Oklahoma</option><option>Oregon</option><option>Pennsylvania</option><option>Rhode Island</option><option>South Carolina</option><option>South Dakota</option><option>Tennessee</option><option>Texas</option><option>Utah</option><option>Vermont</option><option>Virginia</option><option>Washington</option><option>West Virginia</option><option>Wisconsin</option><option>Wyoming</option><option>District of Columbia</option>
           <option>Other / Not applicable</option>
-        </select>
-        <input class="input" id="gate-zip" placeholder="ZIP/postal code*" oninput="gateValidate()">
+        </select> -->
+        <div class="question-display"><p>ZIP/postal code<span style="color:#eb1000">*</span></p>
+        <input class="input" id="gate-zip" oninput="gateValidate()">
+        </div>
       </div>
-      <div class="gate-row" style="grid-template-columns:1fr">
+      <div class="gate-row">
+        <div class="question-display"><p>Primary product of interest<span style="color:#eb1000">*</span></p>
         <select class="select" id="gate-product" onchange="gateValidate()">
-          <option value="" disabled selected>Primary product of interest*</option>
+          <option value="" disabled selected>Primary product of interest</option>
           <option>Customer Journey Analytics</option>
           <option>Adobe Analytics</option>
           <option>Adobe Experience Platform</option>
@@ -842,22 +1091,26 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
           <option>Real-Time CDP</option>
           <option>Other</option>
         </select>
-      </div>
-
-      <div class="gate-row" style="grid-template-columns:1fr">
+        </div>
+        <div class="question-display"><p>Industry<span style="color:#eb1000">*</span></p>
         <select class="select" id="gate-industry" onchange="gateValidate()">
-          <option value="" disabled selected>Industry*</option>
+          <option value="" disabled selected>Industry</option>
           <option value="retail">Retail</option>
           <option value="financial-services">Financial Services</option>
           <option value="media-travel">Media &amp; Travel</option>
           <option value="healthcare">Healthcare</option>
           <option value="generic">Other / Not listed</option>
         </select>
+        </div>
       </div>
+
+      <!-- <div class="gate-row" style="grid-template-columns:1fr">
+        
+      </div> -->
 
       <div class="gate-legal">The <a href="#">Adobe family of companies</a> would like to bring you great content like this and keep you informed with <a href="#">personalized</a> communications about Adobe's products and services via email and telephone. By submitting this form, you agree to receive these communications at the email address and phone numbers you provided. See our <a href="#">Privacy Policy</a> for more details or to <a href="#">opt-out</a> at any time.</div>
 
-      <button class="btn btn-primary btn-lg" id="gate-submit-btn" onclick="submitGate()" disabled style="width:100%;justify-content:center">Submit</button>
+      <button class="btn btn-primary btn-lg leadsubmit-btn" id="gate-submit-btn" onclick="submitGate()" disabled style="">Submit</button>
     </div>
   </div>
 </div>
@@ -868,13 +1121,12 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
   <div class="topbar">
     <button class="hamburger-btn" onclick="toggleSidebar()" aria-label="Open menu">☰</button>
     <div class="brand">
-      <div class="brand-mark" id="brand-mark">GD</div>
-      <div class="brand-text"><b id="brand-name">Guided Discovery</b><span id="brand-sub">AA → CJA Migration</span></div>
+      <!-- <div class="brand-mark" id="brand-mark">GD</div> -->
+      <div class="brand-text"><b id="brand-name">Guided Discovery</b></div>
     </div>
     <div class="nav-spacer"></div>
-    <button class="glossary-btn" onclick="openGlossary()">Glossary</button>
     <button class="facilitator-btn" id="facilitator-notes-btn" onclick="openFacilitatorNotes()" style="display:none">Facilitator Notes</button>
-    <button class="focus-pill unset" id="nav-focus-pill" onclick="showPage('discovery')" style="display:none">Focus: not set</button>
+    <button class="glossary-btn" onclick="openGlossary()">Glossary</button>
   </div>
 
   <!-- ===================== PERSISTENT STEP/PROGRESS HEADER (v2) ===================== -->
@@ -893,25 +1145,27 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
     <nav class="sidebar-nav">
       <button class="nav-link" data-page="overview">Overview</button>
       <button class="nav-link" data-page="discovery">Discovery</button>
-      <button class="nav-link" data-page="hub">Build Your Profile</button>
-      <button class="nav-link" data-page="data-foundations">Data Foundations</button>
-      <button class="nav-link" data-page="segmentation">Segmentation Rebuild</button>
-      <button class="nav-link" data-page="identity">Identity &amp; Stitching</button>
-      <button class="nav-link" data-page="governance">Governance &amp; Access</button>
-      <button class="nav-link" data-page="roles">Roles &amp; Stakeholders</button>
-      <button class="nav-link" data-page="strategy-adoption">Strategy &amp; Adoption</button>
-      <button class="nav-link" data-page="roadmap">Migration Roadmap</button>
-      <button class="nav-link" data-page="summary">Summary &amp; Next Steps</button>
-      <div class="sidebar-divider">Reference</div>
+      <button class="nav-link profile-menu" data-page="hub">Build Your Profile <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none'><path d='M6 9l6 6 6-6' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg></button>
+      <div class="sidebar-grp">
+        <button class="nav-link" data-page="data-foundations">Data Foundations</button>
+        <button class="nav-link" data-page="segmentation">Segmentation Rebuild</button>
+        <button class="nav-link" data-page="identity">Identity &amp; Stitching</button>
+        <button class="nav-link" data-page="governance">Governance &amp; Access</button>
+        <button class="nav-link" data-page="roles">Roles &amp; Stakeholders</button>
+        <button class="nav-link" data-page="strategy-adoption">Strategy &amp; Adoption</button>
+      </div>
+      <!-- <button class="nav-link" data-page="roadmap">Migration Roadmap</button> -->
+      <button class="nav-link" data-page="summary" style="margin-top: 10px;">Your Results</button>
+      <!-- <div class="sidebar-divider">Reference</div>
       <button class="nav-link" data-page="crosswalk">Metric Crosswalk</button>
-      <button class="nav-link" data-page="architecture">Architecture</button>
+      <button class="nav-link" data-page="architecture">Architecture</button> -->
     </nav>
   </div>
 
   <!-- ===================== OVERVIEW ===================== -->
   <div class="page active" id="page-overview">
     <div class="page-inner">
-      <div class="eyebrow" id="ov-eyebrow">Guided Discovery Workshop</div>
+      <!-- <div class="eyebrow" id="ov-eyebrow">Guided Discovery Workshop</div> -->
       <h1 class="gd-h1">Evolve how you understand your customers, safely and in sequence, with your data.</h1>
       <p class="gd-lede" id="ov-lede">This session walks through how <span id="ov-client-inline">your organization</span>'s current Adobe Analytics implementation maps into Customer Journey Analytics: what moves directly, what needs to be rebuilt, and what becomes possible for the first time once your data lives in a person-centric, cross-channel data lake.</p>
 
@@ -923,8 +1177,8 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
       </div>
 
       <div class="section" id="ov-outcomes-section" style="margin-top:8px">
-        <div style="font-size:14.5px;color:var(--c-text-soft);margin-bottom:8px">Everything you check along the way turns into:</div>
-        <div id="ov-outcomes-list" style="display:flex;flex-wrap:wrap;gap:10px 28px;font-size:14.5px;color:var(--c-text-soft)"></div>
+        <div style="font-size:18px;color:var(--c-text-soft);margin:20px 0px">Everything you check along the way turns into:</div>
+        <div id="ov-outcomes-list" style="display:flex;flex-wrap:wrap;gap:10px 28px;font-size:16px;color:var(--c-text-soft)"></div>
       </div>
 
       <div class="section">
@@ -942,11 +1196,15 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
   <!-- ===================== DISCOVERY (technology-agnostic opening) ===================== -->
   <div class="page" id="page-discovery">
     <div class="page-inner">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
-        <div class="eyebrow">Start here · Technology-agnostic</div>
-        <button class="btn btn-primary btn-sm" onclick="markComplete('discovery')">Continue →</button>
+      <div class="section-page-header">
+        <div class="section-page-title-group">
+          <h1 class="section-title">Discovery</h1>
+        </div>
+        <div class="section-page-actions">
+          <button class="btn btn-primary btn-sm" onclick="markComplete('discovery')">Continue</button>
+        </div>
       </div>
-      <h1 class="gd-h1" style="font-size:28px">Before solutioning: what's really driving this?</h1>
+      <h2 class="gd-h1" style="font-size:28px">Before solutioning: what's really driving this?</h2>
       <p class="gd-lede">Let's set the technology aside for a minute. Before we talk about Adobe Analytics or Customer Journey Analytics, tell us broadly what you're here for, then what's specifically behind it. Your answers shape what we show you next, but everything stays available no matter what you pick.</p>
       <div class="callout-skip">Pick a focus above and select at least one need to continue - everything else on this page is optional, and "Not sure yet" is always a valid answer.</div>
 
@@ -961,7 +1219,7 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
       <div class="section">
         <div class="section-head">
           <h2 class="gd-h2">What's really driving this?</h2>
-          <button class="btn btn-ghost btn-sm" onclick="openNeedsSwipeMode()">🎴 Swipe mode</button>
+          <button class="btn btn-ghost btn-sm" onclick="openDiscoveryFlowAt('needs')">Swipe mode</button>
         </div>
         <p style="font-size:16px;color:var(--c-text-soft);margin:-4px 0 18px;max-width:680px;line-height:1.55" id="disc-needs-intro">
           Select anything below that's in play. There's no wrong answer, and it's normal to select more than one.
@@ -977,7 +1235,7 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
       <div class="section">
         <div class="section-head">
           <h2 class="gd-h2">A few starting questions</h2>
-          <button class="btn btn-ghost btn-sm" onclick="openFocusMode('A few starting questions', getOrderedOpenPrompts(), 'renderDiscovery')">✨ Focus mode</button>
+          <button class="btn btn-ghost btn-sm" onclick="openDiscoveryFlowAt('starting')">Swipe mode</button>
         </div>
         <div class="prompt-list" id="disc-prompts-open"></div>
       </div>
@@ -985,14 +1243,14 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
       <div class="section">
         <div class="section-head">
           <h2 class="gd-h2">Digging a bit deeper</h2>
-          <button class="btn btn-ghost btn-sm" onclick="openFocusMode('Digging a bit deeper', DISCOVERY_PROMPTS_POKE, 'renderDiscovery')">✨ Focus mode</button>
+          <button class="btn btn-ghost btn-sm" onclick="openDiscoveryFlowAt('deeper')">Swipe mode</button>
         </div>
         <div class="prompt-list" id="disc-prompts-poke"></div>
       </div>
 
       <div class="section-complete">
         <div class="section-complete-note">Once the conversation feels settled, you're ready to continue.</div>
-        <button class="btn btn-primary btn-lg" id="sc-btn-discovery" onclick="markComplete('discovery')">Continue →</button>
+        <button class="btn btn-primary btn-lg" id="sc-btn-discovery" onclick="markComplete('discovery')">Continue</button>
       </div>
     </div>
   </div>
@@ -1002,8 +1260,8 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
     <div class="page-inner page-inner--wide">
       <div class="hub-layout">
         <div class="hub-intro">
-          <div class="eyebrow">Build your customer profile</div>
-          <h1 class="gd-h1" style="font-size:22px;margin-top:6px">Every signal you connect brings your customer into focus.</h1>
+          <h1 class="section-title">Build Your Profile</h1>
+          <h2 class="gd-h1" style="font-size:22px;margin-top:6px">Every signal you connect brings your customer into focus.</h2>
           <p class="gd-lede" style="font-size:14.5px;margin-top:10px">This is exactly what CJA does with fragmented data: nothing here has to happen in order. Connect these in whatever sequence makes sense for you - the picture comes together either way.</p>
         </div>
         <div class="hub-wrap">
@@ -1018,7 +1276,7 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
 
       <div class="section-complete">
         <div class="section-complete-note" id="hub-continue-note">Connect as many as you'd like, then continue whenever you're ready.</div>
-        <button class="btn btn-primary btn-lg" onclick="hubContinue()">Continue →</button>
+        <div style="display:flex;gap:12px;flex-wrap:wrap"><button class="btn btn-ghost btn-lg" onclick="hubFinishWrapUp()">Finish &amp; Wrap Up</button><button class="btn btn-primary btn-lg" onclick="hubContinue()">Continue</button></div>
       </div>
     </div>
   </div>
@@ -1026,16 +1284,22 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
   <!-- ===================== DATA FOUNDATIONS WIZARD ===================== -->
   <div class="page" id="page-data-foundations">
     <div class="page-inner">
+      <div class="section-page-header">
+        <div class="section-page-title-group">
+          <h1 class="section-title">Connected Data</h1>
+          <button class="back-to-profile" onclick="showPage('hub')">Back to profile</button>
+        </div>
+      </div>
       <div class="wizard-steps" id="df-steps" style="margin:-8px -40px 24px;padding:20px 40px"></div>
       <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
-        <button class="btn btn-primary btn-sm" id="df-top-continue-btn" onclick="dfTopContinue()">Continue →</button>
+        <button class="btn btn-primary btn-sm" id="df-top-continue-btn" onclick="dfTopContinue()">Continue</button>
       </div>
       <div class="callout-skip">Select at least one item you're tracking today to continue. You can reopen the Yes/No questions anytime to edit your selections.</div>
 
       <div id="df-step-1">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
           <h2 class="gd-h2" style="margin-top:24px">What are you tracking today in Adobe Analytics?</h2>
-          <button class="btn btn-ghost btn-sm" style="margin-top:24px" onclick="openDfSwipeMode()">Review Yes/No questions</button>
+          <button class="btn btn-ghost btn-sm" style="margin-top:24px" onclick="openDfSwipeMode()">Swipe mode</button>
         </div>
         <p class="gd-lede" style="margin-top:6px">Select the eVars, props, events and other implementation pieces currently in use. We'll map each one to its Customer Journey Analytics equivalent in the next step.</p>
         <div id="df-role-hint" style="font-size:14px;color:var(--c-text-soft);margin-top:10px"></div>
@@ -1068,7 +1332,7 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
       <div id="df-step-2" style="display:none">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
           <h2 class="gd-h2" style="margin-top:24px">Recommended Customer Journey Analytics approach</h2>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:24px"><button class="btn btn-ghost btn-sm" onclick="dfReviewSelections()">← Edit Yes/No answers</button><button class="btn btn-ghost btn-sm" onclick="openDfMappingFocusMode()">✨ Focus mode</button></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:24px"><button class="btn btn-ghost btn-sm" onclick="dfReviewSelections()">Swipe mode</button><button class="btn btn-ghost btn-sm" onclick="openDfMappingFocusMode()">Swipe mode</button></div>
         </div>
         <p class="gd-lede" style="margin-top:6px">Here's how each selected element maps into CJA / XDM, and what it takes to get there.</p>
         <div id="df-mapping-list" style="margin-top:24px"></div>
@@ -1078,8 +1342,8 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
         <div class="section-complete-note">Select what you track, then continue to see the CJA mapping.</div>
         <div style="display:flex;gap:12px;align-items:center">
           <button class="btn btn-ghost" id="df-back-btn" onclick="dfBack()" style="visibility:hidden">← Back</button>
-          <button class="btn btn-primary btn-lg" id="df-next-btn" onclick="dfNext()" disabled>Continue →</button>
-          <button class="btn btn-primary btn-lg" id="df-complete-btn" onclick="markComplete('data-foundations')" style="display:none">Continue →</button>
+          <button class="btn btn-primary btn-lg" id="df-next-btn" onclick="dfNext()" disabled>Continue</button>
+          <button class="btn btn-primary btn-lg" id="df-complete-btn" onclick="markComplete('data-foundations')" style="display:none">Continue</button>
         </div>
       </div>
     </div>
@@ -1088,11 +1352,17 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
   <!-- ===================== SEGMENTATION REBUILD ===================== -->
   <div class="page" id="page-segmentation">
     <div class="page-inner page-inner--wide">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
-        <div class="eyebrow">Segmentation Rebuild</div>
-        <button class="btn btn-primary btn-sm" onclick="markComplete('segmentation')">Continue →</button>
+      <div class="section-page-header">
+        <div class="section-page-title-group">
+          <h1 class="section-title">Segmentation Rebuild</h1>
+          <button class="back-to-profile" onclick="showPage('hub')">Back to profile</button>
+        </div>
+        <div class="section-page-actions">
+          <button class="btn btn-ghost btn-sm" onclick="openSegSwipeMode()">Swipe mode</button>
+          <button class="btn btn-primary btn-sm" onclick="markComplete('segmentation')">Continue</button>
+        </div>
       </div>
-      <h1 class="gd-h1" style="font-size:28px">Every AA segment can be rebuilt in CJA, and some become far more powerful.</h1>
+      <h2 class="gd-h1" style="font-size:28px">Every AA segment can be rebuilt in CJA, and some become far more powerful.</h2>
       <p class="gd-lede">Click a pattern below to see how its container logic changes and what it looks like in <span id="seg-industry-inline">your industry</span>. Then drag the ones worth rebuilding into the priority zone below.</p>
       <div class="callout-skip">Don't know an answer? Skip it or pick "Not sure yet" - nothing here is being graded, and every question is optional.</div>
       <div class="bucket-filter-row" id="seg-bucket-filter" style="margin-top:24px"></div>
@@ -1107,7 +1377,6 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
       <div class="section" style="margin-top:36px">
         <div class="section-head">
           <h2 class="gd-h2">Flag the ones worth rebuilding</h2>
-          <button class="btn btn-ghost btn-sm" onclick="openSegSwipeMode()">🎴 Swipe mode</button>
         </div>
         <p style="font-size:16px;color:var(--c-text-soft);margin:-4px 0 8px;max-width:680px;line-height:1.55">Drag any pattern into the box below, or use its button in the list.</p>
         <div class="dnd-zone" id="seg-zone-priority" ondragover="dndAllow(event)" ondragleave="dndLeave(event)" ondrop="dndDrop(event,'priority','seg')">
@@ -1119,7 +1388,7 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
 
       <div class="section-complete">
         <div class="section-complete-note">Flag the patterns worth rebuilding, then continue when you're ready.</div>
-        <button class="btn btn-primary btn-lg" id="sc-btn-segmentation" onclick="markComplete('segmentation')">Continue →</button>
+        <button class="btn btn-primary btn-lg" id="sc-btn-segmentation" onclick="markComplete('segmentation')">Continue</button>
       </div>
     </div>
   </div>
@@ -1127,14 +1396,17 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
   <!-- ===================== IDENTITY & STITCHING ===================== -->
   <div class="page" id="page-identity">
     <div class="page-inner">
-      <div class="eyebrow">Identity &amp; Stitching</div>
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
-        <h1 class="gd-h1" style="font-size:28px;margin:0">How well do you know your customer?</h1>
-        <div style="display:flex;gap:10px;align-items:center">
-          <button class="btn btn-ghost btn-sm" onclick="openIdentityFocusMode()">✨ Focus mode</button>
-          <button class="btn btn-primary btn-sm" onclick="markComplete('identity')">Continue →</button>
+      <div class="section-page-header">
+        <div class="section-page-title-group">
+          <h1 class="section-title">Identity &amp; Stitching</h1>
+          <button class="back-to-profile" onclick="showPage('hub')">Back to profile</button>
+        </div>
+        <div class="section-page-actions">
+          <button class="btn btn-ghost btn-sm" onclick="openIdentityFocusMode()">Swipe mode</button>
+          <button class="btn btn-primary btn-sm" onclick="markComplete('identity')">Continue</button>
         </div>
       </div>
+      <h2 class="gd-h1" style="font-size:28px;margin:0">How well do you know your customer?</h2>
       <p class="gd-lede">Most AA implementations sit in stage 1 or 2. CJA's value compounds as identity stitching matures.</p>
       <div class="focus-banner" id="focus-banner-identity"></div>
       <div class="callout-skip">Set a Today and a Target stage to continue - nothing else on this page is graded.</div>
@@ -1159,12 +1431,13 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
             <div id="id-zone-target-content"></div>
           </div>
         </div>
+        <div class="selection-hint" id="id-order-note" style="display:none;margin-top:10px"></div>
         <div class="dnd-bank" id="id-dnd-bank"></div>
       </div>
 
       <div class="section-complete">
         <div class="section-complete-note">Set your current and target stages above, then continue when you're ready.</div>
-        <button class="btn btn-primary btn-lg" id="sc-btn-identity" onclick="markComplete('identity')">Continue →</button>
+        <button class="btn btn-primary btn-lg" id="sc-btn-identity" onclick="markComplete('identity')">Continue</button>
       </div>
     </div>
   </div>
@@ -1172,14 +1445,17 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
   <!-- ===================== GOVERNANCE & ACCESS ===================== -->
   <div class="page" id="page-governance">
     <div class="page-inner page-inner--wide">
-      <div class="eyebrow">Governance &amp; Access</div>
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
-        <h1 class="gd-h1" style="font-size:28px;margin:0">Governance moves from report-suite settings to platform-level controls.</h1>
-        <div style="display:flex;gap:10px;align-items:center">
-          <button class="btn btn-ghost btn-sm" onclick="openGovSwipeMode()">🎴 Swipe mode</button>
-          <button class="btn btn-primary btn-sm" onclick="markComplete('governance')">Continue →</button>
+      <div class="section-page-header">
+        <div class="section-page-title-group">
+          <h1 class="section-title">Governance &amp; Access</h1>
+          <button class="back-to-profile" onclick="showPage('hub')">Back to profile</button>
+        </div>
+        <div class="section-page-actions">
+          <button class="btn btn-ghost btn-sm" onclick="openGovSwipeMode()">Swipe mode</button>
+          <button class="btn btn-primary btn-sm" onclick="markComplete('governance')">Continue</button>
         </div>
       </div>
+      <h2 class="gd-h1" style="font-size:28px;margin:0">Governance moves from report-suite settings to platform-level controls.</h2>
       <p class="gd-lede">See how each control is enforced in Adobe Experience Platform / CJA, then sort it below.</p>
       <div class="callout-skip">Sort at least one control to continue - the rest can wait.</div>
 
@@ -1208,7 +1484,7 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
 
       <div class="section-complete">
         <div class="section-complete-note">Sort each control above, then continue when you're ready.</div>
-        <button class="btn btn-primary btn-lg" id="sc-btn-governance" onclick="markComplete('governance')">Continue →</button>
+        <button class="btn btn-primary btn-lg" id="sc-btn-governance" onclick="markComplete('governance')">Continue</button>
       </div>
     </div>
   </div>
@@ -1216,22 +1492,25 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
   <!-- ===================== ROLES & STAKEHOLDERS ===================== -->
   <div class="page" id="page-roles">
     <div class="page-inner page-inner--wide">
-      <div class="eyebrow">Roles &amp; Stakeholders</div>
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
-        <h1 class="gd-h1" style="font-size:28px;margin:0">Migration changes daily workflow for four roles.</h1>
-        <div style="display:flex;gap:10px;align-items:center">
-          <button class="btn btn-ghost btn-sm" onclick="openRolesFocusMode()">✨ Focus mode</button>
-          <button class="btn btn-primary btn-sm" onclick="markComplete('roles')">Continue →</button>
+      <div class="section-page-header">
+        <div class="section-page-title-group">
+          <h1 class="section-title">Roles &amp; Stakeholders</h1>
+          <button class="back-to-profile" onclick="showPage('hub')">Back to profile</button>
+        </div>
+        <div class="section-page-actions">
+          <button class="btn btn-ghost btn-sm" onclick="openRolesFocusMode()">Swipe mode</button>
+          <button class="btn btn-primary btn-sm" onclick="markComplete('roles')">Continue</button>
         </div>
       </div>
+      <h2 class="gd-h1" style="font-size:28px;margin:0">Migration changes daily workflow for four roles.</h2>
       <p class="gd-lede">Use this to set expectations with each team before go-live. Note an owner for each role and flag anyone who needs a follow-up conversation.</p>
       <div class="focus-banner" id="focus-banner-roles"></div>
-      <div class="callout-skip">Don't know an answer? Skip it or pick "Not sure yet" - nothing here is being graded, and every question is optional.</div>
+      <div class="callout-skip">Don't know who owns an area? Mark that it needs a follow-up conversation</div>
       <div class="grid grid--2" id="roles-grid" style="margin-top:28px"></div>
 
       <div class="section-complete">
         <div class="section-complete-note">Assign owners where you can, then continue when you're ready.</div>
-        <button class="btn btn-primary btn-lg" id="sc-btn-roles" onclick="markComplete('roles')">Continue →</button>
+        <button class="btn btn-primary btn-lg" id="sc-btn-roles" onclick="markComplete('roles')">Continue</button>
       </div>
     </div>
   </div>
@@ -1239,17 +1518,20 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
   <!-- ===================== STRATEGY & ADOPTION ===================== -->
   <div class="page" id="page-strategy-adoption">
     <div class="page-inner">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
-        <div class="eyebrow">Strategy &amp; Adoption</div>
-        <button class="btn btn-primary btn-sm" onclick="markComplete('strategy-adoption')">Continue →</button>
+      <div class="section-page-header">
+        <div class="section-page-title-group">
+          <h1 class="section-title">Strategy &amp; Adoption</h1>
+          <button class="back-to-profile" onclick="showPage('hub')">Back to profile</button>
+        </div>
+        <div class="section-page-actions">
+          <button class="btn btn-ghost btn-sm" onclick="openStrategyFocusMode()">Swipe mode</button>
+          <button class="btn btn-primary btn-sm" onclick="markComplete('strategy-adoption')">Continue</button>
+        </div>
       </div>
-      <h1 class="gd-h1" style="font-size:28px">Data is only as good as what your org does with it.</h1>
+      <h2 class="gd-h1" style="font-size:28px">Data is only as good as what your org does with it.</h2>
       <p class="gd-lede">CJA can answer questions AA never could, but that only pays off if there's a plan for who owns it, how it gets adopted, and what happens once better answers start showing up.</p>
       <div class="focus-banner" id="focus-banner-strategy-adoption"></div>
       <div class="callout-skip">Answer at least the AI/agentic workflows question to continue - "Not sure yet" counts. Everything else here is optional.</div>
-      <div style="display:flex;justify-content:flex-end;margin-top:20px">
-        <button class="btn btn-ghost btn-sm" onclick="openStrategyFocusMode()">✨ Focus mode</button>
-      </div>
       <div class="prompt-list" id="strategy-prompts" style="margin-top:8px"></div>
 
       <div class="section" style="margin-top:32px">
@@ -1260,7 +1542,7 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
 
       <div class="section-complete">
         <div class="section-complete-note">Once the operating picture feels right, you're ready to continue.</div>
-        <button class="btn btn-primary btn-lg" id="sc-btn-strategy-adoption" onclick="markComplete('strategy-adoption')">Continue →</button>
+        <button class="btn btn-primary btn-lg" id="sc-btn-strategy-adoption" onclick="markComplete('strategy-adoption')">Continue</button>
       </div>
     </div>
   </div>
@@ -1268,10 +1550,10 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
   <!-- ===================== MIGRATION ROADMAP BUILDER ===================== -->
   <div class="page" id="page-roadmap">
     <div class="page-inner page-inner--wide">
-      <div class="eyebrow">Migration Roadmap</div>
+      <h1 class="section-title">Migration Roadmap</h1>
       <div class="section-head">
         <div>
-          <h1 class="gd-h1" style="font-size:28px">Your phased migration plan</h1>
+          <h2 class="gd-h1" style="font-size:28px">Your phased migration plan</h2>
           <p class="gd-lede">Check items off as they're scoped or completed. This view is designed to be screen-shared and edited live in the workshop.</p>
           <div class="focus-banner" id="focus-banner-roadmap"></div>
           <div class="callout-skip">Don't know an answer? Skip it or pick "Not sure yet" - nothing here is being graded, and every question is optional.</div>
@@ -1285,7 +1567,81 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
 
       <div class="section-complete">
         <div class="section-complete-note">Check off what's scoped so far, then continue to see your summary.</div>
-        <button class="btn btn-primary btn-lg" id="sc-btn-roadmap" onclick="markComplete('roadmap')">Continue →</button>
+        <button class="btn btn-primary btn-lg" id="sc-btn-roadmap" onclick="markComplete('roadmap')">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== PREPARE MODERNIZATION GUIDE ===================== -->
+  <div class="page" id="page-modernization-guide">
+    <div class="page-inner page-inner--wide">
+      <div class="mg-hero">
+        <div class="mg-eyebrow">Your personalized next step</div>
+        <h1 class="gd-h1" style="font-size:34px;margin-bottom:12px">Preparing Your Analytics Modernization Guide</h1>
+        <p class="gd-lede" style="margin:0">You've given us the signals. Now we're bringing them together into a practical view of your Adobe Analytics to Customer Journey Analytics modernization opportunity.</p>
+      </div>
+
+      <div class="mg-layout">
+        <div class="mg-content">
+          <section class="mg-section" aria-labelledby="mg-pillars-title">
+            <h2 class="mg-section-title" id="mg-pillars-title">What successful analytics modernization connects</h2>
+            <div class="mg-pillars">
+              <article class="mg-pillar">
+                <div class="mg-pillar-num">01</div>
+                <div class="mg-pillar-title">Architecture</div>
+                <div class="mg-pillar-copy">A modern analytics foundation should be flexible, scalable, governed, and capable of supporting evolving data requirements.</div>
+              </article>
+              <article class="mg-pillar">
+                <div class="mg-pillar-num">02</div>
+                <div class="mg-pillar-title">Identity</div>
+                <div class="mg-pillar-copy">Customer interactions span channels and devices. Connecting identities turns fragmented activity into a more complete customer journey.</div>
+              </article>
+              <article class="mg-pillar">
+                <div class="mg-pillar-num">03</div>
+                <div class="mg-pillar-title">Actionability</div>
+                <div class="mg-pillar-copy">Insights create value when teams can use them quickly through better decisions, audiences, journeys, experimentation, and activation.</div>
+              </article>
+              <article class="mg-pillar">
+                <div class="mg-pillar-num">04</div>
+                <div class="mg-pillar-title">AI Readiness</div>
+                <div class="mg-pillar-copy">AI becomes more useful when it operates on connected, enriched, trustworthy data with meaningful business context.</div>
+              </article>
+            </div>
+          </section>
+
+          <section class="mg-section" aria-labelledby="mg-sequence-title">
+            <h2 class="mg-section-title" id="mg-sequence-title">What we're bringing together</h2>
+            <div class="mg-sequence">
+              <div class="mg-sequence-step">
+                <div class="mg-sequence-num">1</div>
+                <div><div class="mg-sequence-title">Your current state</div><div class="mg-sequence-copy">The priorities, implementation signals, organizational considerations, and modernization gaps identified in this discovery.</div></div>
+              </div>
+              <div class="mg-sequence-step">
+                <div class="mg-sequence-num">2</div>
+                <div><div class="mg-sequence-title">What changes in CJA</div><div class="mg-sequence-copy">What can carry forward, what may need to be rebuilt, and which new capabilities become possible.</div></div>
+              </div>
+              <div class="mg-sequence-step">
+                <div class="mg-sequence-num">3</div>
+                <div><div class="mg-sequence-title">A practical path forward</div><div class="mg-sequence-copy">A modernization path that can help analytics, marketing, IT, data, governance, and leadership align around priorities.</div></div>
+              </div>
+              <div class="mg-sequence-step">
+                <div class="mg-sequence-num">4</div>
+                <div><div class="mg-sequence-title">A conversation starter</div><div class="mg-sequence-copy">Something tangible to review and share with your team before determining what should happen next.</div></div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <aside class="mg-status-card" id="mg-status-card" data-status="idle" aria-labelledby="mg-status-title">
+          <div class="mg-status-kicker">Modernization Guide</div>
+          <div class="mg-status-title" id="mg-status-title">Preparing your guide</div>
+          <p class="mg-status-copy" id="mg-status-copy">We're connecting your discovery responses, modernization priorities, and CJA considerations into a personalized guide.</p>
+          <div class="mg-progress" id="mg-progress" aria-hidden="true"><div class="mg-progress-bar"></div></div>
+          <div class="mg-status-actions">
+            <button class="btn btn-primary" id="mg-results-btn" onclick="continueToResults()" disabled>Preparing results...</button>
+          </div>
+          <div id="mg-status-announcement" class="sr-only" role="status" aria-live="polite"></div>
+        </aside>
       </div>
     </div>
   </div>
@@ -1294,7 +1650,7 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
   <div class="page" id="page-summary">
     <div class="page-inner page-inner--wide">
       <div class="no-print" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:28px">
-        <button class="btn btn-primary btn-lg" onclick="showPage('onepager')">Go to Your Summary &amp; Next Steps →</button>
+        <button class="btn btn-primary btn-lg" onclick="continueToResults()">Go to Your Results</button>
         <button class="btn btn-ghost" id="sum-btn-print-full" onclick="printSummary()">Download PDF</button>
       </div>
 
@@ -1338,14 +1694,17 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
     <div class="page-inner page-inner--wide">
       <div class="no-print" style="margin-bottom:20px;display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between">
         <button class="btn btn-ghost btn-sm" id="op-back-btn" onclick="showPage('summary')">View detailed answer log →</button>
-        <button class="btn btn-primary btn-sm" onclick="downloadOnePager()">Download PDF</button>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="downloadOnePager()">Download results PDF</button>
+          <button class="btn btn-primary btn-sm" onclick="downloadModernizationGuide()">Download Modernization Guide</button>
+        </div>
       </div>
       <div id="onepager-content">
         <div class="sum-cover">
           <div class="sum-cover-mark" id="op-cover-mark">GD</div>
           <div class="sum-cover-text">
-            <div class="sum-cover-eyebrow">Guided Discovery &middot; AA to CJA Migration</div>
-            <div class="sum-cover-title">Your Summary &amp; Next Steps</div>
+            <!-- <div class="sum-cover-eyebrow">Guided Discovery &middot; AA to CJA Migration</div> -->
+            <div class="sum-cover-title">Your Analytics Modernization Results</div>
             <div class="sum-cover-meta" id="op-cover-meta"></div>
           </div>
         </div>
@@ -1363,17 +1722,19 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
         </div>
 
         <div class="sum-block">
-          <div class="sum-block-title">Suggested Engagement</div>
-          <div id="op-engagement"></div>
+          <div class="sum-block-title">Your Analytics Modernization Guide</div>
+          <p style="font-size:15px;color:var(--c-text-soft);line-height:1.6;margin:0 0 16px">Your personalized guide brings together what you shared during discovery and translates it into a practical view of your AA-to-CJA modernization opportunity.</p>
+          <div id="op-modernization-guide"></div>
         </div>
 
         <div class="sum-block">
-          <div class="sum-block-title">Recommended Next Steps</div>
+          <div class="sum-block-title">A practical way forward</div>
           <div class="op-steps" id="op-steps"></div>
         </div>
 
-        <div class="sum-block">
-          <div class="sum-block-title">Your Adobe Team</div>
+        <div class="sum-block" id="op-adobe-resource" style="display:none">
+          <div class="sum-block-title">Adobe Professional Services as an optional resource</div>
+          <p id="op-resource-copy" style="font-size:14px;color:var(--c-text-soft);line-height:1.55;margin:0 0 12px">If your team wants support interpreting the findings or planning next steps, Adobe Professional Services can help facilitate that conversation.</p>
           <div id="op-contacts"></div>
         </div>
 
@@ -1385,8 +1746,8 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
   <!-- ===================== METRIC & DIMENSION CROSSWALK ===================== -->
   <div class="page" id="page-crosswalk">
     <div class="page-inner page-inner--wide">
-      <div class="eyebrow">Metric &amp; Dimension Crosswalk</div>
-      <h1 class="gd-h1" style="font-size:28px">Adobe Analytics concept → Customer Journey Analytics equivalent</h1>
+      <h1 class="section-title">Metric &amp; Dimension Crosswalk</h1>
+      <h2 class="gd-h1" style="font-size:28px">Adobe Analytics concept → Customer Journey Analytics equivalent</h2>
       <div class="filterbar" style="margin-top:24px">
         <input class="input" id="cw-search" placeholder="Search concepts…" oninput="cwRender()">
         <select class="select" id="cw-f-complexity" onchange="cwRender()">
@@ -1404,8 +1765,8 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
   <!-- ===================== ARCHITECTURE ===================== -->
   <div class="page" id="page-architecture">
     <div class="page-inner page-inner--wide">
-      <div class="eyebrow">Target Architecture</div>
-      <h1 class="gd-h1" style="font-size:28px">The CJA stack, phase by phase</h1>
+      <h1 class="section-title">Target Architecture</h1>
+      <h2 class="gd-h1" style="font-size:28px">The CJA stack, phase by phase</h2>
       <div class="focus-banner" id="focus-banner-architecture"></div>
       <div class="subtabs" id="arch-phase-tabs"></div>
       <div id="arch-layers"></div>
@@ -1443,40 +1804,25 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
   </div>
 </div>
 
-<div class="modal-overlay" id="focus-mode-overlay" onclick="closeFocusModeOnBg(event)">
-  <div class="modal-box" style="max-width:560px">
-    <div class="modal-head">
+<div class="modal-overlay" id="guided-modal-overlay">
+  <div class="modal-box guided-modal-box" role="dialog" aria-modal="true" aria-labelledby="guided-modal-title">
+    <div class="modal-head guided-modal-head">
       <div>
-        <h3 style="font-family:var(--font-display);font-size:16px" id="focus-mode-title">Focus mode</h3>
-        <div style="font-size:13px;color:var(--c-text-soft);margin-top:2px" id="focus-mode-progress"></div>
+        <h3 style="font-family:var(--font-display);font-size:16px" id="guided-modal-title">Swipe mode</h3>
+        <div style="font-size:13px;color:var(--c-text-soft);margin-top:2px" id="guided-modal-progress"></div>
+        <div class="guided-modal-filter" id="guided-modal-filter-label"></div>
       </div>
-      <button class="modal-close" onclick="closeFocusMode()">×</button>
     </div>
-    <div class="modal-list" style="padding-top:20px" id="focus-mode-body"></div>
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 22px;border-top:1px solid var(--c-line)" id="focus-mode-footer">
-      <button class="btn btn-ghost btn-sm" id="focus-mode-prev" onclick="focusModePrev()">← Back</button>
-      <button class="btn btn-primary btn-sm" id="focus-mode-next" onclick="focusModeNext()">Next →</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="swipe-mode-overlay" onclick="closeSwipeModeOnBg(event)">
-  <div class="modal-box" style="max-width:440px">
-    <div class="modal-head">
-      <div>
-        <h3 style="font-family:var(--font-display);font-size:16px" id="swipe-mode-title">Swipe mode</h3>
-        <div style="font-size:13px;color:var(--c-text-soft);margin-top:2px" id="swipe-mode-progress"></div>
-        <div id="swipe-mode-filter-label" style="font-size:12.5px;color:var(--c-select-600);font-weight:600;margin-top:2px"></div>
+    <button class="guided-modal-close" onclick="closeGuidedModal()" aria-label="Close">×</button>
+    <div class="guided-modal-body" id="guided-modal-body"></div>
+    <div class="guided-modal-note" id="guided-modal-note" role="status"></div>
+    <div class="guided-modal-error" id="guided-modal-error" role="alert"></div>
+    <div class="guided-modal-footer" id="guided-modal-footer">
+      <button class="btn btn-ghost btn-sm" id="guided-modal-back" onclick="guidedModalBack()">Back</button>
+      <div class="guided-modal-footer-main">
+        <button class="btn btn-ghost btn-sm" id="guided-modal-details" style="display:none" onclick="guidedModalFlip(true)">Details</button>
+        <button class="btn btn-primary btn-sm" id="guided-modal-next" onclick="guidedModalNext()">Next</button>
       </div>
-      <button class="modal-close" onclick="closeSwipeMode()">×</button>
-    </div>
-    <div style="padding:24px 22px 8px">
-      <div id="swipe-mode-instructions" style="font-size:13.5px;color:var(--c-text-soft);text-align:center;margin-bottom:14px"></div>
-      <div id="swipe-card-stack"></div>
-    </div>
-    <div style="display:flex;justify-content:center;gap:20px;padding:18px 22px 22px">
-      <button class="swipe-btn swipe-btn-no" onclick="swipeButtonDecide(false)" aria-label="No">✕</button>
-      <button class="swipe-btn swipe-btn-yes" onclick="swipeButtonDecide(true)" aria-label="Yes">✓</button>
     </div>
   </div>
 </div>
@@ -1560,15 +1906,20 @@ const HUB_NODES = [
 function isHubProfile(){ return VIEW_PROFILE === "selfguided" || VIEW_PROFILE === "practitioner"; }
 function hubDoneCount(){ return HUB_PAGES.filter(p=>COMPLETED.has(p)).length; }
 
-/* The hub's own "Continue" button: goes to Roadmap if this profile
-   has one and it isn't done yet, otherwise the session is complete. */
+/* Continue completes the remaining hub work in sequence. Finish & Wrap Up
+   is intentionally different: it preserves whatever is complete and moves
+   directly into finalization without marking skipped sections complete. */
 function hubContinue(){
+  const nextIncomplete = HUB_PAGES.find(p=>!COMPLETED.has(p));
+  if(nextIncomplete){ showPage(nextIncomplete); return; }
   if(PROFILE_PAGES[VIEW_PROFILE].includes('roadmap') && !COMPLETED.has('roadmap')){
     showPage('roadmap');
-  } else {
-    autoSubmitOnCompletion();
-    showPage('onepager');
+    return;
   }
+  beginFinalization();
+}
+function hubFinishWrapUp(){
+  beginFinalization();
 }
 
 function renderHub(){
@@ -1713,7 +2064,13 @@ const CONFIG = {
      than pretend to succeed). Once there's a real internal endpoint,
      put it here. The payload is a plain JSON object built by
      buildResponsePayload() below. */
-  submitEndpoint: ""
+  submitEndpoint: "",
+  /* Backend adapter for the personalized PPTX/PDF. Leave blank for the
+     local simulated flow. The response mapping lives only in
+     mapModernizationGuideResponse() so the eventual contract can change
+     without redesigning the customer experience. */
+  modernizationGuideEndpoint: "",
+  adobeTeamUrl: ""
 };
 
 /* ================================================================
@@ -1867,8 +2224,7 @@ function extractGlossaryDefs(str){
 
 function openGlossary(termId){
   const overlay = document.getElementById('glossary-overlay');
-  const anotherModalOpen = document.getElementById('focus-mode-overlay').classList.contains('open')
-    || document.getElementById('swipe-mode-overlay').classList.contains('open');
+  const anotherModalOpen = document.getElementById('guided-modal-overlay').classList.contains('open');
   overlay.classList.toggle('side-panel', anotherModalOpen);
   overlay.classList.add('open');
   document.getElementById('glossary-search').value = '';
@@ -1900,170 +2256,385 @@ function openHelp(){ document.getElementById('help-overlay').classList.add('open
 function closeHelp(){ document.getElementById('help-overlay').classList.remove('open'); }
 function closeHelpOnBg(e){ if(e.target.id==='help-overlay') closeHelp(); }
 
-/* ---------------- FOCUS MODE (question lightbox) ----------------
-   An optional, more immersive way to answer a group of questions one
-   at a time in a modal - everything here is ALSO fully visible and
-   answerable inline on the page without ever opening this. Shares
-   the exact same DISC.answers state and render functions as the
-   inline view, via renderPromptList(), so nothing gets out of sync. */
-let FOCUS_MODE = null;
-
-function openFocusMode(title, prompts, rerenderFn, nextGroup, onComplete, extra){
-  FOCUS_MODE = { title, prompts, index: 0, rerenderFn, nextGroup: nextGroup || null, showingInterstitial: false, onComplete: onComplete || null, ...(extra||{}) };
-  document.getElementById('focus-mode-title').textContent = title;
-  document.getElementById('focus-mode-overlay').classList.add('open');
-  focusModeRenderCurrent();
-}
-function closeFocusMode(){
-  document.getElementById('focus-mode-overlay').classList.remove('open');
-  FOCUS_MODE = null;
-}
-function closeFocusModeOnBg(e){ if(e.target.id==='focus-mode-overlay') closeFocusMode(); }
-
-function focusModeRenderCurrent(){
-  if(!FOCUS_MODE) return;
-  const { prompts, index, rerenderFn, showingInterstitial, nextGroup } = FOCUS_MODE;
-  const prevBtn = document.getElementById('focus-mode-prev');
-  const nextBtn = document.getElementById('focus-mode-next');
-  if(showingInterstitial){
-    document.getElementById('focus-mode-title').textContent = nextGroup.title;
-    document.getElementById('focus-mode-progress').textContent = `${nextGroup.prompts.length} optional question${nextGroup.prompts.length===1?'':'s'}`;
-    document.getElementById('focus-mode-body').innerHTML = `
-      <div class="empty-state" style="padding:20px 4px;text-align:left">
-        <p style="font-size:15px;color:var(--c-text-soft);line-height:1.6;margin:0">You've covered the essentials. There are a few more optional questions that dig a bit deeper, if you're up for it - completely skippable either way.</p>
-      </div>`;
-    prevBtn.style.visibility = 'visible';
-    prevBtn.textContent = 'No, I\'m done';
-    prevBtn.onclick = focusModeSkipRest;
-    nextBtn.textContent = 'Yes, a few more →';
-    return;
-  }
-  prevBtn.onclick = focusModePrev;
-  if(FOCUS_MODE.customRender){
-    FOCUS_MODE.customRender(prompts[index]);
-  } else {
-    renderPromptList('focus-mode-body', [prompts[index]], rerenderFn);
-  }
-  document.getElementById('focus-mode-title').textContent = FOCUS_MODE.title;
-  document.getElementById('focus-mode-progress').textContent = FOCUS_MODE.hideProgress ? '' : `${FOCUS_MODE.itemLabel || 'Question'} ${index+1} of ${prompts.length}`;
-  const footer = document.getElementById('focus-mode-footer');
-  if(footer) footer.style.display = FOCUS_MODE.hideFooter ? 'none' : 'flex';
-  prevBtn.style.visibility = index===0 ? 'hidden' : 'visible';
-  nextBtn.textContent = (index===prompts.length-1) ? (nextGroup ? 'Continue' : 'Done') : 'Next →';
-}
-function focusModeNext(){
-  if(!FOCUS_MODE) return;
-  if(FOCUS_MODE.showingInterstitial){
-    FOCUS_MODE.prompts = FOCUS_MODE.nextGroup.prompts;
-    FOCUS_MODE.title = FOCUS_MODE.nextGroup.title;
-    FOCUS_MODE.index = 0;
-    FOCUS_MODE.nextGroup = null;
-    FOCUS_MODE.showingInterstitial = false;
-    focusModeRenderCurrent();
-    return;
-  }
-  if(FOCUS_MODE.index < FOCUS_MODE.prompts.length-1){
-    FOCUS_MODE.index++;
-    focusModeRenderCurrent();
-  } else if(FOCUS_MODE.nextGroup){
-    FOCUS_MODE.showingInterstitial = true;
-    focusModeRenderCurrent();
-  } else {
-    const cb = FOCUS_MODE.onComplete;
-    closeFocusMode();
-    if(cb) cb();
-  }
-}
-function focusModeSkipRest(){
-  const cb = FOCUS_MODE ? FOCUS_MODE.onComplete : null;
-  closeFocusMode();
-  if(cb) cb();
-}
-function focusModePrev(){
-  if(!FOCUS_MODE || FOCUS_MODE.showingInterstitial || FOCUS_MODE.index===0) return;
-  FOCUS_MODE.index--;
-  focusModeRenderCurrent();
-}
-/* Called at the end of renderDiscovery()/renderStrategyAdoption() so an
-   answer given inline (or in a different tab) keeps the open modal in sync. */
-function focusModeSync(){
-  if(FOCUS_MODE && !FOCUS_MODE.showingInterstitial) focusModeRenderCurrent();
-}
-
-/* ---------------- SWIPE MODE (optional card-stack alternative) ----------------
-   Purely additive: the underlying grid (Data Foundations, Discovery Needs,
-   Segmentation) is always still there, fully visible and clickable. This is
-   just a faster, more game-like way to move through a large list - a real
-   drag gesture with buttons as an always-available, reliable fallback. */
-let SWIPE_MODE = null;
+/* ---------------- UNIFIED GUIDED MODAL ----------------
+   One shell and one controller power yes/no cards, prompt cards, sliders,
+   role forms and interstitials. Section flows swap cards in place without
+   exposing the full page between steps. The page is shown again only when
+   the user closes the flow with the X or Escape key. */
+let GUIDED_MODAL = null;
+let GUIDED_MODAL_HISTORY = [];
+let GUIDED_MODAL_CHAINING = false;
 let swipeStartX = 0, swipeCurrentX = 0, swipeDragging = false;
 
+function guidedModalOpenState(state){
+  if(GUIDED_MODAL){
+    GUIDED_MODAL_HISTORY.push(GUIDED_MODAL);
+  } else if(!GUIDED_MODAL_CHAINING){
+    GUIDED_MODAL_HISTORY = [];
+  }
+  GUIDED_MODAL = {
+    index: 0,
+    showingInterstitial: false,
+    pageId: window.CURRENT_PAGE_ID,
+    error: '',
+    note: '',
+    detailsOpen: false,
+    ...state
+  };
+  document.body.classList.add('guided-modal-active');
+  document.getElementById('guided-modal-overlay').classList.add('open');
+  renderGuidedModal();
+}
+
+function closeGuidedModal(){
+  if(GUIDED_MODAL && GUIDED_MODAL.flowKey==='roles') renderRoles();
+  document.getElementById('guided-modal-overlay').classList.remove('open');
+  document.body.classList.remove('guided-modal-active');
+  GUIDED_MODAL = null;
+  GUIDED_MODAL_HISTORY = [];
+  swipeDragging = false;
+  swipeCurrentX = 0;
+}
+function closeFocusMode(){ closeGuidedModal(); }
+function closeSwipeMode(){ closeGuidedModal(); }
+
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape' && GUIDED_MODAL) closeGuidedModal();
+});
+
+function guidedModalAnimateBody(){
+  const body = document.getElementById('guided-modal-body');
+  body.classList.remove('card-swap');
+  void body.offsetWidth;
+  body.classList.add('card-swap');
+}
+
+function guidedModalSetError(message){
+  if(GUIDED_MODAL) GUIDED_MODAL.error = message || '';
+  const host = document.getElementById('guided-modal-error');
+  host.textContent = message || '';
+  host.classList.toggle('open', !!message);
+}
+
+function guidedModalSetNote(message){
+  if(GUIDED_MODAL) GUIDED_MODAL.note = message || '';
+  const host = document.getElementById('guided-modal-note');
+  host.textContent = message || '';
+  host.classList.toggle('open', !!message);
+}
+
+function guidedDetailSection(label, content, list=false){
+  if(!content || (Array.isArray(content) && !content.length)) return '';
+  const body = list
+    ? `<ul class="guided-detail-list">${content.map(item=>`<li>${glossify(item)}</li>`).join('')}</ul>`
+    : `<div class="guided-detail-copy">${glossify(content)}</div>`;
+  return `<div class="guided-detail-section"><div class="guided-detail-label">${label}</div>${body}</div>`;
+}
+
+function guidedModalConfigureDetails(detailsHtml){
+  const button = document.getElementById('guided-modal-details');
+  const hasDetails = !!detailsHtml;
+  button.style.display = hasDetails && !GUIDED_MODAL.detailsOpen ? 'inline-flex' : 'none';
+  if(!hasDetails) GUIDED_MODAL.detailsOpen = false;
+}
+
+function guidedModalWrapFocusDetails(detailsHtml){
+  guidedModalConfigureDetails(detailsHtml);
+  if(!detailsHtml) return;
+  const body = document.getElementById('guided-modal-body');
+  const front = body.innerHTML;
+  body.innerHTML = `<div class="guided-card-scene">
+    <div class="guided-card-flipper ${GUIDED_MODAL.detailsOpen?'is-flipped':''}" id="guided-card-flipper">
+      <div class="guided-card-face guided-card-front" id="guided-card-front" tabindex="-1" aria-hidden="${GUIDED_MODAL.detailsOpen?'true':'false'}">${front}</div>
+      <div class="guided-card-face guided-card-back" id="guided-card-back" tabindex="-1" aria-hidden="${GUIDED_MODAL.detailsOpen?'false':'true'}">
+        ${detailsHtml}
+        <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="guidedModalFlip(false)">Back to question</button>
+      </div>
+    </div>
+  </div>`;
+  guidedModalSyncFaceAccess();
+}
+
+function guidedModalSyncFaceAccess(){
+  const front = document.getElementById('guided-card-front');
+  const back = document.getElementById('guided-card-back');
+  if(!front || !back || !GUIDED_MODAL) return;
+  front.inert = !!GUIDED_MODAL.detailsOpen;
+  back.inert = !GUIDED_MODAL.detailsOpen;
+}
+
+function guidedModalFlip(showDetails){
+  if(!GUIDED_MODAL) return;
+  GUIDED_MODAL.detailsOpen = !!showDetails;
+  const flipper = document.getElementById('guided-card-flipper');
+  const front = document.getElementById('guided-card-front');
+  const back = document.getElementById('guided-card-back');
+  if(!flipper || !front || !back) return;
+  flipper.classList.toggle('is-flipped', GUIDED_MODAL.detailsOpen);
+  const visibleFace = GUIDED_MODAL.detailsOpen ? back : front;
+  const hiddenFace = GUIDED_MODAL.detailsOpen ? front : back;
+  visibleFace.inert = false;
+  const focusTarget = visibleFace.querySelector('button, input, [tabindex]') || visibleFace;
+  focusTarget.focus();
+  visibleFace.setAttribute('aria-hidden', 'false');
+  hiddenFace.setAttribute('aria-hidden', 'true');
+  hiddenFace.inert = true;
+  document.getElementById('guided-modal-details').style.display = GUIDED_MODAL.detailsOpen ? 'none' : 'inline-flex';
+}
+
+function renderGuidedModal(animate=true){
+  if(!GUIDED_MODAL) return;
+  guidedModalSetError(GUIDED_MODAL.error);
+  guidedModalSetNote(GUIDED_MODAL.note);
+  if(GUIDED_MODAL.mode==='swipe') renderSwipeStack();
+  else focusModeRenderCurrent();
+  if(animate) guidedModalAnimateBody();
+}
+
+function openFocusMode(title, prompts, rerenderFn, nextGroup, onComplete, extra){
+  guidedModalOpenState({
+    mode: 'focus',
+    title,
+    prompts,
+    rerenderFn,
+    nextGroup: nextGroup || null,
+    onComplete: onComplete || null,
+    ...(extra||{})
+  });
+}
+
 function openSwipeMode(title, items, opts){
-  SWIPE_MODE = { title, items, index: 0, showingInterstitial: false, ...opts };
-  document.getElementById('swipe-mode-title').textContent = title;
-  document.getElementById('swipe-mode-instructions').textContent = SWIPE_MODE.instructions || 'Swipe left (or tap ✕) for no - right (or tap ✓) for yes.';
-  document.getElementById('swipe-mode-filter-label').textContent = SWIPE_MODE.filterLabel || '';
-  document.getElementById('swipe-mode-overlay').classList.add('open');
-  renderSwipeStack();
+  guidedModalOpenState({
+    mode: 'swipe',
+    title,
+    items,
+    ...(opts||{})
+  });
 }
-function closeSwipeMode(){
-  document.getElementById('swipe-mode-overlay').classList.remove('open');
-  SWIPE_MODE = null;
+
+function focusModeRenderCurrent(){
+  const state = GUIDED_MODAL;
+  if(!state || state.mode!=='focus') return;
+  const { prompts, index, rerenderFn, showingInterstitial, nextGroup } = state;
+  const body = document.getElementById('guided-modal-body');
+  const backBtn = document.getElementById('guided-modal-back');
+  const nextBtn = document.getElementById('guided-modal-next');
+  const footer = document.getElementById('guided-modal-footer');
+  document.getElementById('guided-modal-filter-label').textContent = '';
+
+  if(showingInterstitial){
+    guidedModalConfigureDetails('');
+    document.getElementById('guided-modal-title').textContent = nextGroup.title;
+    document.getElementById('guided-modal-progress').textContent = `${nextGroup.prompts.length} optional question${nextGroup.prompts.length===1?'':'s'}`;
+    body.innerHTML = `<div class="guided-modal-interstitial">
+      <p>You've covered the essentials. There are a few more optional questions that dig deeper.</p>
+      <div class="guided-modal-interstitial-actions">
+        <button class="btn btn-ghost btn-sm" onclick="focusModeSkipRest()">Skip remaining</button>
+      </div>
+    </div>`;
+    footer.style.display = 'flex';
+    backBtn.style.visibility = 'visible';
+    nextBtn.style.display = 'inline-flex';
+    nextBtn.textContent = 'Continue';
+    return;
+  }
+
+  if(state.customRender) state.customRender(prompts[index]);
+  else renderPromptList('guided-modal-body', [prompts[index]], rerenderFn);
+  const detailsHtml = state.detailsRenderer ? state.detailsRenderer(prompts[index]) : '';
+  guidedModalWrapFocusDetails(detailsHtml);
+
+  document.getElementById('guided-modal-title').textContent = state.title;
+  document.getElementById('guided-modal-progress').textContent = state.hideProgress ? '' : `${state.itemLabel || 'Question'} ${index+1} of ${prompts.length}`;
+  footer.style.display = state.hideFooter ? 'none' : 'flex';
+  backBtn.style.visibility = (index===0 && !GUIDED_MODAL_HISTORY.length) ? 'hidden' : 'visible';
+  nextBtn.style.display = 'inline-flex';
+  nextBtn.textContent = index===prompts.length-1 ? (nextGroup ? 'Continue' : 'Done') : 'Next';
 }
-function closeSwipeModeOnBg(e){ if(e.target.id==='swipe-mode-overlay') closeSwipeMode(); }
 
 function renderSwipeStack(){
-  if(!SWIPE_MODE) return;
-  const { items, index, nextGroup, showingInterstitial } = SWIPE_MODE;
-  const host = document.getElementById('swipe-card-stack');
-  if(showingInterstitial){
-    document.getElementById('swipe-mode-title').textContent = nextGroup.title;
-    document.getElementById('swipe-mode-progress').textContent = `${nextGroup.items.length} more, optional`;
-    host.innerHTML = `<div class="empty-state" style="padding:16px 4px;text-align:left">
-      <p style="font-size:15px;color:var(--c-text-soft);line-height:1.6;margin:0">${nextGroup.message || "Want to keep going with a few more?"}</p>
+  const state = GUIDED_MODAL;
+  if(!state || state.mode!=='swipe') return;
+  const { items, index, nextGroup, showingInterstitial } = state;
+  const body = document.getElementById('guided-modal-body');
+  const backBtn = document.getElementById('guided-modal-back');
+  const nextBtn = document.getElementById('guided-modal-next');
+  document.getElementById('guided-modal-title').textContent = showingInterstitial && nextGroup ? nextGroup.title : state.title;
+  document.getElementById('guided-modal-filter-label').textContent = state.filterLabel || '';
+  document.getElementById('guided-modal-footer').style.display = 'flex';
+  if(showingInterstitial) guidedModalConfigureDetails('');
+  backBtn.style.visibility = (index===0 && !showingInterstitial && !GUIDED_MODAL_HISTORY.length) ? 'hidden' : 'visible';
+
+  if(showingInterstitial && nextGroup){
+    document.getElementById('guided-modal-progress').textContent = `${nextGroup.items.length} more, optional`;
+    body.innerHTML = `<div class="guided-modal-interstitial">
+      <p>${nextGroup.message || 'There are a few more cards outside your current focus.'}</p>
+      <div class="guided-modal-interstitial-actions">
+        <button class="btn btn-ghost btn-sm" onclick="guidedSwipeSkipOptional()">Skip remaining</button>
+      </div>
     </div>`;
+    nextBtn.style.display = 'inline-flex';
+    nextBtn.textContent = 'Continue';
     return;
   }
-  document.getElementById('swipe-mode-progress').textContent = Math.min(index+1, items.length) + ' of ' + items.length;
-  if(index >= items.length){
-    if(nextGroup){
-      SWIPE_MODE.showingInterstitial = true;
-      renderSwipeStack();
-      return;
-    }
-    host.innerHTML = `<div class="empty-state" style="padding:30px"><h3>All done</h3>Close this and continue whenever you're ready.</div>`;
-    if(SWIPE_MODE.onComplete){
-      const cb = SWIPE_MODE.onComplete;
-      setTimeout(()=>{ if(SWIPE_MODE){ closeSwipeMode(); cb(); } }, 700);
-    }
-    return;
-  }
+
+  document.getElementById('guided-modal-progress').textContent = `${Math.min(index+1, items.length)} of ${items.length}`;
   const visible = items.slice(index, index+2);
-  host.innerHTML = visible.map((it,i)=>{
-    const isTop = i===0;
-    const selected = SWIPE_MODE.isSelected(it.id);
-    const desc = SWIPE_MODE.getDesc ? SWIPE_MODE.getDesc(it) : '';
-    const tags = SWIPE_MODE.getTags ? SWIPE_MODE.getTags(it) : [];
-    const iconType = SWIPE_MODE.getIcon ? SWIPE_MODE.getIcon(it) : '';
-    const iconSvg = iconType ? segIconSVG(iconType) : '';
-    const glossSource = SWIPE_MODE.getGlossaryText ? SWIPE_MODE.getGlossaryText(it) : '';
-    const glossDefs = glossSource ? extractGlossaryDefs(glossSource) : [];
-    return `<div class="swipe-card" id="${isTop?'swipe-card-top':''}"
-      ${isTop ? `onpointerdown="swipeStart(event)"` : ''}
-      style="transform:${isTop?'none':'scale(0.95) translateY(10px)'};opacity:${isTop?'1':'0.5'};z-index:${isTop?2:1}">
-      ${iconSvg ? `<svg viewBox="0 0 36 36" style="width:40px;height:40px;color:var(--c-select-600);margin-bottom:12px">${iconSvg}</svg>` : ''}
-      <div class="swipe-card-cat">${SWIPE_MODE.getSubLabel(it)}</div>
-      <div class="swipe-card-name">${SWIPE_MODE.getLabel(it)}</div>
-      ${desc ? `<div class="swipe-card-desc">${desc}</div>` : ''}
-      ${glossDefs.length ? `<div class="swipe-card-defs">${glossDefs.map(g=>`<div class="swipe-card-def"><b>${g.term}</b> - ${g.def}</div>`).join('')}</div>` : ''}
-      ${tags.length ? `<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:10px">${tags.map(t=>`<span class="route-match-tag">${t}</span>`).join('')}</div>` : ''}
-      ${(() => { const s = SWIPE_MODE.getStatusLabel ? SWIPE_MODE.getStatusLabel(it) : (selected ? '✓ Already flagged' : ''); return s ? `<div class="swipe-card-badge">${s}</div>` : ''; })()}
+  body.innerHTML = `
+    <div class="guided-modal-instructions">${state.instructions || 'Choose No or Yes, or drag the card left or right.'}</div>
+    <div id="swipe-card-stack">
+      ${visible.map((it,i)=>{
+        const isTop = i===0;
+        const selected = state.isSelected(it.id);
+        const desc = state.getDesc ? state.getDesc(it) : '';
+        const tags = state.getTags ? state.getTags(it) : [];
+        const iconType = state.getIcon ? state.getIcon(it) : '';
+        const iconSvg = iconType ? segIconSVG(iconType) : '';
+        const glossSource = state.getGlossaryText ? state.getGlossaryText(it) : '';
+        const glossDefs = glossSource ? extractGlossaryDefs(glossSource) : [];
+        const status = state.getStatusLabel ? state.getStatusLabel(it) : (selected ? 'Already selected' : '');
+        const detailsHtml = isTop && state.detailsRenderer ? state.detailsRenderer(it) : '';
+        const frontHtml = `${iconSvg ? `<svg viewBox="0 0 36 36" style="width:40px;height:40px;color:var(--c-select-600);margin-bottom:12px">${iconSvg}</svg>` : ''}
+          <div class="swipe-card-cat">${state.getSubLabel(it)}</div>
+          <div class="swipe-card-name">${state.getLabel(it)}</div>
+          ${desc ? `<div class="swipe-card-desc">${desc}</div>` : ''}
+          ${glossDefs.length ? `<div class="swipe-card-defs">${glossDefs.map(g=>`<div class="swipe-card-def"><b>${g.term}</b> - ${g.def}</div>`).join('')}</div>` : ''}
+          ${tags.length ? `<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:10px">${tags.map(t=>`<span class="route-match-tag">${t}</span>`).join('')}</div>` : ''}
+          ${status ? `<div class="swipe-card-badge">${status}</div>` : ''}`;
+        return `<div class="swipe-card" id="${isTop?'swipe-card-top':''}"
+          ${isTop ? 'onpointerdown="swipeStart(event)"' : ''}
+          style="transform:${isTop?'none':'scale(0.95) translateY(10px)'};opacity:${isTop?'1':'0.5'};z-index:${isTop?2:1}">
+          ${detailsHtml ? `<div class="guided-card-scene">
+            <div class="guided-card-flipper ${state.detailsOpen?'is-flipped':''}" id="${isTop?'guided-card-flipper':''}">
+              <div class="guided-card-face guided-card-front" id="${isTop?'guided-card-front':''}" tabindex="-1" aria-hidden="${state.detailsOpen?'true':'false'}">${frontHtml}</div>
+              <div class="guided-card-face guided-card-back" id="${isTop?'guided-card-back':''}" tabindex="-1" aria-hidden="${state.detailsOpen?'false':'true'}">
+                ${detailsHtml}
+                <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="event.stopPropagation();guidedModalFlip(false)">Back to question</button>
+              </div>
+            </div>
+          </div>` : frontHtml}
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="guided-yes-no-actions">
+      <button class="btn btn-ghost" onclick="swipeButtonDecide(false)">No</button>
+      <button class="btn btn-primary" onclick="swipeButtonDecide(true)">Yes</button>
     </div>`;
-  }).join('');
+  const topItem = items[index];
+  const topDetails = topItem && state.detailsRenderer ? state.detailsRenderer(topItem) : '';
+  guidedModalConfigureDetails(topDetails);
+  guidedModalSyncFaceAccess();
+  nextBtn.style.display = 'inline-flex';
+  nextBtn.textContent = index===items.length-1 && !nextGroup ? 'Done' : 'Next';
 }
 
+function guidedModalCompleteCurrent(){
+  if(!GUIDED_MODAL) return;
+  const completed = {
+    ...GUIDED_MODAL,
+    index: Math.max(0, (GUIDED_MODAL.mode==='swipe' ? GUIDED_MODAL.items.length : GUIDED_MODAL.prompts.length) - 1),
+    showingInterstitial: false,
+    error: ''
+  };
+  const cb = completed.onComplete;
+  GUIDED_MODAL = null;
+  GUIDED_MODAL_CHAINING = true;
+  if(cb) cb();
+  GUIDED_MODAL_CHAINING = false;
+  if(GUIDED_MODAL){
+    GUIDED_MODAL_HISTORY.push(completed);
+    renderGuidedModal();
+  } else {
+    document.getElementById('guided-modal-overlay').classList.remove('open');
+    document.body.classList.remove('guided-modal-active');
+    GUIDED_MODAL_HISTORY = [];
+  }
+}
+
+function guidedModalNext(){
+  if(!GUIDED_MODAL) return;
+  GUIDED_MODAL.error = '';
+  GUIDED_MODAL.note = '';
+  GUIDED_MODAL.detailsOpen = false;
+  if(GUIDED_MODAL.flowKey==='roles') renderRoles();
+  if(GUIDED_MODAL.mode==='swipe'){
+    if(GUIDED_MODAL.showingInterstitial){
+      const next = GUIDED_MODAL.nextGroup;
+      GUIDED_MODAL.items = next.items;
+      GUIDED_MODAL.title = next.title;
+      GUIDED_MODAL.index = 0;
+      GUIDED_MODAL.nextGroup = null;
+      GUIDED_MODAL.showingInterstitial = false;
+      renderGuidedModal();
+      return;
+    }
+    GUIDED_MODAL.index++;
+    if(GUIDED_MODAL.index >= GUIDED_MODAL.items.length){
+      if(GUIDED_MODAL.nextGroup){
+        GUIDED_MODAL.showingInterstitial = true;
+        renderGuidedModal();
+      } else guidedModalCompleteCurrent();
+    } else renderGuidedModal();
+    return;
+  }
+  focusModeNext();
+}
+
+function guidedModalBack(){
+  if(!GUIDED_MODAL) return;
+  GUIDED_MODAL.error = '';
+  GUIDED_MODAL.note = '';
+  GUIDED_MODAL.detailsOpen = false;
+  if(GUIDED_MODAL.showingInterstitial){
+    GUIDED_MODAL.showingInterstitial = false;
+    renderGuidedModal();
+    return;
+  }
+  if(GUIDED_MODAL.index>0){
+    GUIDED_MODAL.index--;
+    renderGuidedModal();
+    return;
+  }
+  if(GUIDED_MODAL_HISTORY.length){
+    const previous = GUIDED_MODAL_HISTORY.pop();
+    if(previous.pageId && previous.pageId!==window.CURRENT_PAGE_ID) window.showPage(previous.pageId);
+    GUIDED_MODAL = previous;
+    document.body.classList.add('guided-modal-active');
+    document.getElementById('guided-modal-overlay').classList.add('open');
+    renderGuidedModal();
+  }
+}
+
+function focusModeNext(){
+  if(!GUIDED_MODAL || GUIDED_MODAL.mode!=='focus') return;
+  if(GUIDED_MODAL.showingInterstitial){
+    GUIDED_MODAL.prompts = GUIDED_MODAL.nextGroup.prompts;
+    GUIDED_MODAL.title = GUIDED_MODAL.nextGroup.title;
+    GUIDED_MODAL.index = 0;
+    GUIDED_MODAL.nextGroup = null;
+    GUIDED_MODAL.showingInterstitial = false;
+    renderGuidedModal();
+    return;
+  }
+  if(GUIDED_MODAL.index < GUIDED_MODAL.prompts.length-1){
+    GUIDED_MODAL.index++;
+    renderGuidedModal();
+  } else if(GUIDED_MODAL.nextGroup){
+    GUIDED_MODAL.showingInterstitial = true;
+    renderGuidedModal();
+  } else guidedModalCompleteCurrent();
+}
+function focusModeSkipRest(){ guidedModalCompleteCurrent(); }
+function focusModePrev(){ guidedModalBack(); }
+function focusModeSync(){
+  if(GUIDED_MODAL && GUIDED_MODAL.mode==='focus' && !GUIDED_MODAL.showingInterstitial) renderGuidedModal(false);
+}
+
+function guidedSwipeSkipOptional(){ guidedModalCompleteCurrent(); }
+
 function swipeStart(e){
-  if(e.target.closest('.gterm')) return;
+  if(!GUIDED_MODAL || GUIDED_MODAL.mode!=='swipe' || GUIDED_MODAL.showingInterstitial || GUIDED_MODAL.detailsOpen || e.target.closest('.gterm,button,input,label,a')) return;
+  e.stopPropagation();
   swipeDragging = true;
   swipeStartX = e.clientX;
   const card = document.getElementById('swipe-card-top');
@@ -2085,45 +2656,86 @@ function swipeEnd(){
   swipeDragging = false;
   const card = document.getElementById('swipe-card-top');
   if(!card){ swipeCurrentX = 0; return; }
-  card.onpointermove = null; card.onpointerup = null;
+  card.onpointermove = null;
+  card.onpointerup = null;
   if(swipeCurrentX > 80) swipeDecide(true);
   else if(swipeCurrentX < -80) swipeDecide(false);
-  else { card.style.transform = 'none'; card.style.borderColor = 'var(--c-line-strong)'; }
+  else {
+    card.style.transform = 'none';
+    card.style.borderColor = 'var(--c-line-strong)';
+  }
   swipeCurrentX = 0;
 }
 function swipeButtonDecide(yes){
-  if(!SWIPE_MODE) return;
-  if(SWIPE_MODE.showingInterstitial){
-    const origTitle = SWIPE_MODE.title;
-    if(yes){
-      SWIPE_MODE.items = SWIPE_MODE.nextGroup.items;
-      SWIPE_MODE.index = 0;
-      SWIPE_MODE.nextGroup = null;
-      SWIPE_MODE.showingInterstitial = false;
-      document.getElementById('swipe-mode-title').textContent = origTitle;
-      renderSwipeStack();
-    } else {
-      const cb = SWIPE_MODE.onComplete;
-      closeSwipeMode();
-      if(cb) cb();
-    }
-    return;
-  }
-  if(SWIPE_MODE.index >= SWIPE_MODE.items.length){
-    const cb = SWIPE_MODE.onComplete;
-    closeSwipeMode();
-    if(cb) cb();
+  if(!GUIDED_MODAL || GUIDED_MODAL.mode!=='swipe') return;
+  if(GUIDED_MODAL.showingInterstitial){
+    if(yes) guidedModalNext();
+    else guidedSwipeSkipOptional();
     return;
   }
   swipeDecide(yes);
 }
 function swipeDecide(yes){
-  if(!SWIPE_MODE || SWIPE_MODE.index >= SWIPE_MODE.items.length) return;
-  const item = SWIPE_MODE.items[SWIPE_MODE.index];
-  SWIPE_MODE.onDecide(item.id, yes);
-  SWIPE_MODE.index++;
-  if(SWIPE_MODE.rerenderFn) window[SWIPE_MODE.rerenderFn]();
-  renderSwipeStack();
+  if(!GUIDED_MODAL || GUIDED_MODAL.mode!=='swipe' || GUIDED_MODAL.index >= GUIDED_MODAL.items.length) return;
+  const item = GUIDED_MODAL.items[GUIDED_MODAL.index];
+  GUIDED_MODAL.onDecide(item.id, yes);
+  if(GUIDED_MODAL.rerenderFn) window[GUIDED_MODAL.rerenderFn]();
+  GUIDED_MODAL.index++;
+  if(GUIDED_MODAL.index >= GUIDED_MODAL.items.length){
+    if(GUIDED_MODAL.nextGroup){
+      GUIDED_MODAL.showingInterstitial = true;
+      renderGuidedModal();
+    } else guidedModalCompleteCurrent();
+  } else renderGuidedModal();
+}
+
+function renderNeedDetails(item){
+  const bucket = item.bucket==='both' ? 'Analysis and activation' : (item.bucket==='analysis' ? 'Analysis' : 'Activation');
+  return guidedDetailSection('What this means', item.desc) + guidedDetailSection('Focus area', bucket);
+}
+
+function renderDataDetails(item){
+  return guidedDetailSection('CJA approach', item.cja.approach)
+    + guidedDetailSection('Field or tool', item.cja.field)
+    + guidedDetailSection('Why this mapping works', item.cja.rationale)
+    + guidedDetailSection('Prerequisites', item.cja.prereqs, true)
+    + guidedDetailSection('Complexity', item.complexity.charAt(0).toUpperCase()+item.complexity.slice(1));
+}
+
+function renderSegmentDetails(item){
+  const example = industryData().segmentExamples[item.id] || 'No industry-specific example is available for this pattern.';
+  return guidedDetailSection('Adobe Analytics logic', item.aaLogic)
+    + guidedDetailSection('Customer Journey Analytics logic', item.cjaLogic)
+    + guidedDetailSection(`${industryData().label} example`, example);
+}
+
+function selectedIdentityStageForPrompt(prompt){
+  const answer = DISC.answers[prompt.id] ? Array.from(DISC.answers[prompt.id])[0] : null;
+  const selected = IDENTITY_STAGES.find(stage=>stage.name===answer);
+  if(selected) return selected;
+  const assignedId = prompt.id==='identity-current' ? ID_CURRENT : ID_TARGET;
+  if(assignedId) return IDENTITY_STAGES.find(stage=>stage.id===assignedId);
+  return IDENTITY_STAGES[Math.floor((IDENTITY_STAGES.length-1)/2)];
+}
+
+function renderIdentityDetails(prompt){
+  const stage = selectedIdentityStageForPrompt(prompt);
+  return guidedDetailSection(stage.name, stage.short)
+    + guidedDetailSection('What it enables', stage.enables)
+    + guidedDetailSection('Prerequisites', stage.prereqs, true)
+    + guidedDetailSection('Common blockers', stage.blockers, true);
+}
+
+function renderGovernanceDetails(item){
+  return guidedDetailSection('Example', item.example)
+    + guidedDetailSection('How it is enforced', item.mechanism);
+}
+
+function renderRoleDetails(role){
+  return guidedDetailSection('Moving from', role.from)
+    + guidedDetailSection('Moving to', role.to)
+    + guidedDetailSection('New skill to build', role.newSkill)
+    + guidedDetailSection('Quick win', role.quickWin);
 }
 
 function openDfSwipeMode(onComplete){
@@ -2151,7 +2763,8 @@ function openDfSwipeMode(onComplete){
     getLabel: it => glossify(it.name),
     getSubLabel: it => glossify(it.type) + ' · ' + it.category,
     getGlossaryText: it => it.name + ' ' + it.type,
-    getTags: it => industryCats.includes(it.category) ? ['Common in your industry'] : [],
+    getTags: it => [],
+    detailsRenderer: renderDataDetails,
     isSelected: id => DF.selected.has(id),
     onDecide: (id, yes) => { yes ? DF.selected.add(id) : DF.selected.delete(id); },
     rerenderFn: 'dfRender',
@@ -2160,7 +2773,13 @@ function openDfSwipeMode(onComplete){
       message: continuationNote,
       items: rest
     } : null,
-    onComplete: () => { if(!DF.selected.size){ dfReviewSelections(false); showToast('Select at least one Yes to see CJA mapping. Use Review Yes/No questions to change answers.'); return; } openDfMappingFocusMode(onComplete); }
+    onComplete: () => {
+      if(!DF.selected.size){
+        finishGuidedSection('data-foundations');
+        return;
+      }
+      openDfMappingFocusMode(onComplete);
+    }
   });
 }
 function openNeedsSwipeMode(extra){
@@ -2171,6 +2790,7 @@ function openNeedsSwipeMode(extra){
     getLabel: n => glossify(n.name),
     getSubLabel: n => n.bucket==='both' ? 'Analysis + Activation' : (n.bucket==='analysis' ? 'Analysis' : 'Activation'),
     getDesc: n => n.desc,
+    detailsRenderer: renderNeedDetails,
     isSelected: id => DISC.checked.has(id),
     onDecide: (id, yes) => { yes ? DISC.checked.add(id) : DISC.checked.delete(id); },
     rerenderFn: 'renderDiscovery',
@@ -2181,6 +2801,17 @@ function openNeedsSwipeMode(extra){
     } : null,
     ...(extra || {})
   });
+}
+
+function openDiscoveryFlowAt(step){
+  const finish = () => finishGuidedSection('discovery');
+  const openDeeper = () => openFocusMode('Digging a bit deeper', DISCOVERY_PROMPTS_POKE, 'renderDiscovery', null, finish, {flowKey:'discovery'});
+  const openStarting = () => openFocusMode('A few starting questions', getOrderedOpenPrompts(), 'renderDiscovery', null, openDeeper, {flowKey:'discovery'});
+  const openNeeds = () => openNeedsSwipeMode({flowKey:'discovery', onComplete:openStarting});
+  if(step==='needs') openNeeds();
+  else if(step==='starting') openStarting();
+  else if(step==='deeper') openDeeper();
+  else openDiscoveryFocusModal(openNeeds);
 }
 /* Simple geometric glyphs for segment patterns, to give the swipe cards
    some visual variety beyond plain text - not literal illustrations,
@@ -2205,17 +2836,42 @@ function openSegSwipeMode(onComplete){
     getSubLabel: p => p.bucket==='both' ? 'Analysis + Activation' : (p.bucket==='analysis' ? 'Analysis' : 'Activation'),
     getDesc: p => p.desc,
     getIcon: p => p.icon,
+    detailsRenderer: renderSegmentDetails,
     isSelected: id => SEG_PRIORITY.has(id),
     onDecide: (id, yes) => segAssign(yes?'priority':'later', id),
     rerenderFn: 'renderSegmentation',
-    onComplete: onComplete || null
+    onComplete: onComplete || (() => finishGuidedSection('segmentation')),
+    flowKey: 'segmentation'
   });
 }
 
 /* ---------------- LEAD CAPTURE GATE (self-guided only) ---------------- */
 function renderGate(){
-  /* No dynamic content to render for the RFI-style gate; kept as a
-     no-op entry point since it's called on load and after submit. */
+  const localTest = location.protocol==='file:' || ['localhost','127.0.0.1'].includes(location.hostname);
+  const submit = document.getElementById('gate-submit-btn');
+  if(!localTest || !submit || document.getElementById('gate-test-bypass')) return;
+  const testButton = document.createElement('button');
+  testButton.type = 'button';
+  testButton.id = 'gate-test-bypass';
+  testButton.className = 'btn btn-ghost btn-lg';
+  testButton.style.marginLeft = '10px';
+  testButton.textContent = 'Skip form for local testing';
+  testButton.onclick = startLocalTest;
+  submit.insertAdjacentElement('afterend', testButton);
+}
+function startLocalTest(){
+  LEAD.firstName = 'Test';
+  LEAD.lastName = 'User';
+  LEAD.email = 'test@example.com';
+  LEAD.org = 'Test organization';
+  LEAD.industry = 'generic';
+  CONFIG.client.name = LEAD.org;
+  CONFIG.client.logoInitials = 'TO';
+  GATE_PASSED = true;
+  document.getElementById('gate-screen').classList.remove('open');
+  applyConfig();
+  renderOverview();
+  showPage('overview');
 }
 function gateValidate(){
   const first = document.getElementById('gate-first').value.trim();
@@ -2638,7 +3294,7 @@ function openStrategyFocusMode(onComplete){
       return cap ? cap.name : null;
     }).filter(Boolean));
   }
-  openFocusMode('Strategy & Adoption', [...getOrderedStrategyPrompts(), AI_CAPABILITY_PROMPT], 'renderStrategyAdoption', null, onComplete);
+  openFocusMode('Strategy & Adoption', [...getOrderedStrategyPrompts(), AI_CAPABILITY_PROMPT], 'renderStrategyAdoption', null, onComplete || (() => finishGuidedSection('strategy-adoption')), {flowKey:'strategy-adoption'});
 }
 
 const DISCOVERY_NEEDS = [
@@ -2813,14 +3469,14 @@ function gaugeRowHTML(p, idx, stopsLen){
   return '';
 }
 
-function updateGaugeRowLive(p, idx, stopsLen){
-  const row = document.getElementById('cgauge-'+p.id);
+function updateGaugeRowLive(p, idx, stopsLen, wrap){
+  const row = wrap ? wrap.querySelector('.cslider-gauge') : document.getElementById('cgauge-'+p.id);
   if(!row) return;
   if(p.gaugeType === 'journey'){
     const ratio = idx/(stopsLen-1);
     const opacity = (0.25 + ratio*0.75).toFixed(2);
     const dash = idx===stopsLen-1 ? 'none' : '5,4';
-    const svg = document.getElementById('cgauge-journey-svg-'+p.id);
+    const svg = row.querySelector('svg');
     if(svg){
       svg.querySelectorAll('circle, path').forEach(el=>el.setAttribute('opacity', opacity));
       const outerCircle = svg.querySelector('circle');
@@ -2829,7 +3485,7 @@ function updateGaugeRowLive(p, idx, stopsLen){
   } else if(p.gaugeType === 'clock'){
     const angle = -90 + idx*(180/(stopsLen-1));
     const rad = angle*Math.PI/180;
-    const hand = document.getElementById('cgauge-clock-hand-'+p.id);
+    const hand = row.querySelector('line');
     if(hand){ hand.setAttribute('x2',(30+20*Math.cos(rad)).toFixed(1)); hand.setAttribute('y2',(30+20*Math.sin(rad)).toFixed(1)); }
   } else if(p.gaugeType === 'signal'){
     const filled = idx + 1;
@@ -2855,7 +3511,7 @@ function renderSliderPrompt(p, fn){
      position, so at idx=0/max they visually overhang past a plain 0%/100%
      point. Insetting the whole 0-100 scale by CSLIDER_INSET on each side
      keeps the full circle within the track's own box at every position -
-     this is computed in JS (see cSliderIdxFromEvent) using the identical
+     this is computed in JS (see cSliderPosFromEvent) using the identical
      formula, so clicks and visuals always agree, with no dependence on
      margin/padding-vs-percentage CSS behavior that varies by context. */
   const ratio = i => i/(stops.length-1);
@@ -2865,8 +3521,8 @@ function renderSliderPrompt(p, fn){
   return `
     <div class="prompt-item" style="flex-direction:column;align-items:stretch;gap:10px">
       <div class="prompt-q">${glossify(p.q)}</div>
-      <div class="cslider-wrap ${!answered?'unanswered':''}" id="cslider-${p.id}" data-fn="${fn}">
-        <div id="cgauge-${p.id}">${gaugeRowHTML(p, displayIdx, stops.length)}</div>
+      <div class="cslider-wrap ${!answered?'unanswered':''}" id="cslider-${p.id}" data-qid="${p.id}" data-fn="${fn}">
+        <div class="cslider-gauge" id="cgauge-${p.id}">${gaugeRowHTML(p, displayIdx, stops.length)}</div>
         <div class="cslider-hitzone" tabindex="0" role="slider"
           aria-valuemin="0" aria-valuemax="${stops.length-1}" aria-valuenow="${displayIdx}"
           onpointerdown="cSliderPointerDown(event,'${p.id}')" onkeydown="cSliderKeyDown(event,'${p.id}')">
@@ -2874,8 +3530,6 @@ function renderSliderPrompt(p, fn){
             <div class="cslider-fill" id="cfill-${p.id}" style="width:${pctWidth(displayIdx)}"></div>
             ${stops.map((s,i)=>`<div class="cslider-tick" style="left:${pctPos(i)}"></div>`).join('')}
             <div class="cslider-thumb" id="cthumb-${p.id}" style="left:${pctPos(displayIdx)}"></div>
-            <div class="cslider-endcap cslider-endcap-left" onclick="event.stopPropagation();cSliderJumpTo('${p.id}', 0)"></div>
-            <div class="cslider-endcap cslider-endcap-right" onclick="event.stopPropagation();cSliderJumpTo('${p.id}', ${stops.length-1})"></div>
           </div>
         </div>
         <div class="cslider-labels">
@@ -2888,70 +3542,108 @@ function renderSliderPrompt(p, fn){
             }).join('')}
           </div>
         </div>
-        <div class="spectrum-caption" id="caption-${p.id}">${caption}</div>
+        <div class="spectrum-caption cslider-caption" id="caption-${p.id}">${caption}</div>
         ${escapes.length ? `<div class="spectrum-escape-row">${escapes.map(o=>`<button class="spectrum-escape-btn ${current===o?'selected':''}" data-qid="${p.id}" data-val="${o}" data-rerender="${fn}" onclick="discAnswerClick(this)">${o}</button>`).join('')}</div>` : ''}
       </div>
     </div>`;
 }
 
-function cSliderApply(qid, idx, stopsLen){
-  const ratio = idx/(stopsLen-1);
-  const pos = `calc(${CSLIDER_INSET}px + (100% - ${CSLIDER_INSET*2}px) * ${ratio.toFixed(4)})`;
-  const width = `calc((100% - ${CSLIDER_INSET*2}px) * ${ratio.toFixed(4)})`;
-  const thumb = document.getElementById('cthumb-'+qid);
-  const fill = document.getElementById('cfill-'+qid);
-  if(thumb) thumb.style.left = pos;
-  if(fill) fill.style.width = width;
-  const track = document.getElementById('ctrack-'+qid);
-  if(track) track.setAttribute('aria-valuenow', idx);
+/* NOTE: the same slider can exist twice in the DOM (once on the Discovery
+   page, once inside the guided modal), so element IDs are NOT unique.
+   Every lookup below is scoped to the specific .cslider-wrap being used,
+   never document.getElementById. */
+function cSliderPosCSS(ratio){
+  return `calc(${CSLIDER_INSET}px + (100% - ${CSLIDER_INSET*2}px) * ${ratio.toFixed(4)})`;
+}
+function cSliderWidthCSS(ratio){
+  return `calc((100% - ${CSLIDER_INSET*2}px) * ${ratio.toFixed(4)})`;
+}
+/* Place thumb/fill at a continuous 0..1 ratio (used while dragging so the
+   thumb tracks the pointer smoothly instead of hopping stop to stop). */
+function cSliderPlace(wrap, ratio, animate){
+  const thumb = wrap.querySelector('.cslider-thumb');
+  const fill = wrap.querySelector('.cslider-fill');
+  const tr = animate ? 'left .15s ease, opacity .15s ease' : 'none';
+  const fr = animate ? 'width .15s ease, opacity .15s ease' : 'none';
+  if(thumb){ thumb.style.transition = tr; thumb.style.left = cSliderPosCSS(ratio); }
+  if(fill){ fill.style.transition = fr; fill.style.width = cSliderWidthCSS(ratio); }
+}
+function cSliderApply(qid, idx, stopsLen, wrap, continuousRatio){
+  wrap = wrap || document.querySelector('.cslider-wrap[data-qid="'+qid+'"]');
+  if(!wrap) return;
+  const ratio = continuousRatio !== undefined ? continuousRatio : idx/(stopsLen-1);
+  cSliderPlace(wrap, ratio, continuousRatio === undefined);
+  const slider = wrap.querySelector('[role="slider"]');
+  if(slider) slider.setAttribute('aria-valuenow', idx);
   const prompt = discPromptById(qid);
-  updateGaugeRowLive(prompt, idx, stopsLen);
-  const caption = document.getElementById('caption-'+qid);
+  updateGaugeRowLive(prompt, idx, stopsLen, wrap);
+  const caption = wrap.querySelector('.cslider-caption');
   if(caption) caption.textContent = (prompt.sliderCaptions || prompt.options.slice(0,prompt.sliderStops))[idx];
-  const wrap = document.getElementById('cslider-'+qid);
-  if(wrap) wrap.classList.remove('unanswered');
+  wrap.classList.remove('unanswered');
 }
 
-function cSliderIdxFromEvent(e, qid){
-  const prompt = discPromptById(qid);
-  const stopsLen = prompt.sliderStops;
-  const track = document.getElementById('ctrack-'+qid);
+/* Returns {ratio (0..1, continuous), idx (nearest stop)} for a pointer event. */
+function cSliderPosFromEvent(e, wrap, stopsLen){
+  const track = wrap.querySelector('.cslider-track');
   const rect = track.getBoundingClientRect();
   const usableWidth = rect.width - CSLIDER_INSET*2;
   let pct = usableWidth > 0 ? (e.clientX - rect.left - CSLIDER_INSET) / usableWidth : 0;
   pct = Math.max(0, Math.min(1, pct));
-  // Small extra tolerance beyond the inset scale itself, for touch imprecision.
-  if(pct <= 0.03) return 0;
-  if(pct >= 0.97) return stopsLen-1;
-  return Math.round(pct * (stopsLen-1));
+  return { ratio: pct, idx: Math.round(pct * (stopsLen-1)) };
 }
 
-let cSliderActiveQid = null;
+let cSliderActive = null; // {qid, wrap, pointerId, stopsLen}
 function cSliderDocMove(e){
-  if(!cSliderActiveQid) return;
-  const i = cSliderIdxFromEvent(e, cSliderActiveQid);
-  CSLIDER_PENDING[cSliderActiveQid] = i;
-  cSliderApply(cSliderActiveQid, i, discPromptById(cSliderActiveQid).sliderStops);
+  const a = cSliderActive;
+  if(!a || (a.pointerId !== undefined && e.pointerId !== a.pointerId)) return;
+  if(!a.wrap.isConnected) return cSliderCancel();
+  const pos = cSliderPosFromEvent(e, a.wrap, a.stopsLen);
+  CSLIDER_PENDING[a.qid] = pos.idx;
+  cSliderApply(a.qid, pos.idx, a.stopsLen, a.wrap, pos.ratio);
 }
-function cSliderDocUp(){
-  if(!cSliderActiveQid) return;
-  const qid = cSliderActiveQid;
-  cSliderActiveQid = null;
+function cSliderDetach(){
   document.removeEventListener('pointermove', cSliderDocMove);
   document.removeEventListener('pointerup', cSliderDocUp);
   document.removeEventListener('pointercancel', cSliderDocUp);
-  cSliderCommit(qid);
+  window.removeEventListener('blur', cSliderCancel);
+}
+function cSliderCancel(){
+  cSliderActive = null;
+  cSliderDetach();
+}
+function cSliderDocUp(e){
+  const a = cSliderActive;
+  if(!a) return;
+  if(e && a.pointerId !== undefined && e.pointerId !== a.pointerId) return;
+  cSliderActive = null;
+  cSliderDetach();
+  try{ if(a.hit && a.hit.hasPointerCapture && a.hit.hasPointerCapture(a.pointerId)) a.hit.releasePointerCapture(a.pointerId); }catch(_){}
+  if(e && e.type==='pointercancel' && CSLIDER_PENDING[a.qid]===undefined) return;
+  // Snap the thumb to the nearest stop with a short ease, then commit.
+  if(a.wrap.isConnected) cSliderApply(a.qid, CSLIDER_PENDING[a.qid], a.stopsLen, a.wrap);
+  cSliderCommit(a.qid);
 }
 function cSliderPointerDown(e, qid){
-  const track = document.getElementById('ctrack-'+qid);
-  track.focus();
-  cSliderActiveQid = qid;
-  const idx = cSliderIdxFromEvent(e, qid);
-  CSLIDER_PENDING[qid] = idx;
-  cSliderApply(qid, idx, discPromptById(qid).sliderStops);
+  if(e.button !== undefined && e.button !== 0) return;
+  if(cSliderActive) cSliderCancel();
+  e.preventDefault();
+  e.stopPropagation();
+  const hit = e.currentTarget;
+  const wrap = hit.closest('.cslider-wrap');
+  if(!wrap) return;
+  try{ hit.focus({preventScroll:true}); }catch(_){ }
+  const stopsLen = discPromptById(qid).sliderStops;
+  cSliderActive = { qid, wrap, hit, pointerId: e.pointerId, stopsLen };
+  // Capture keeps move/up events flowing even if the pointer leaves the
+  // element or the window, which was the cause of "stuck"/missed drags.
+  try{ hit.setPointerCapture(e.pointerId); }catch(_){ }
+  const pos = cSliderPosFromEvent(e, wrap, stopsLen);
+  CSLIDER_PENDING[qid] = pos.idx;
+  cSliderApply(qid, pos.idx, stopsLen, wrap, pos.ratio);
   document.addEventListener('pointermove', cSliderDocMove);
   document.addEventListener('pointerup', cSliderDocUp);
   document.addEventListener('pointercancel', cSliderDocUp);
+  window.addEventListener('blur', cSliderCancel);
 }
 
 function cSliderKeyDown(e, qid){
@@ -2963,7 +3655,7 @@ function cSliderKeyDown(e, qid){
   else { return; }
   e.preventDefault();
   CSLIDER_PENDING[qid] = idx;
-  cSliderApply(qid, idx, stopsLen);
+  cSliderApply(qid, idx, stopsLen, e.currentTarget.closest('.cslider-wrap'));
   cSliderCommit(qid);
 }
 
@@ -2973,7 +3665,7 @@ function cSliderCommit(qid){
   const prompt = discPromptById(qid);
   const stops = prompt.options.slice(0, prompt.sliderStops);
   DISC.answers[qid] = new Set([stops[idx]]);
-  const wrap = document.getElementById('cslider-'+qid);
+  const wrap = document.querySelector('.cslider-wrap[data-qid="'+qid+'"]');
   const fn = wrap ? wrap.dataset.fn : 'renderDiscovery';
   window[fn || 'renderDiscovery']();
 }
@@ -2987,12 +3679,12 @@ function cSliderJumpTo(qid, idx){
 }
 
 function renderDiscoveryFocusModalCard(){
-  document.getElementById('focus-mode-body').innerHTML = `
+  document.getElementById('guided-modal-body').innerHTML = `
     <div style="text-align:left">
       <p style="font-size:15px;color:var(--c-text-soft);margin:0 0 18px;line-height:1.6">Let's set the technology aside for a minute. Pick whichever describes you best right now - not sure? "Both" works fine.</p>
       <div class="bucket-grid">
         ${DISCOVERY_BUCKETS.map(b => `
-          <div class="bucket-card bucket-accent-${b.id}" style="cursor:pointer" onclick="closeFocusMode();discSelectBucket('${b.id}')">
+          <div class="bucket-card bucket-accent-${b.id}" style="cursor:pointer" onclick="selectDiscoveryFocus('${b.id}')">
             <div style="font-weight:700;font-size:16px;margin-bottom:6px;color:${b.color}">${b.name}</div>
             <div style="font-size:14px;color:var(--c-text-soft);line-height:1.5">${b.desc}</div>
           </div>
@@ -3000,12 +3692,24 @@ function renderDiscoveryFocusModalCard(){
       </div>
     </div>`;
 }
-function openDiscoveryFocusModal(){
+function selectDiscoveryFocus(id){
+  DISC.bucket = id;
+  DISC.showAllNeeds = false;
+  renderDiscovery();
+  if(GUIDED_MODAL && GUIDED_MODAL.flowKey==='discovery' && GUIDED_MODAL.onComplete){
+    GUIDED_MODAL.onComplete();
+  } else {
+    closeGuidedModal();
+  }
+}
+function openDiscoveryFocusModal(onComplete){
   openFocusMode("Where's your focus?", [{}], null, null, null, {
     customRender: renderDiscoveryFocusModalCard,
     hideProgress: true,
-    hideFooter: true
+    hideFooter: true,
+    flowKey: 'discovery'
   });
+  if(GUIDED_MODAL) GUIDED_MODAL.onComplete = onComplete || null;
 }
 
 function renderDiscovery(){
@@ -3031,7 +3735,7 @@ function renderDiscovery(){
       </div>
       <div class="sig-desc">${n.desc}</div>
     </div>`).join('') + (bucketFiltering && relevantNeeds.length < DISCOVERY_NEEDS.length ? `
-    <button class="btn btn-ghost btn-sm" style="grid-column:1/-1;justify-self:start" onclick="discShowAllNeeds()">Show all ${DISCOVERY_NEEDS.length} needs instead →</button>` : '');
+    <button class="btn btn-ghost btn-sm" style="grid-column:1/-1;justify-self:start" onclick="discShowAllNeeds()">Show all ${DISCOVERY_NEEDS.length} needs instead</button>` : '');
 
   document.getElementById('disc-bucket-grid').innerHTML = DISCOVERY_BUCKETS.map(b=>{
     let hint = '';
@@ -3067,24 +3771,15 @@ function discRoute(page){
 }
 
 function updateFocusPill(){
-  const pill = document.getElementById('nav-focus-pill');
-  pill.style.display = DISCOVERY_VISITED ? '' : 'none';
-  if(DISC.bucket){
-    const b = DISCOVERY_BUCKETS.find(x=>x.id===DISC.bucket);
-    pill.textContent = 'Focus: ' + b.name;
-    pill.classList.remove('unset');
-  } else {
-    pill.textContent = 'Focus: not set';
-    pill.classList.add('unset');
-  }
+  // Focus remains part of Discovery state, but is no longer shown in the top bar.
 }
 
 /* ================================================================
    APP INIT: apply CONFIG, wire nav
    ================================================================ */
 function applyConfig(){
-  document.getElementById('brand-mark').textContent = CONFIG.client.logoInitials;
-  document.getElementById('brand-name').textContent = CONFIG.client.name + " · Guided Discovery";
+  // document.getElementById('brand-mark').textContent = CONFIG.client.logoInitials;
+  document.getElementById('brand-name').textContent = CONFIG.client.name + " · CX Analytics Modernization";
   document.documentElement.style.setProperty('--c-ink-900', CONFIG.client.primaryColor);
   document.documentElement.style.setProperty('--c-teal-600', CONFIG.client.accentColor);
   document.getElementById('ov-client-inline').textContent = CONFIG.client.name;
@@ -3376,6 +4071,7 @@ function currentWorkflowSteps(){
 function renderGlobalStepper(pageId){
   const host = document.getElementById('global-stepper');
   if(!host) return;
+  if(['modernization-guide','onepager','summary'].includes(pageId)){ renderFinalJourneyStepper(pageId, host); return; }
   if(isHubProfile()){ renderHubStepper(pageId, host); return; }
   const steps = currentWorkflowSteps();
   const idx = steps.findIndex(s=>s.id===pageId);
@@ -3390,34 +4086,74 @@ function renderGlobalStepper(pageId){
       <span class="gstep-num">${isDone && !isActive ? '✓' : i+1}</span><span class="gstep-label">${s.short}</span>
     </button>${i<total-1 ? '<span class="gstep-arrow">→</span>' : ''}`;
   }).join('');
-  const current = steps[idx];
-  document.getElementById('global-stepper-meta').textContent =
-    `${PAGE_LABELS[pageId]} · Step ${idx+1} of ${total} · About ${current.minutes} min`;
+  document.getElementById('global-stepper-meta').textContent = PAGE_LABELS[pageId];
+}
+
+function renderFinalJourneyStepper(pageId, host){
+  const macro = [{id:'discovery',short:'Discovery'}];
+  if(isHubProfile()) macro.push({id:'hub',short:'Build Your Profile'});
+  if(PROFILE_PAGES[VIEW_PROFILE].includes('roadmap')) macro.push({id:'roadmap',short:'Roadmap'});
+  macro.push({id:'modernization-guide',short:'Prepare Your Guide'},{id:'results',short:'Results'});
+  const activeId = pageId==='modernization-guide' ? 'modernization-guide' : 'results';
+  host.style.display='block';
+  document.getElementById('global-stepper-row').innerHTML = macro.map((step,index)=>{
+    const active = step.id===activeId;
+    const done = step.id==='discovery' ? COMPLETED.has('discovery')
+      : step.id==='hub' ? hubDoneCount()===HUB_PAGES.length
+      : step.id==='roadmap' ? COMPLETED.has('roadmap')
+      : step.id==='modernization-guide' ? activeId==='results'
+      : false;
+    const target = step.id==='hub' ? "showPage('hub')"
+      : step.id==='modernization-guide' ? 'beginFinalization()'
+      : step.id==='results' ? 'continueToResults()'
+      : `showPage('${step.id}')`;
+    return `<button class="gstep ${active?'active':(done?'done':'')}" onclick="${target}" title="${step.short}">
+      <span class="gstep-num">${done&&!active?'✓':index+1}</span><span class="gstep-label">${step.short}</span>
+    </button>${index<macro.length-1?'<span class="gstep-arrow">→</span>':''}`;
+  }).join('');
+  document.getElementById('global-stepper-meta').textContent = activeId==='modernization-guide'
+    ? 'Preparing your personalized guide'
+    : 'Your Summary & Next Steps';
 }
 
 /* Macro-step stepper for Self-Guided/Practitioner: Discovery, then one
-   collapsed "Build Your Profile" step covering all 6 hub sections
-   (with a live X of 6 sub-count), then Roadmap if present, then done.
+   collapsed "Build Your Profile" step covering all 6 hub sections,
+   followed by guide preparation and results.
    Reflects the real non-linear structure instead of stale numbering. */
 function renderHubStepper(pageId, host){
   const macro = [{ id:"discovery", short:"Discovery" }, { id:"hub", short:"Build Your Profile" }];
   if(PROFILE_PAGES[VIEW_PROFILE].includes('roadmap')) macro.push({ id:"roadmap", short:"Roadmap" });
-  const activeMacroId = (pageId==='discovery') ? 'discovery' : (HUB_PAGES.includes(pageId) || pageId==='hub') ? 'hub' : (pageId==='roadmap' ? 'roadmap' : null);
+  macro.push({id:'modernization-guide',short:'Prepare Your Guide'},{id:'results',short:'Results'});
+  const activeMacroId = (pageId==='discovery') ? 'discovery'
+    : (HUB_PAGES.includes(pageId) || pageId==='hub') ? 'hub'
+    : (pageId==='roadmap' ? 'roadmap'
+    : (pageId==='modernization-guide' ? 'modernization-guide'
+    : (pageId==='onepager' || pageId==='summary' ? 'results' : null)));
   if(!activeMacroId){ host.style.display='none'; return; }
   host.style.display='block';
   const idx = macro.findIndex(s=>s.id===activeMacroId);
   const total = macro.length;
   document.getElementById('global-stepper-row').innerHTML = macro.map((s,i)=>{
-    const isDone = s.id==='discovery' ? COMPLETED.has('discovery') : (s.id==='hub' ? hubDoneCount()===HUB_PAGES.length : COMPLETED.has('roadmap'));
+    const isDone = s.id==='discovery' ? COMPLETED.has('discovery')
+      : s.id==='hub' ? hubDoneCount()===HUB_PAGES.length
+      : s.id==='roadmap' ? COMPLETED.has('roadmap')
+      : s.id==='modernization-guide' ? activeMacroId==='results'
+      : false;
     const isActive = i===idx;
     const cls = isActive ? 'active' : (isDone ? 'done' : '');
     const label = s.id==='hub' ? `${s.short} (${hubDoneCount()}/${HUB_PAGES.length})` : s.short;
-    const target = s.id==='hub' ? 'hub' : s.id;
-    return `<button class="gstep ${cls}" onclick="showPage('${target}')" title="${s.short}">
+    const action = s.id==='hub' ? "showPage('hub')"
+      : s.id==='modernization-guide' ? 'beginFinalization()'
+      : s.id==='results' ? 'continueToResults()'
+      : `showPage('${s.id}')`;
+    return `<button class="gstep ${cls}" onclick="${action}" title="${s.short}">
       <span class="gstep-num">${isDone && !isActive ? '✓' : i+1}</span><span class="gstep-label">${label}</span>
     </button>${i<total-1 ? '<span class="gstep-arrow">→</span>' : ''}`;
   }).join('');
-  const metaLabel = activeMacroId==='hub' ? `Building your customer profile · ${hubDoneCount()} of ${HUB_PAGES.length} signals stitched` : `${PAGE_LABELS[pageId]} · Step ${idx+1} of ${total}`;
+  const metaLabel = activeMacroId==='hub' ? `Customer journey completeness · ${hubDoneCount()} of ${HUB_PAGES.length} signals stitched`
+    : activeMacroId==='modernization-guide' ? 'Preparing your personalized guide'
+    : activeMacroId==='results' ? 'Your Summary & Next Steps'
+    : PAGE_LABELS[pageId];
   document.getElementById('global-stepper-meta').textContent = metaLabel;
 }
 
@@ -3466,13 +4202,14 @@ function showPage(id){
   target.classList.add('active');
   target.scrollTop = 0;
   window.scrollTo(0, 0);
-  document.querySelectorAll('.nav-link').forEach(b=>b.classList.toggle('active', b.dataset.page===id || (b.dataset.page==='summary' && id==='onepager')));
+  document.querySelectorAll('.nav-link').forEach(b=>b.classList.toggle('active', b.dataset.page===id || (b.dataset.page==='summary' && ['modernization-guide','onepager'].includes(id))));
   if(id==='overview') renderOverviewProgress();
   if(id==='summary') renderSummary();
   if(id==='onepager') renderOnePager();
+  if(id==='modernization-guide') renderModernizationGuidePage();
   if(id==='roles') renderRoles();
   if(id==='strategy-adoption') renderStrategyAdoption();
-  if(id==='data-foundations') renderDfRoleHint();
+  if(id==='data-foundations'){ renderDfRoleHint(); dfRenderSteps(); }
   if(id==='hub') renderHub();
   if(id==='architecture') renderArchitecture();
   if(id==='identity') renderIdentity();
@@ -3490,68 +4227,22 @@ function showPage(id){
    a default entry point, not a gate; nothing is hidden by choosing not
    to use it. Tracked per page so revisiting doesn't re-trigger it. */
 const AUTO_MODAL_SHOWN = new Set();
-/* The guided chain: once someone picks a Discovery focus, the modal
-   experience carries them through every section that has one, in
-   order, without dropping back to the page in between. Declining an
-   interstitial ("No, I'm done") or finishing a step naturally advances
-   to the next one; explicitly closing via the X always exits the whole
-   chain rather than skipping ahead - that's the one true "let me out."
-   Profile-aware: steps for pages this profile doesn't have are skipped
-   automatically (e.g. Executive has no Data Foundations/Segmentation). */
-const GUIDED_CHAIN_STEPS = [
-  { page: 'data-foundations', open: cb => openDfSwipeMode(cb) },
-  { page: 'segmentation', open: cb => openSegSwipeMode(cb) },
-  { page: 'identity', open: cb => openIdentityFocusMode(cb) },
-  { page: 'governance', open: cb => openGovSwipeMode(cb) },
-  { page: 'roles', open: cb => openRolesFocusMode(cb) },
-  { page: 'strategy-adoption', open: cb => openStrategyFocusMode(cb) }
-];
-function runGuidedChainFrom(index){
-  if(index >= GUIDED_CHAIN_STEPS.length) return;
-  const step = GUIDED_CHAIN_STEPS[index];
-  if(!PROFILE_PAGES[VIEW_PROFILE].includes(step.page)){
-    runGuidedChainFrom(index+1);
-    return;
-  }
-  AUTO_MODAL_SHOWN.add(step.page);
-  showPage(step.page);
-  step.open(() => runGuidedChainFrom(index+1));
+function openGuidedSection(pageId){
+  if(pageId==='discovery') openDiscoveryFlowAt(DISC.bucket ? 'needs' : 'focus');
+  else if(pageId==='data-foundations') openDfSwipeMode();
+  else if(pageId==='segmentation') openSegSwipeMode();
+  else if(pageId==='identity') openIdentityFocusMode();
+  else if(pageId==='governance') openGovSwipeMode();
+  else if(pageId==='roles') openRolesFocusMode();
+  else if(pageId==='strategy-adoption') openStrategyFocusMode();
 }
 
 function maybeAutoOpenModal(pageId){
-  if(AUTO_MODAL_SHOWN.has(pageId)) return;
+  if(pageId !== 'discovery-questions' && !['discovery',...HUB_PAGES].includes(pageId)) return;
+  if(GUIDED_MODAL) return;
   AUTO_MODAL_SHOWN.add(pageId);
-  if(pageId === 'discovery'){
-    if(!DISC.bucket) openDiscoveryFocusModal();
-  } else if(pageId === 'discovery-questions'){
-    openNeedsSwipeMode({
-      onComplete: () => {
-        openFocusMode('A few questions to start', getOrderedOpenPrompts(), 'renderDiscovery', null, () => {
-          openFocusMode('Digging a bit deeper', DISCOVERY_PROMPTS_POKE, 'renderDiscovery', null, () => {
-            if(isHubProfile()){
-              // finish Discovery the same way its Continue button does, so it counts as complete
-              if(pageRequirementsMet('discovery')) markComplete('discovery');
-              else showPage('hub');
-            } else {
-              runGuidedChainFrom(0);
-            }
-          });
-        });
-      }
-    });
-  } else if(pageId === 'data-foundations'){
-    openDfSwipeMode();
-  } else if(pageId === 'segmentation'){
-    openSegSwipeMode();
-  } else if(pageId === 'identity'){
-    openIdentityFocusMode();
-  } else if(pageId === 'governance'){
-    openGovSwipeMode();
-  } else if(pageId === 'roles'){
-    openRolesFocusMode();
-  } else if(pageId === 'strategy-adoption'){
-    openStrategyFocusMode();
-  }
+  if(pageId==='discovery-questions') openDiscoveryFlowAt('needs');
+  else openGuidedSection(pageId);
 }
 
 /* ================================================================
@@ -3564,7 +4255,7 @@ function maybeAutoOpenModal(pageId){
 function pageRequirementsMet(pageId){
   if(pageId==='discovery') return !!DISC.bucket && DISC.checked.size>0;
   if(pageId==='data-foundations') return DF.selected.size>0;
-  if(pageId==='identity') return !!ID_CURRENT && !!ID_TARGET;
+  if(pageId==='identity') return !!ID_CURRENT && !!ID_TARGET && identityStageIndex(ID_CURRENT)<=identityStageIndex(ID_TARGET);
   if(pageId==='governance') return Object.keys(GOV_STATUS).length>0;
   if(pageId==='strategy-adoption') return !!(DISC.answers && DISC.answers['strategy-ai']);
   return true;
@@ -3578,6 +4269,41 @@ function pageRequirementMessage(pageId){
     "strategy-adoption": "Answer the AI/agentic workflows question before continuing - \"Not sure yet\" is fine."
   };
   return msgs[pageId] || "Please complete this section before continuing.";
+}
+
+function openGuidedRequirementCard(pageId){
+  const message = pageRequirementMessage(pageId);
+  if(pageId==='discovery'){
+    openDiscoveryFlowAt(DISC.bucket ? 'needs' : 'focus');
+  } else if(pageId==='data-foundations'){
+    openDfSwipeMode();
+  } else if(pageId==='identity'){
+    openIdentityFocusMode();
+    if(GUIDED_MODAL){
+      GUIDED_MODAL.index = ID_CURRENT ? 1 : 0;
+      renderGuidedModal();
+    }
+  } else if(pageId==='governance'){
+    openGovSwipeMode();
+  } else if(pageId==='strategy-adoption'){
+    openStrategyFocusMode();
+    if(GUIDED_MODAL){
+      const strategyIndex = GUIDED_MODAL.prompts.findIndex(prompt=>prompt.id==='strategy-ai');
+      GUIDED_MODAL.index = strategyIndex < 0 ? 0 : strategyIndex;
+      renderGuidedModal();
+    }
+  }
+  guidedModalSetError(message);
+}
+
+function finishGuidedSection(pageId){
+  if(!pageRequirementsMet(pageId)){
+    openGuidedRequirementCard(pageId);
+    return false;
+  }
+  closeGuidedModal();
+  window.markComplete(pageId);
+  return true;
 }
 
 /* Called by the "Mark section complete" button at the bottom of each
@@ -3604,8 +4330,7 @@ function markComplete(pageId){
   if(next && next !== 'summary'){
     showPage(next);
   } else {
-    autoSubmitOnCompletion();
-    showPage('onepager');
+    beginFinalization();
   }
 }
 
@@ -3624,7 +4349,7 @@ function badgeFor(level, textOverride){
 
 /* ---------------- OVERVIEW ---------------- */
 function renderOverview(){
-  document.getElementById('ov-eyebrow').textContent = `Guided Discovery · ${CONFIG.client.name}`;
+  //document.getElementById('ov-eyebrow').textContent = `Guided Discovery · ${CONFIG.client.name}`;
 
   const tipHost = document.getElementById('ov-awareness-tip');
   if(tipHost){
@@ -3643,9 +4368,9 @@ function renderOverview(){
     </div>`).join('');
 
   const outcomes = [
-    "A personalized recommendation",
+    "A personalized modernization guide",
     "Specific CJA capabilities for your priorities",
-    "A rough engagement size"
+    "A practical path for team discussion"
   ];
   document.getElementById('ov-outcomes-list').innerHTML = outcomes.map(o=>`
     <div style="display:flex;align-items:center;gap:8px"><span style="color:var(--c-select-600);font-weight:700">✓</span>${o}</div>`).join('');
@@ -3656,12 +4381,13 @@ function renderOverview(){
 const PAGE_LABELS = {
   discovery:"Discovery", hub:"Build Your Profile", "data-foundations":"Data Foundations", segmentation:"Segmentation Rebuild",
   identity:"Identity & Stitching", governance:"Governance & Access", roles:"Roles & Stakeholders",
-  roadmap:"Migration Roadmap", "strategy-adoption":"Strategy & Adoption", summary:"Summary & Wrap-up", crosswalk:"Metric Crosswalk", architecture:"Architecture"
+  roadmap:"Migration Roadmap", "strategy-adoption":"Strategy & Adoption", "modernization-guide":"Prepare Your Guide",
+  onepager:"Your Results", summary:"Detailed Answer Log", crosswalk:"Metric Crosswalk", architecture:"Architecture"
 };
 
 /* ================================================================
    CONTINUE-LANGUAGE CTAs (v2)
-   Self-guided respondents expect "Continue →", not a facilitator's
+   Self-guided respondents expect "Continue", not a facilitator's
    "Mark section complete →". The underlying COMPLETED-tracking logic in
    markComplete() is untouched; this only relabels the visible button to
    name the actual next section, computed from the existing
@@ -3679,15 +4405,15 @@ function setContinueLabels(){
     const btn = document.getElementById(CONTINUE_BTN_IDS[pageId]);
     if(!btn) return;
     if(isHubProfile() && pageId==='discovery'){
-      btn.textContent = "Continue to build your profile →";
+      btn.textContent = "Continue to build your profile";
       return;
     }
     if(isHubProfile() && HUB_PAGES.includes(pageId)){
-      btn.textContent = "Connect and return →";
+      btn.textContent = "Connect and return";
       return;
     }
     const next = nextWorkflowPage(pageId);
-    btn.textContent = next ? `Continue to ${PAGE_LABELS[next]} →` : "Continue to Summary →";
+    btn.textContent = next==='summary' ? "Continue to prepare your guide" : (next ? `Continue to ${PAGE_LABELS[next]}` : "Continue to prepare your guide");
   });
 }
 
@@ -3732,12 +4458,12 @@ function renderOverviewProgress(){
 
   const ctaHost = document.getElementById('ov-progress-cta');
   if(doneCount===0){
-    ctaHost.innerHTML = `<button class="btn btn-primary btn-lg" onclick="showPage('${pages[0]}')">Start →</button>`;
+    ctaHost.innerHTML = `<button class="btn btn-primary btn-lg" onclick="showPage('${pages[0]}')">Start</button>`;
   } else if(doneCount < pages.length){
     const next = pages.find(p=>!COMPLETED.has(p)) || pages[0];
-    ctaHost.innerHTML = `<button class="btn btn-primary btn-lg" onclick="showPage('${next}')">Continue →</button>`;
+    ctaHost.innerHTML = `<button class="btn btn-primary btn-lg" onclick="showPage('${next}')">Continue</button>`;
   } else {
-    ctaHost.innerHTML = `<button class="btn btn-primary btn-lg" onclick="showPage('onepager')">Go to Your Summary &amp; Next Steps →</button>`;
+    ctaHost.innerHTML = `<button class="btn btn-primary btn-lg" onclick="continueToResults()">Go to Your Results</button>`;
   }
 }
 
@@ -3864,11 +4590,11 @@ function dfSetQuantity(id, val){
 function dfSetQuantityModal(id, val){
   DF_QUANTITY[id] = (DF_QUANTITY[id]===val) ? undefined : val;
   dfRenderMapping();
-  if(FOCUS_MODE && FOCUS_MODE.customRender) FOCUS_MODE.customRender(FOCUS_MODE.prompts[FOCUS_MODE.index]);
+  if(GUIDED_MODAL && GUIDED_MODAL.mode==='focus' && GUIDED_MODAL.customRender) GUIDED_MODAL.customRender(GUIDED_MODAL.prompts[GUIDED_MODAL.index]);
 }
 
 function renderDfMappingFocusCard(it){
-  document.getElementById('focus-mode-body').innerHTML = `
+  document.getElementById('guided-modal-body').innerHTML = `
     <div style="text-align:left">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
         <div style="font-weight:600;font-size:17px">${glossify(it.name)}</div>
@@ -3895,12 +4621,14 @@ function renderDfMappingFocusCard(it){
 
 function openDfMappingFocusMode(onComplete){
   const items = DF_ITEMS.filter(it=>DF.selected.has(it.id));
-  const finish = onComplete || (() => markComplete('data-foundations'));
-  if(!items.length){ dfReviewSelections(false); showToast('Select at least one tracked item before continuing.'); return; }
+  const finish = onComplete || (() => finishGuidedSection('data-foundations'));
+  if(!items.length){ finishGuidedSection('data-foundations'); return; }
   if(DF.step < 2) dfNext();
   openFocusMode('CJA Mapping', items, null, null, finish, {
     customRender: renderDfMappingFocusCard,
-    itemLabel: 'Item'
+    detailsRenderer: renderDataDetails,
+    itemLabel: 'Item',
+    flowKey: 'data-foundations'
   });
 }
 
@@ -3927,8 +4655,7 @@ function dfNext(){
   }
 }
 function dfReviewSelections(reopen=true){
-  if(FOCUS_MODE)closeFocusMode();
-  if(SWIPE_MODE)closeSwipeMode();
+  if(GUIDED_MODAL) closeGuidedModal();
   if(DF.step>1)dfBack();
   dfRender();
   if(reopen)openDfSwipeMode();
@@ -4045,16 +4772,40 @@ function dndDrop(e, zone, page){
 let ID_STAGE = "none";
 let ID_CURRENT = null;
 let ID_TARGET = null;
+let IDENTITY_ORDER_NOTE = '';
+
+function identityStageIndex(stageId){
+  return IDENTITY_STAGES.findIndex(stage=>stage.id===stageId);
+}
+
+function syncIdentityAnswer(qid, stageId){
+  if(!stageId){
+    delete DISC.answers[qid];
+    return;
+  }
+  const stage = IDENTITY_STAGES.find(item=>item.id===stageId);
+  if(stage) DISC.answers[qid] = new Set([stage.name]);
+}
+
+function enforceIdentityOrder(){
+  IDENTITY_ORDER_NOTE = '';
+  if(!ID_CURRENT || !ID_TARGET) return;
+  if(identityStageIndex(ID_CURRENT) <= identityStageIndex(ID_TARGET)) return;
+  ID_TARGET = ID_CURRENT;
+  syncIdentityAnswer('identity-target', ID_TARGET);
+  IDENTITY_ORDER_NOTE = 'Target was raised to match Today because it cannot be an earlier maturity stage.';
+}
 
 function idAssign(zone, stageId){
   if(zone==='current'){
-    if(ID_TARGET===stageId) ID_TARGET = null;
     ID_CURRENT = (ID_CURRENT===stageId) ? null : stageId;
+    syncIdentityAnswer('identity-current', ID_CURRENT);
   }
   if(zone==='target'){
-    if(ID_CURRENT===stageId) ID_CURRENT = null;
     ID_TARGET = (ID_TARGET===stageId) ? null : stageId;
+    syncIdentityAnswer('identity-target', ID_TARGET);
   }
+  enforceIdentityOrder();
   renderIdentity();
 }
 
@@ -4080,20 +4831,16 @@ function identityStageIdFromAnswer(qid){
 }
 
 function renderIdentityFromModal(){
-  const currentAns = DISC.answers['identity-current'] ? Array.from(DISC.answers['identity-current'])[0] : null;
-  const targetAns = DISC.answers['identity-target'] ? Array.from(DISC.answers['identity-target'])[0] : null;
-  if(currentAns && targetAns && currentAns === targetAns){
-    const activeId = (FOCUS_MODE && FOCUS_MODE.prompts[FOCUS_MODE.index]) ? FOCUS_MODE.prompts[FOCUS_MODE.index].id : null;
-    if(activeId === 'identity-current') delete DISC.answers['identity-target'];
-    else delete DISC.answers['identity-current'];
-  }
   ID_CURRENT = identityStageIdFromAnswer('identity-current');
   ID_TARGET = identityStageIdFromAnswer('identity-target');
+  enforceIdentityOrder();
   renderIdentity();
   focusModeSync();
+  guidedModalSetNote(IDENTITY_ORDER_NOTE);
 }
 
 function openIdentityFocusMode(onComplete){
+  enforceIdentityOrder();
   if(ID_CURRENT){
     const s = IDENTITY_STAGES.find(x=>x.id===ID_CURRENT);
     if(s) DISC.answers['identity-current'] = new Set([s.name]);
@@ -4102,7 +4849,10 @@ function openIdentityFocusMode(onComplete){
     const s = IDENTITY_STAGES.find(x=>x.id===ID_TARGET);
     if(s) DISC.answers['identity-target'] = new Set([s.name]);
   }
-  openFocusMode('Identity & Stitching', IDENTITY_PROMPTS, 'renderIdentityFromModal', null, onComplete);
+  openFocusMode('Identity & Stitching', IDENTITY_PROMPTS, 'renderIdentityFromModal', null, onComplete || (() => finishGuidedSection('identity')), {
+    flowKey:'identity',
+    detailsRenderer: renderIdentityDetails
+  });
 }
 
 function idZoneContent(zone){
@@ -4118,6 +4868,9 @@ function idZoneContent(zone){
 function renderIdentity(){
   document.getElementById('id-zone-current-content').innerHTML = idZoneContent('current');
   document.getElementById('id-zone-target-content').innerHTML = idZoneContent('target');
+  const orderNote = document.getElementById('id-order-note');
+  orderNote.textContent = IDENTITY_ORDER_NOTE;
+  orderNote.style.display = IDENTITY_ORDER_NOTE ? 'block' : 'none';
 
   document.getElementById('id-dnd-bank').innerHTML = IDENTITY_STAGES.map(s=>`
     <div class="dnd-chip ${(ID_CURRENT===s.id||ID_TARGET===s.id)?'is-assigned':''}" draggable="true" ondragstart="dndStart(event,'${s.id}')">
@@ -4166,12 +4919,14 @@ function openGovSwipeMode(onComplete){
     getLabel: b => glossify(b.name),
     getSubLabel: b => b.severity === 'hard' ? 'Hard control' : 'Soft control',
     getDesc: b => b.desc,
+    detailsRenderer: renderGovernanceDetails,
     instructions: 'Swipe left (or ✕) if it\'s a gap for you, right (or ✓) if it\'s already in place.',
     isSelected: id => !!GOV_STATUS[id],
     getStatusLabel: b => GOV_STATUS[b.id]==='in-place' ? '✓ In place' : (GOV_STATUS[b.id]==='gap' ? '⚠ Gap for us' : ''),
     onDecide: (id, yes) => { GOV_STATUS[id] = yes ? 'in-place' : 'gap'; },
     rerenderFn: 'renderGovernance',
-    onComplete: onComplete || null
+    onComplete: onComplete || (() => finishGuidedSection('governance')),
+    flowKey: 'governance'
   });
 }
 
@@ -4238,7 +4993,7 @@ function renderRoles(){
   });
   document.getElementById('roles-grid').innerHTML = sorted.map(r=>{
     const isMatch = DISC.bucket && (r.bucket===DISC.bucket || r.bucket==='both');
-    const matchTag = isMatch ? `<span class="route-match-tag" style="margin-bottom:10px">Most relevant to your focus</span>` : '';
+    const matchTag = '';
     return `
     <div class="role-card ${isMatch?'is-recommended':''}" style="border-left:4px solid ${r.color}">
       ${matchTag}
@@ -4262,21 +5017,18 @@ function roleSetOwner(id, val){ ROLE_OWNERS[id] = val; }
 function roleToggleFlag(id){
   ROLE_FLAGGED.has(id) ? ROLE_FLAGGED.delete(id) : ROLE_FLAGGED.add(id);
   renderRoles();
-  if(FOCUS_MODE && FOCUS_MODE.customRender) FOCUS_MODE.customRender(FOCUS_MODE.prompts[FOCUS_MODE.index]);
+  if(GUIDED_MODAL && GUIDED_MODAL.mode==='focus' && GUIDED_MODAL.customRender) GUIDED_MODAL.customRender(GUIDED_MODAL.prompts[GUIDED_MODAL.index]);
 }
 
 function renderRoleFocusCard(r){
   const isMatch = DISC.bucket && (r.bucket===DISC.bucket || r.bucket==='both');
-  const matchTag = isMatch ? `<span class="route-match-tag" style="margin-bottom:12px">Most relevant to your focus</span>` : '';
-  document.getElementById('focus-mode-body').innerHTML = `
+  const matchTag = '';
+  document.getElementById('guided-modal-body').innerHTML = `
     <div style="text-align:left">
       ${matchTag}
       <div style="font-family:var(--font-display);font-weight:700;font-size:19px;margin-bottom:14px;color:${r.color}">${r.name}</div>
-      <div style="margin-bottom:12px"><div class="map-col-label">Moving from</div><div style="font-size:15px;margin-top:4px;line-height:1.5">${glossify(r.from)}</div></div>
-      <div style="margin-bottom:12px"><div class="map-col-label">Moving to</div><div style="font-size:15px;margin-top:4px;line-height:1.5">${glossify(r.to)}</div></div>
-      <div style="margin-bottom:12px"><div class="map-col-label">New skill to build</div><div style="font-size:15px;margin-top:4px;line-height:1.5">${glossify(r.newSkill)}</div></div>
-      <div style="margin-bottom:12px"><div class="map-col-label">Quick win</div><div style="font-size:15px;margin-top:4px;line-height:1.5">${glossify(r.quickWin)}</div></div>
-      <div style="padding-top:12px;border-top:1px solid var(--c-line)">
+      <p style="font-size:15px;color:var(--c-text-soft);line-height:1.55;margin:0 0 18px">Name the person or team who owns this role today. Use Details for the role transition and suggested quick win.</p>
+      <div>
         <div class="map-col-label">Owner today</div>
         <input class="input" style="width:100%;margin-top:6px" placeholder="Name or team" value="${ROLE_OWNERS[r.id]||''}" oninput="roleSetOwner('${r.id}', this.value)">
         <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14.5px;cursor:pointer;color:var(--c-text-soft)">
@@ -4292,9 +5044,11 @@ function openRolesFocusMode(onComplete){
     const score = r => (DISC.bucket && (r.bucket===DISC.bucket || r.bucket==='both')) ? 1 : 0;
     return score(b)-score(a);
   });
-  openFocusMode('Roles & Stakeholders', sorted, null, null, onComplete, {
+  openFocusMode('Roles & Stakeholders', sorted, null, null, onComplete || (() => finishGuidedSection('roles')), {
     customRender: renderRoleFocusCard,
-    itemLabel: 'Role'
+    detailsRenderer: renderRoleDetails,
+    itemLabel: 'Role',
+    flowKey: 'roles'
   });
 }
 
@@ -4429,6 +5183,166 @@ function buildResponsePayload(){
     payload.roadmap = { percentScoped: total ? Math.round((RM_CHECKED.size/total)*100) : 0, itemsChecked: RM_CHECKED.size, itemsTotal: total };
   }
   return payload;
+}
+
+const MODERNIZATION_GUIDE = {
+  status: 'idle',
+  downloadUrl: '',
+  fileName: '',
+  fileType: '',
+  error: '',
+  request: null
+};
+
+function buildModernizationGuidePayload(){
+  const response = buildResponsePayload();
+  const expectedSections = workflowPages().filter(p=>p!=='summary');
+  const completedSections = expectedSections.filter(p=>COMPLETED.has(p));
+  const incompleteSections = expectedSections.filter(p=>!COMPLETED.has(p));
+  const recommendation = computeRecommendation();
+  return {
+    ...response,
+    artifact: {
+      type: 'analytics-modernization-guide',
+      requestedFormats: ['pptx','pdf'],
+      title: `${CONFIG.client.name} Analytics Modernization Guide`
+    },
+    completionContext: {
+      completedSections,
+      incompleteSections,
+      completedCount: completedSections.length,
+      expectedCount: expectedSections.length,
+      hubSectionsCompleted: HUB_PAGES.filter(p=>COMPLETED.has(p)),
+      hubSectionsIncomplete: HUB_PAGES.filter(p=>PROFILE_PAGES[VIEW_PROFILE].includes(p) && !COMPLETED.has(p))
+    },
+    modernizationSignals: {
+      headline: recommendation.headline,
+      matchedCapabilities: recommendation.matchedCapabilities.map(item=>({
+        id: item.capability.id,
+        name: item.capability.name,
+        description: item.capability.desc,
+        reasons: item.reasons
+      })),
+      discoverySnapshot: recommendation.snapshot.map(([label,value])=>({label,value}))
+    }
+  };
+}
+
+function mapModernizationGuideResponse(data){
+  const file = data && typeof data==='object' ? (data.file || data.artifact || data) : {};
+  const downloadUrl = file.downloadUrl || file.url || '';
+  if(!downloadUrl || typeof downloadUrl!=='string'){
+    throw new Error('The guide service did not return a downloadable file.');
+  }
+  return {
+    downloadUrl,
+    fileName: file.fileName || file.filename || `${CONFIG.client.name.replace(/\s+/g,'-')}-Analytics-Modernization-Guide.pptx`,
+    fileType: file.fileType || file.type || 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+  };
+}
+
+function beginFinalization(){
+  autoSubmitOnCompletion();
+  showPage('modernization-guide');
+  if(MODERNIZATION_GUIDE.status==='idle' || MODERNIZATION_GUIDE.status==='error') generateModernizationGuide();
+}
+
+async function generateModernizationGuide(){
+  if(MODERNIZATION_GUIDE.status==='generating' || MODERNIZATION_GUIDE.status==='ready') return;
+  MODERNIZATION_GUIDE.status = 'generating';
+  MODERNIZATION_GUIDE.error = '';
+  MODERNIZATION_GUIDE.request = buildModernizationGuidePayload();
+  renderModernizationGuidePage();
+  try{
+    if(!CONFIG.modernizationGuideEndpoint){
+      await new Promise(resolve=>setTimeout(resolve, 2800));
+      MODERNIZATION_GUIDE.downloadUrl = '';
+      MODERNIZATION_GUIDE.fileName = `${CONFIG.client.name.replace(/\s+/g,'-')}-Analytics-Modernization-Guide.pptx`;
+      MODERNIZATION_GUIDE.fileType = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+    } else {
+      const res = await fetch(CONFIG.modernizationGuideEndpoint, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(MODERNIZATION_GUIDE.request)
+      });
+      if(!res.ok) throw new Error(`Guide generation failed (${res.status}).`);
+      const mapped = mapModernizationGuideResponse(await res.json());
+      MODERNIZATION_GUIDE.downloadUrl = mapped.downloadUrl;
+      MODERNIZATION_GUIDE.fileName = mapped.fileName;
+      MODERNIZATION_GUIDE.fileType = mapped.fileType;
+    }
+    MODERNIZATION_GUIDE.status = 'ready';
+  }catch(err){
+    MODERNIZATION_GUIDE.status = 'error';
+    MODERNIZATION_GUIDE.error = err instanceof Error ? err.message : 'We could not prepare the guide right now.';
+    console.error('Modernization Guide generation error:', err);
+  }
+  renderModernizationGuidePage();
+  if(window.CURRENT_PAGE_ID==='onepager') renderOnePager();
+}
+
+function renderModernizationGuidePage(){
+  const card = document.getElementById('mg-status-card');
+  if(!card) return;
+  const title = document.getElementById('mg-status-title');
+  const copy = document.getElementById('mg-status-copy');
+  const progress = document.getElementById('mg-progress');
+  const actions = card.querySelector('.mg-status-actions');
+  const announcement = document.getElementById('mg-status-announcement');
+  card.dataset.status = MODERNIZATION_GUIDE.status;
+  if(MODERNIZATION_GUIDE.status==='ready'){
+    title.textContent = 'Your guide is ready';
+    copy.textContent = 'Your discovery signals have been brought together. Continue to your results to review the highlights and next steps.';
+    progress.style.display = 'none';
+    actions.innerHTML = `<button class="btn btn-primary" onclick="continueToResults()">Continue to results</button>
+      <button class="btn btn-ghost" onclick="downloadModernizationGuide()">Download guide</button>`;
+    announcement.textContent = 'Your Analytics Modernization Guide is ready.';
+  } else if(MODERNIZATION_GUIDE.status==='error'){
+    title.textContent = 'Your results are still available';
+    copy.textContent = MODERNIZATION_GUIDE.error || 'We could not prepare the downloadable guide right now. You can retry or continue to review your results.';
+    progress.style.display = 'none';
+    actions.innerHTML = `<button class="btn btn-primary" onclick="generateModernizationGuide()">Try again</button>
+      <button class="btn btn-ghost" onclick="continueToResults()">Continue to results</button>`;
+    announcement.textContent = 'The downloadable guide could not be prepared. You can retry or continue to results.';
+  } else {
+    title.textContent = 'Preparing your guide';
+    copy.textContent = "We're connecting your discovery responses, modernization priorities, and CJA considerations into a personalized guide.";
+    progress.style.display = '';
+    actions.innerHTML = '<button class="btn btn-primary" disabled>Preparing results...</button>';
+    announcement.textContent = 'Preparing your Analytics Modernization Guide.';
+  }
+  if(window.CURRENT_PAGE_ID==='modernization-guide') renderGlobalStepper('modernization-guide');
+}
+
+function continueToResults(){
+  if(MODERNIZATION_GUIDE.status==='idle'){
+    beginFinalization();
+    return;
+  }
+  if(MODERNIZATION_GUIDE.status==='generating'){
+    showPage('modernization-guide');
+    return;
+  }
+  window.showPage('onepager');
+}
+
+function downloadModernizationGuide(){
+  if(MODERNIZATION_GUIDE.status!=='ready'){
+    showToast('Your guide is still being prepared.');
+    return;
+  }
+  if(!MODERNIZATION_GUIDE.downloadUrl){
+    showToast('Your generated PPTX or PDF will be available here once the guide service is connected.');
+    return;
+  }
+  const link = document.createElement('a');
+  link.href = MODERNIZATION_GUIDE.downloadUrl;
+  link.download = MODERNIZATION_GUIDE.fileName || 'Analytics-Modernization-Guide';
+  link.target = '_blank';
+  link.rel = 'noopener';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
 }
 
 function renderSummary(){
@@ -4700,7 +5614,7 @@ function renderOnePager(){
   const rec = computeRecommendation();
   document.getElementById('op-cover-mark').textContent = CONFIG.client.logoInitials;
   const today = new Date().toLocaleDateString(undefined, { year:'numeric', month:'long', day:'numeric' });
-  document.getElementById('op-cover-meta').textContent = CONFIG.client.name + ' \u00b7 ' + rec.headline + ' \u00b7 Prepared ' + today;
+  document.getElementById('op-cover-meta').textContent = CONFIG.client.name + ' \u00b7 Prepared ' + today;
   const sharedNote = document.getElementById('op-shared-note');
   if(sharedNote) sharedNote.style.display = SUBMITTED ? 'block' : 'none';
 
@@ -4722,24 +5636,52 @@ function renderOnePager(){
     capBlock.style.display = 'none';
   }
 
-  const eng = rec.engagement;
-  document.getElementById('op-engagement').innerHTML =
-    '<div class="sum-row"><div class="sum-row-label">Rough size</div><div class="sum-row-value">' + eng.size + '</div></div>' +
-    '<div class="sum-row"><div class="sum-row-label">Typical duration</div><div class="sum-row-value">' + eng.duration + '</div></div>' +
-    '<div class="sum-row"><div class="sum-row-label">Engagement model</div><div class="sum-row-value">' + eng.model + '</div></div>' +
-    '<div style="font-size:14px;color:var(--c-text-soft);line-height:1.5;margin-top:10px">' + eng.desc + '</div>' +
-    '<div style="font-size:12.5px;color:var(--c-text-soft);font-style:italic;margin-top:8px">A rough sizing signal based on what you shared today, not a quote or a commitment.</div>';
+  const guideHost = document.getElementById('op-modernization-guide');
+  if(MODERNIZATION_GUIDE.status==='ready'){
+    guideHost.innerHTML = `<div class="mg-document">
+      <div class="mg-document-icon" aria-hidden="true"></div>
+      <div>
+        <div class="mg-document-title">${MODERNIZATION_GUIDE.fileName || 'Your Analytics Modernization Guide'}</div>
+        <div class="mg-document-meta">${MODERNIZATION_GUIDE.downloadUrl ? 'Ready to download and share with your team.' : 'Your guide is prepared. The downloadable file will appear here when the guide service is connected.'}</div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="downloadModernizationGuide()">Download guide</button>
+    </div>`;
+  } else if(MODERNIZATION_GUIDE.status==='error'){
+    guideHost.innerHTML = `<div class="mg-document">
+      <div class="mg-document-icon" aria-hidden="true"></div>
+      <div><div class="mg-document-title">Guide preparation needs another try</div><div class="mg-document-meta">${MODERNIZATION_GUIDE.error || 'The downloadable file is not available yet.'}</div></div>
+      <button class="btn btn-ghost btn-sm" onclick="beginFinalization()">Try again</button>
+    </div>`;
+  } else {
+    guideHost.innerHTML = `<div class="mg-document">
+      <div class="mg-document-icon" aria-hidden="true"></div>
+      <div><div class="mg-document-title">Prepare your personalized guide</div><div class="mg-document-meta">Bring your discovery responses and modernization signals together into one shareable artifact.</div></div>
+      <button class="btn btn-primary btn-sm" onclick="beginFinalization()">Prepare guide</button>
+    </div>`;
+  }
 
-  document.getElementById('op-steps').innerHTML = rec.steps.map(([title,desc],i)=>
+  const nextSteps = [
+    ['Download your Modernization Guide', 'Keep the personalized guide as a practical record of the signals and opportunities identified in this discovery.'],
+    ['Review the findings', 'Look across the current-state signals, modernization pillars, and areas that may need deeper validation.'],
+    ['Share it with your team', 'Use the guide to bring analytics, marketing, data, IT, identity, governance, and leadership into the same conversation.'],
+    ['Determine the right next move', 'Decide what your team wants to validate, prioritize, or explore next based on your own goals and readiness.']
+  ];
+  document.getElementById('op-steps').innerHTML = nextSteps.map(([title,desc],i)=>
     '<div class="op-step"><div class="op-step-num">' + (i+1) + '</div><div class="op-step-body"><div class="op-step-title">' + title + '</div><div class="op-step-desc">' + desc + '</div></div></div>'
   ).join('');
 
-  const contactRows = CONTACTS.slice();
+  const contactRows = [];
   if(CONFIG.client.accountDirector) contactRows.push({ name: CONFIG.client.accountDirector, role: 'Account Director' });
   if(CONFIG.client.acsAccountExecutive) contactRows.push({ name: CONFIG.client.acsAccountExecutive, role: 'ACS Account Executive' });
-  document.getElementById('op-contacts').innerHTML = contactRows.map(c=>
-    '<div class="op-contact-row"><div class="op-contact-name">' + c.name + '</div><div class="op-contact-role">' + c.role + '</div></div>'
-  ).join('');
+  const resourceBlock = document.getElementById('op-adobe-resource');
+  if(contactRows.length || CONFIG.adobeTeamUrl){
+    resourceBlock.style.display = '';
+    document.getElementById('op-contacts').innerHTML = contactRows.map(c=>
+      '<div class="op-contact-row"><div class="op-contact-name">' + c.name + '</div><div class="op-contact-role">' + c.role + '</div></div>'
+    ).join('') + (CONFIG.adobeTeamUrl ? `<a class="btn btn-ghost btn-sm" href="${CONFIG.adobeTeamUrl}" target="_blank" rel="noopener" style="margin-top:12px">Connect with Adobe</a>` : '');
+  } else {
+    resourceBlock.style.display = 'none';
+  }
 }
 
 function printOnePager(){
@@ -4802,7 +5744,7 @@ async function submitToAdobeServer(){
 
 /* ---------------- BOOT ---------------- */
 document.querySelectorAll('.nav-link').forEach(btn=>{
-  btn.addEventListener('click', ()=>showPage(btn.dataset.page === 'summary' ? 'onepager' : btn.dataset.page));
+  btn.addEventListener('click', ()=>btn.dataset.page === 'summary' ? continueToResults() : showPage(btn.dataset.page));
 });
 
 applyConfig();
@@ -4849,7 +5791,7 @@ if(!GATE_PASSED){
 #ab-veil #ab-veil-stay{background:#eef1f5;color:#182233}
 @keyframes ab-spin{to{transform:rotate(360deg)}}
 </style>
-<div id="ab-sync"><details open><summary>App Builder sync · STAGING</summary>
+<div id="ab-sync"><details><summary>App Builder sync · STAGING</summary>
 <div id="ab-status" role="status">Waiting for profile submission.</div>
 <button id="ab-save" type="button" disabled>Save answers now</button>
 <button id="ab-check" type="button" disabled>Verify saved answers</button>
@@ -4872,7 +5814,8 @@ if(!GATE_PASSED){
  */
 (function(){
 'use strict';
-const BASE=(location.hostname.endsWith('.adobeio-static.net')?location.origin:'https://20409-157ochretakin-stage.adobeio-static.net')+'/api/v1/web/marketingprototype'; // the API of the environment serving this page (Stage when opened from anywhere else);
+const API_HOST_OUTSIDE_APP_BUILDER='https://20409-157ochretakin-stage.adobeio-static.net'; // when hosted outside App Builder: set to https://20409-157ochretakin.adobeio-static.net for production
+const BASE=(location.hostname.endsWith('.adobeio-static.net')?location.origin:API_HOST_OUTSIDE_APP_BUILDER)+'/api/v1/web/marketingprototype';
 const $=id=>document.getElementById(id);
 const state={submissionId:null,userId:null,responseId:null,catalog:null,busy:false,again:false,sent:new Map(),progressSent:'',completed:false};
 // the seven sections the API knows, as the page's page ids (they are the same keys)
@@ -5140,6 +6083,7 @@ $('ab-check').addEventListener('click',async()=>{
  }catch(e){status('Read-back failed: '+e.message,true);}
 });
 window.addEventListener('beforeunload',e=>{if(state.responseId&&pending){e.preventDefault();e.returnValue='';}if(state.responseId)backgroundSave({keepalive:true});});
+/* >>> app-builder wrap-up: managed by scripts/build-pages.js, do not edit here (source: web-src/wrapup-guide.snippet.js) */
 /* ---- wrap-up guide (Finish & Wrap Up): the guide is written by Claude, not simulated ----
    Source of truth for the block that goes at the END of the App Builder sync IIFE in the page
    (just before its closing `})();`), because it uses that block's private state, api and save.
@@ -5158,16 +6102,59 @@ window.addEventListener('beforeunload',e=>{if(state.responseId&&pending){e.preve
 
   window.WRAPUP_GUIDE = { text: '', analysisId: '' };
 
+  // Download guide: an HTML deck opens in a new tab to print as PDF; anything else downloads as before
+  const priorDownload = window.downloadModernizationGuide;
+  window.downloadModernizationGuide = function downloadModernizationGuide() {
+    if (window.WRAPUP_GUIDE.printable && MODERNIZATION_GUIDE.status === 'ready' && MODERNIZATION_GUIDE.downloadUrl) {
+      if (!window.open(MODERNIZATION_GUIDE.downloadUrl, '_blank')) showToast('Allow pop-ups for this page to save your guide as a PDF.');
+      return undefined;
+    }
+    return priorDownload.apply(this, arguments);
+  };
+
+  // Elapsed time and a short reference key under the card text, so people can see it is working and
+  // quote the key to support; the key is the first 8 characters of the query's id in the LLM log.
+  const meta = { start: 0, key: '', timer: null };
+  const clock = (ms) => Math.floor(ms / 60000) + ':' + String(Math.floor(ms / 1000) % 60).padStart(2, '0');
+  function paintMeta() {
+    let el = document.getElementById('mg-wrapup-meta');
+    if (!el) {
+      const copy = document.getElementById('mg-status-copy');
+      if (!copy) return;
+      el = document.createElement('p');
+      el.id = 'mg-wrapup-meta';
+      el.className = 'mg-status-copy';
+      el.style.cssText = 'margin-top:10px;font-size:13px;font-variant-numeric:tabular-nums;color:rgba(255,255,255,.6)';
+      copy.insertAdjacentElement('afterend', el);
+    }
+    el.textContent = (meta.timer ? 'Elapsed ' : 'Took ') + clock(Date.now() - meta.start) + (meta.key ? ' \u00b7 Reference: ' + meta.key : '');
+  }
+  function startMeta() {
+    clearInterval(meta.timer);
+    meta.start = Date.now();
+    meta.key = '';
+    meta.timer = setInterval(paintMeta, 1000);
+    paintMeta();
+  }
+  function stopMeta() {
+    clearInterval(meta.timer);
+    meta.timer = null;
+    paintMeta();
+  }
+
   window.generateModernizationGuide = async function generateModernizationGuide() {
     if (!state.responseId) return priorGenerate.apply(this, arguments);
     if (MODERNIZATION_GUIDE.status === 'generating' || MODERNIZATION_GUIDE.status === 'ready') return undefined;
     MODERNIZATION_GUIDE.status = 'generating';
     MODERNIZATION_GUIDE.error = '';
     renderModernizationGuidePage();
+    startMeta();
     try {
       await save();
-      const sent = await api('/guided-discovery', 'POST', { op: 'wrapup-send', responseId: state.responseId });
+      const sent = await api('/guided-discovery', 'POST', { op: 'wrapup-send', responseId: state.responseId, retry: !!window.WRAPUP_TEST_RERUN });
       state.completed = true;
+      meta.key = String(sent.analysisId || '').slice(0, 8);
+      paintMeta();
       const started = Date.now();
       let res;
       for (;;) {
@@ -5179,18 +6166,53 @@ window.addEventListener('beforeunload',e=>{if(state.responseId&&pending){e.preve
       }
       if (res.status === 'failed') throw new Error('We could not write your guide right now. Please try again.');
       if (!res.output) throw new Error('The guide came back empty. Please try again.');
-      window.WRAPUP_GUIDE = { text: res.output, analysisId: sent.analysisId };
+      window.WRAPUP_GUIDE = { text: res.output, analysisId: sent.analysisId, printable: false };
+      // the server typesets the reply as a PDF; if that fails the Markdown is still downloadable
+      // a skill can ask for a finished HTML document (e.g. a slide deck); that is delivered as .html, not typeset
+      const isHtml = /^\s*(```(html)?\s*)?(<!doctype html|<html[\s>])/i.test(res.output);
+      let pdf = '';
+      if (!isHtml) try {
+        const typeset = await api('/guided-discovery?op=wrapup-status&format=pdf&responseId=' + encodeURIComponent(state.responseId)
+          + '&analysisId=' + encodeURIComponent(sent.analysisId));
+        pdf = typeset.pdf || '';
+      } catch (pdfErr) { console.error('Wrap-up guide PDF error:', pdfErr); }
       if (MODERNIZATION_GUIDE.downloadUrl && MODERNIZATION_GUIDE.downloadUrl.startsWith('blob:')) URL.revokeObjectURL(MODERNIZATION_GUIDE.downloadUrl);
-      MODERNIZATION_GUIDE.downloadUrl = URL.createObjectURL(new Blob([res.output], { type: 'text/markdown' }));
-      MODERNIZATION_GUIDE.fileName = CONFIG.client.name.replace(/\s+/g, '-') + '-Analytics-Modernization-Guide.md';
-      MODERNIZATION_GUIDE.fileType = 'text/markdown';
+      const base = CONFIG.client.name.replace(/\s+/g, '-') + '-Analytics-Modernization-Guide';
+      if (isHtml) {
+        // an HTML deck is saved as a PDF by the browser: Download guide opens it in a new tab and starts the
+        // print dialog (Save as PDF); the deck's own styles and its Save as PDF button do the rest
+        const title = base.replace(/[<>&"]/g, '');
+        const printable = res.output
+          .replace(/^\s*```(html)?[ \t]*\n/i, '') // a reply saved before fences were removed
+          .replace(/(<\/html>)[\s\S]*$/i, '$1') // drop any commentary after the document
+          .replace(/<title>[\s\S]*?<\/title>/i, '<title>' + title + '</title>')
+          .replace(/<\/body>/i, '<script>addEventListener("load",function(){setTimeout(function(){print()},800)})<\/script></body>');
+        MODERNIZATION_GUIDE.downloadUrl = URL.createObjectURL(new Blob([printable], { type: 'text/html' }));
+        MODERNIZATION_GUIDE.fileName = base + '.pdf';
+        MODERNIZATION_GUIDE.fileType = 'application/pdf';
+        window.WRAPUP_GUIDE.printable = true;
+      } else if (pdf) {
+        const bytes = Uint8Array.from(atob(pdf), (c) => c.charCodeAt(0));
+        MODERNIZATION_GUIDE.downloadUrl = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+        MODERNIZATION_GUIDE.fileName = base + '.pdf';
+        MODERNIZATION_GUIDE.fileType = 'application/pdf';
+      } else {
+        MODERNIZATION_GUIDE.downloadUrl = URL.createObjectURL(new Blob([res.output], { type: 'text/markdown' }));
+        MODERNIZATION_GUIDE.fileName = base + '.md';
+        MODERNIZATION_GUIDE.fileType = 'text/markdown';
+      }
       MODERNIZATION_GUIDE.status = 'ready';
     } catch (err) {
       MODERNIZATION_GUIDE.status = 'error';
       // server errors carry HTTP details; show people a plain message and keep the detail in the console
-      MODERNIZATION_GUIDE.error = err instanceof Error && !err.status ? err.message : 'We could not prepare your guide right now. Please try again.';
+      MODERNIZATION_GUIDE.error = err instanceof Error && !err.status ? err.message
+        : err && err.status === 429 ? 'This guide has been requested several times already. Please contact your Adobe team.'
+          : 'We could not prepare your guide right now. Please try again.';
+      // on the test link, show what the server said
+      if (window.WRAPUP_TEST_RERUN && err && err.message) MODERNIZATION_GUIDE.error += ' [' + String(err.message).slice(0, 200) + ']';
       console.error('Wrap-up guide error:', err);
     }
+    stopMeta();
     renderModernizationGuidePage();
     if (window.CURRENT_PAGE_ID === 'onepager') renderOnePager();
     return undefined;
@@ -5204,6 +6226,7 @@ window.addEventListener('beforeunload',e=>{if(state.responseId&&pending){e.preve
   const testId = new URLSearchParams(window.location.search).get('wrapupTest');
   if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(testId || '')) {
     state.responseId = testId;
+    window.WRAPUP_TEST_RERUN = true; // test link: always send a fresh query, not the finished one
     state.completed = true;
     GATE_PASSED = true;
     const gate = document.getElementById('gate-screen');
@@ -5213,7 +6236,7 @@ window.addEventListener('beforeunload',e=>{if(state.responseId&&pending){e.preve
     setTimeout(() => window.beginFinalization(), 300);
   }
 }
-
+/* <<< app-builder wrap-up */
 })();
 </script>
 </body>
