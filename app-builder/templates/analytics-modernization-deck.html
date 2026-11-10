@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{computed.company}} | Analytics modernization assessment</title>
+<style>
+/* Adobe Analytics modernization assessment deck shell. Slides are 1920 by 1080 px (2x the template's 960 by 540 pt). */
+:root{
+  --red:#EB1000; --black:#000; --white:#fff; --ink:#2C2C2C; --panel:#F5F5F5; --muted:#5F5F5F; --mid:#919191; --line:#D5D5D5;
+  --display:"Adobe Clean Display Black","Adobe Clean Display","Adobe Clean","Helvetica Neue",Arial,sans-serif;
+  --body:"Adobe Clean","Source Sans 3","Segoe UI","Helvetica Neue",Arial,sans-serif;
+  --wm-red:url(data:image/png;base64,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);
+  --wm-white:url(data:image/png;base64,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);
+  --s:1;
+}
+*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+html,body{margin:0;background:#E6E6E6}
+body{font-family:var(--body);color:#000;-webkit-font-smoothing:antialiased}
+.toolbar{position:sticky;top:0;z-index:5;display:flex;gap:16px;align-items:center;justify-content:space-between;padding:10px 24px;background:#000;color:#fff;font:600 14px/1.3 var(--body)}
+.toolbar .hint{font-weight:400;color:#D5D5D5}
+.toolbar button{background:var(--red);color:#fff;border:0;padding:8px 18px;font:700 14px var(--body);cursor:pointer}
+.deck{padding:24px 0;counter-reset:pg}
+.slide-wrap{width:calc(1920px*var(--s));height:calc(1080px*var(--s));margin:0 auto 24px;position:relative}
+.slide{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden;transform:scale(var(--s));transform-origin:0 0;counter-increment:pg;background:#fff;color:#000}
+
+/* Standard content slide: red thread, red wordmark, footer text, copyright, page number */
+.slide.std{background:var(--wm-red) 96px 1026px/95px 23px no-repeat,linear-gradient(var(--red),var(--red)) 0 0/20px 100% no-repeat,#fff}
+.slide.std::after{content:var(--foot);position:absolute;left:259px;top:1031px;font-size:12px;line-height:14px;color:var(--ink)}
+.slide.std::before{content:"\00a9 2026 Adobe. All Rights Reserved. Adobe Confidential.\00a0\00a0\00a0\00a0\00a0\00a0" counter(pg);position:absolute;right:56px;top:1031px;font-size:12px;line-height:14px;color:var(--ink)}
+.slide.cover{background:var(--wm-red) 97px 945px/207px 50px no-repeat,linear-gradient(var(--red),var(--red)) 0 0/20px 100% no-repeat,#000;color:#fff}
+.slide.divider{background:linear-gradient(var(--red),var(--red)) 0 0/20px 100% no-repeat,#000;color:#fff}
+.slide.closer{background:var(--wm-white) 675px 471px/570px 138px no-repeat,var(--red)}
+
+/* Title and sub-header: one-line title, sub-header carries the rest */
+.title{position:absolute;left:96px;top:36px;width:1728px;margin:0;font:900 64px/72px var(--display);letter-spacing:-2px;white-space:nowrap;overflow:hidden}
+.subhead{position:absolute;left:96px;top:116px;width:1728px;margin:0;font:400 32px/40px var(--body);color:var(--ink)}
+.body{position:absolute;left:96px;top:210px;width:1728px;height:790px}
+.body.up{top:150px;height:850px}
+
+/* Table: set --cols inline. Header row then body rows. */
+.tbl{font-size:24px;line-height:1.3}
+.tr{display:grid;grid-template-columns:var(--cols);column-gap:32px;padding:14px 0;border-top:1px solid var(--line);align-items:center}
+.tr.th{border-top:0;color:var(--muted);padding:0 0 10px;border-bottom:2px solid #000}
+.tr:last-child{border-bottom:1px solid var(--line)}
+.lbl{font-weight:700;font-size:26px;line-height:1.25}
+.top{align-items:start}
+.sm{font-size:22px;line-height:1.3}
+
+/* Hanging indent: marker in its own fixed-width column so wrapped lines align with the first line of text */
+.ni{display:grid;grid-template-columns:44px 1fr;column-gap:8px;align-items:start}
+.ni .n{font-weight:700;font-size:26px;line-height:1.25}
+.bul{list-style:none;margin:0;padding:0;font-size:24px}
+.bul li{display:grid;grid-template-columns:30px 1fr;margin-top:10px;line-height:1.35}
+.bul li:first-child{margin-top:0}
+.bul li::before{content:"";width:10px;height:10px;background:#000;margin-top:.55em}
+
+/* Panels, grids, callouts, notes */
+.panel{background:var(--panel);padding:24px 32px}
+.panel h3{margin:0 0 8px;font:700 28px/1.2 var(--body)}
+.panel p{margin:0;font-size:24px;line-height:1.35}
+.panel p+p{margin-top:10px}
+.hl{border-left:10px solid var(--red)}
+.g2,.g3,.g4,.g5{display:grid;gap:24px}
+.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}.g5{grid-template-columns:repeat(5,1fr)}
+.callout{background:#000;color:#fff;padding:22px 32px;font-size:26px;line-height:1.35}
+.note{margin:16px 0 0;font-size:22px;line-height:1.3;color:var(--muted)}
+.mt{margin-top:24px}
+
+/* Level scale (four squares) and chips */
+.lvl{display:inline-grid;grid-auto-flow:column;gap:6px;vertical-align:middle;margin-right:14px}
+.lvl i{width:30px;height:30px;border:2px solid #000;background:#fff}
+.lvl.l1 i:nth-child(-n+1),.lvl.l2 i:nth-child(-n+2),.lvl.l3 i:nth-child(-n+3),.lvl.l4 i{background:#000}
+.lv{display:flex;align-items:center}
+.lv small{display:block;font-size:22px;line-height:1.2}
+.chip{display:inline-block;padding:2px 14px;border:2px solid #000;font:600 22px/1.4 var(--body);white-space:nowrap}
+.chip.dash{border-style:dashed;border-color:var(--muted);color:var(--muted)}
+
+/* Connect, decide, act diagram. Solid border = existing. Dashed border = proposed or to be validated. */
+.dia{display:grid;grid-template-columns:1fr 56px 1fr 56px 1fr}
+.band{background:var(--panel);padding:24px 28px}
+.band h3{margin:0;font:900 40px/1 var(--display);letter-spacing:-1px}
+.band .bs{margin:8px 0 6px;font-size:22px;color:var(--muted)}
+.node{background:#fff;border:3px solid #000;padding:12px 16px;margin-top:12px;font-size:24px;line-height:1.25}
+.node.prop{border:3px dashed var(--muted)}
+.arr{align-self:center;justify-self:center;width:0;height:0;border-left:30px solid #000;border-top:20px solid transparent;border-bottom:20px solid transparent}
+.legend{display:flex;gap:40px;margin-top:18px;font-size:22px}
+.legend .sw{display:inline-block;width:44px;height:22px;border:3px solid #000;vertical-align:middle;margin-right:10px}
+.legend .sw.d{border-style:dashed;border-color:var(--muted)}
+
+/* Stages and decision gates */
+.stage{background:var(--panel);padding:28px 32px}
+.stage .sn{font:900 56px/1 var(--display);letter-spacing:-2px}
+.stage h3{margin:6px 0 12px;font:700 30px/1.2 var(--body)}
+.gate{border:3px solid #000;padding:16px 24px;font-size:24px;line-height:1.3;display:grid;grid-template-columns:40px 1fr;align-items:start}
+.gate::before{content:"";width:18px;height:18px;background:#000;transform:rotate(45deg);margin:7px 0 0 6px}
+
+/* Size modifiers on .body. big = airy slides (most content slides). dense = readiness table slide. */
+.big .tbl{font-size:28px}.big .tr{padding:18px 0}.big .lbl{font-size:30px}.big .sm{font-size:26px}
+.big .ni{grid-template-columns:48px 1fr}.big .ni .n{font-size:30px}
+.big .panel h3{font-size:32px}.big .panel p{font-size:28px}.big .bul{font-size:28px}.big .bul li{margin-top:14px}
+.big .node{font-size:28px}.big .band .bs{font-size:24px}.big .note{font-size:24px}.big .gate{font-size:28px}
+.big .callout{font-size:30px}.big .stage h3{font-size:36px}.big .chip{font-size:24px}.big .legend{font-size:24px}
+.big .kv{font-size:26px}.big .kvh{font-size:32px}.big .tbl.sm{font-size:26px}
+.tight .tr{padding:12px 0}.tight .note{font-size:22px}
+.dense .tr{padding:9px 0}.dense .lvl i{width:26px;height:26px}.dense .panel{padding:16px 24px}.dense .panel p{font-size:22px}.dense .panel h3{font-size:26px}
+
+/* Question and answer lists (appendix) */
+.kvh{margin:0 0 12px;font:700 28px/1.2 var(--body)}
+.kv{display:grid;grid-template-columns:340px 1fr;column-gap:24px;row-gap:10px;margin:0 0 30px;font-size:22px;line-height:1.3}
+.kv dt{font-weight:700}.kv dd{margin:0}
+
+/* Cover, divider */
+.cover .ct{position:absolute;left:96px;top:170px;width:1728px;margin:0;font:900 108px/100px var(--display);letter-spacing:-3px}
+.cover .grp{position:absolute;left:96px;top:520px;width:1500px}
+.cover .co{margin:0;font:700 56px/64px var(--body)}
+.cover .cc{margin:16px 0 0;font:400 36px/44px var(--body);white-space:nowrap}
+.cover .ev{position:absolute;left:96px;top:770px}
+.cover .ev p{margin:0;font:400 34px/44px var(--body)}
+.cover .ev .en{font-weight:700}
+.divider .dt{position:absolute;left:96px;top:393px;margin:0;font:900 144px/1 var(--display);letter-spacing:-4px}
+
+@page{size:1920px 1080px;margin:0}
+@media print{
+  html,body{background:#fff}
+  .toolbar{display:none}
+  .deck{padding:0}
+  .slide-wrap{width:1920px;height:1080px;margin:0;break-after:page;page-break-after:always}
+  .slide{transform:none!important}
+}
+</style>
+</head>
+<body>
+<div class="toolbar"><span>{{computed.company}} | Analytics modernization assessment</span><span class="hint">To save as a PDF: choose Print, set the destination to Save as PDF, and turn on background graphics.</span><button type="button" onclick="window.print()">Save as PDF</button></div>
+<main class="deck" style='--foot:"{{computed.company}} | Analytics modernization assessment | Preliminary and subject to technical validation"'>
+
+<!-- 1 Cover -->
+<div class="slide-wrap"><section class="slide cover">
+<h1 class="ct">Analytics modernization<br>assessment</h1>
+<div class="grp"><p class="co">{{computed.company}}</p></div>
+<div class="ev"><p class="en">The Analytics Modernization Workshop</p><p>{{event_line}}</p></div>
+</section></div>
+{{!-- field event_line: workshop date and place, for example "Wednesday, December 2, 2026; San Jose" (or the date only) --}}
+
+<!-- 2 Executive summary -->
+<div class="slide-wrap"><section class="slide std">
+<h1 class="title">{{summary.title}}</h1>
+<p class="subhead">{{summary.subhead}}</p>
+<div class="body big">
+<div class="g2" style="grid-template-columns:1fr 1fr">
+<div class="panel"><h3>The challenge</h3><p>{{summary.challenge}}</p></div>
+<div class="panel"><h3>The opportunity</h3><p>{{summary.opportunity}}</p></div>
+<div class="panel"><h3>The outcomes the team wants</h3><p>{{summary.outcomes}}</p></div>
+<div class="panel"><h3>What the findings show</h3><p>{{summary.findings}}</p></div>
+</div>
+<div class="panel hl mt"><h3>Decision needed</h3><p>{{summary.decision}}</p></div>
+</div>
+</section></div>
+{{!-- field summary.title: one-line slide title that states the main message, at most 55 characters --}}
+{{!-- field summary.subhead: one sentence under the title --}}
+
+<!-- 3 Readiness -->
+<div class="slide-wrap"><section class="slide std">
+<h1 class="title">{{readiness.title}}</h1>
+<p class="subhead">{{readiness.subhead}}</p>
+<div class="body dense">
+<div class="tbl" style="--cols:400px 330px 1fr 150px">
+<div class="tr th"><div>Dimension</div><div>Provisional level</div><div>Evidence from the workshop</div><div>Confidence</div></div>
+{{#each readiness.rows}}
+<div class="tr"><div class="lbl">{{dimension}}</div><div class="lv"><span class="lvl l{{level}}"><i></i><i></i><i></i><i></i></span><small><b>Level {{level}}</b><br>{{level_text}}</small></div><div>{{evidence}}</div><div>{{confidence}}</div></div>
+{{/each}}
+</div>
+<div class="g3 mt">
+<div class="panel"><h3>Strengths</h3><p>{{readiness.strengths}}</p></div>
+<div class="panel"><h3>Needs attention</h3><p>{{readiness.attention}}</p></div>
+<div class="panel"><h3>Needs further discovery</h3><p>{{readiness.discovery}}</p></div>
+</div>
+<p class="note">{{readiness.note}}</p>
+</div>
+</section></div>
+{{!-- field readiness.rows.dimension: one of the six readiness dimensions (Data & architecture, Identity & customer understanding, Insights & measurement, Activation & actionability, Governance & trust, People & adoption) --}}
+{{!-- field readiness.rows.level: a single digit, 1 to 4 --}}
+{{!-- field readiness.rows.level_text: for example "Developing" or "Needs attention (provisional)" --}}
+{{!-- field readiness.rows.confidence: Low, Medium or High --}}
+
+<!-- 4 Objectives -->
+<div class="slide-wrap"><section class="slide std">
+<h1 class="title">{{objectives.title}}</h1>
+<p class="subhead">{{objectives.subhead}}</p>
+<div class="body big">
+<div class="tbl" style="--cols:480px 1fr 1fr 1fr">
+<div class="tr th"><div>Objective</div><div>Current challenge</div><div>Desired outcome</div><div>Business value</div></div>
+{{#each objectives.rows}}
+<div class="tr top"><div class="ni"><span class="n">{{add @index 1}}</span><span class="lbl">{{objective}}</span></div><div>{{challenge}}</div><div>{{outcome}}</div><div>{{value}}</div></div>
+{{/each}}
+</div>
+<p class="note">{{objectives.note}}</p>
+</div>
+</section></div>
+{{!-- field objectives.rows: 3 to 4 objectives, strongest first --}}
+
+<!-- 5 Gaps -->
+<div class="slide-wrap"><section class="slide std">
+<h1 class="title">{{gaps.title}}</h1>
+<p class="subhead">{{gaps.subhead}}</p>
+<div class="body big">
+<div class="tbl" style="--cols:430px 1fr 1fr 150px">
+<div class="tr th"><div>Gap</div><div>Why it matters</div><div>Recommended response and dependencies</div><div>Basis</div></div>
+{{#each gaps.rows}}
+<div class="tr top"><div class="ni"><span class="n">{{add @index 1}}</span><span class="lbl">{{gap}}</span></div><div class="sm">{{why}}</div><div class="sm">{{response}}</div><div><span class="chip{{#if (eq basis "Validate")}} dash{{/if}}">{{basis}}</span></div></div>
+{{/each}}
+</div>
+<p class="note">Confirmed: stated in the workshop answers. Validate: a dependency or assumption to confirm.</p>
+</div>
+</section></div>
+{{!-- field gaps.rows: 3 to 5 gaps, most important first --}}
+{{!-- field gaps.rows.basis: "Confirmed" (stated in the answers) or "Validate" (an assumption to confirm) --}}
+
+<!-- 6 Target state -->
+<div class="slide-wrap"><section class="slide std">
+<h1 class="title">Connect, decide, act</h1>
+<p class="subhead">{{target.subhead}}</p>
+<div class="body big">
+<div class="dia">
+{{#each target.bands}}
+{{#unless @first}}<div class="arr"></div>{{/unless}}
+<div class="band"><h3>{{name}}</h3><p class="bs">{{tagline}}</p>
+{{#each nodes}}<div class="node{{#if (eq status "proposed")}} prop{{/if}}">{{text}}</div>{{/each}}</div>
+{{/each}}
+</div>
+<div class="legend"><span><i class="sw"></i>Existing or in place today</span><span><i class="sw d"></i>Proposed or to be validated</span></div>
+<p class="note">{{target.note}}</p>
+</div>
+</section></div>
+{{!-- field target.bands: exactly 3 bands, in order: Connect, Decide, Act --}}
+{{!-- field target.bands.name: Connect, Decide or Act --}}
+{{!-- field target.bands.nodes.status: "existing" (in place today) or "proposed" (proposed or to be validated) --}}
+
+<!-- 7 Opportunities -->
+<div class="slide-wrap"><section class="slide std">
+<h1 class="title">{{opportunities.title}}</h1>
+<p class="subhead">{{opportunities.subhead}}</p>
+<div class="body big">
+<div class="g3">
+{{#each opportunities.items}}
+<div class="panel"><span class="chip{{#if (eq timing_kind "dependent")}} dash{{/if}}">{{timing}}</span><h3 style="margin-top:14px">{{name}}</h3>
+<p><b>Current challenge.</b> {{challenge}}</p>
+<p><b>Future capability.</b> {{capability}}</p>
+<p><b>Business objective.</b> {{objective}}</p>
+<p><b>Primary KPI.</b> {{kpi}}</p>
+<p><b>Prerequisites.</b> {{prerequisites}}</p></div>
+{{/each}}
+</div>
+<p class="note">{{opportunities.note}}</p>
+</div>
+</section></div>
+{{!-- field opportunities.items: exactly 3 opportunities --}}
+{{!-- field opportunities.items.timing: for example "Near-term after foundation" or "Longer-term expansion" --}}
+{{!-- field opportunities.items.timing_kind: "ready" if it can start after the foundation, "dependent" if it depends on other work --}}
+
+<!-- 8 Roadmap -->
+<div class="slide-wrap"><section class="slide std">
+<h1 class="title">{{roadmap.title}}</h1>
+<p class="subhead">{{roadmap.subhead}}</p>
+<div class="body big">
+<div class="g3">
+{{#each roadmap.stages}}
+<div class="stage"><div class="sn">{{add @index 1}}</div><h3>{{name}}</h3><ul class="bul">{{#each bullets}}<li>{{this}}</li>{{/each}}</ul></div>
+{{/each}}
+</div>
+<div class="g2 mt">{{#each roadmap.gates}}<div class="gate"><span>{{this}}</span></div>{{/each}}</div>
+<p class="note">{{roadmap.note}}</p>
+</div>
+</section></div>
+{{!-- field roadmap.stages: exactly 3 stages: Foundation, Parity, Expansion --}}
+{{!-- field roadmap.stages.bullets: 3 to 5 short actions --}}
+{{!-- field roadmap.gates: exactly 2 decision gates, each one sentence --}}
+
+<!-- 9 What it takes -->
+<div class="slide-wrap"><section class="slide std">
+<h1 class="title">{{team.title}}</h1>
+<p class="subhead">{{team.subhead}}</p>
+<div class="body big">
+<div class="g2">
+<div class="panel"><h3>Customer roles</h3><ul class="bul">{{#each team.roles}}<li>{{this}}</li>{{/each}}</ul></div>
+<div class="panel hl"><h3>Ownership gaps</h3><p>{{team.ownership}}</p></div>
+<div class="panel"><h3>Technical complexity</h3><p>{{team.complexity}}</p></div>
+<div class="panel"><h3>Governance dependencies</h3><p>{{team.governance}}</p></div>
+</div>
+<div class="panel mt"><h3>Enablement</h3><p>{{team.enablement}}</p></div>
+<p class="note">{{team.note}}</p>
+</div>
+</section></div>
+{{!-- field team.roles: one line per role, for example "Analyst: Pat Lee" --}}
+
+<!-- 10 Next steps -->
+<div class="slide-wrap"><section class="slide std">
+<h1 class="title">{{actions.title}}</h1>
+<p class="subhead">{{actions.subhead}}</p>
+<div class="body big tight">
+<div class="tbl" style="--cols:520px 330px 1fr 1fr">
+<div class="tr th"><div>Action</div><div>Who</div><div>Input or decision needed</div><div>What it unlocks</div></div>
+{{#each actions.rows}}
+<div class="tr top"><div class="ni"><span class="n">{{add @index 1}}</span><span class="lbl">{{action}}</span></div><div class="sm">{{who}}</div><div class="sm">{{input}}</div><div class="sm">{{unlocks}}</div></div>
+{{/each}}
+</div>
+<div class="callout mt"><b>Recommended next step.</b> {{actions.next_step}}</div>
+<p class="note">{{actions.note}}</p>
+</div>
+</section></div>
+{{!-- field actions.rows: exactly 5 actions --}}
+
+<!-- 11 Appendix divider -->
+<div class="slide-wrap"><section class="slide divider"><h1 class="dt">Appendix</h1></section></div>
+
+<!-- 12 Appendix A part 1 -->
+<div class="slide-wrap"><section class="slide std">
+<h1 class="title">Appendix A | Workshop answers (part 1)</h1>
+<div class="body up big">
+<div class="g2">
+<div>{{#each answers_1.left}}<h2 class="kvh">{{heading}}</h2><dl class="kv">{{#each items}}<dt>{{question}}</dt><dd>{{answer}}</dd>{{/each}}</dl>{{/each}}</div>
+<div>{{#each answers_1.right}}<h2 class="kvh">{{heading}}</h2><dl class="kv">{{#each items}}<dt>{{question}}</dt><dd>{{answer}}</dd>{{/each}}</dl>{{/each}}</div>
+</div>
+</div>
+</section></div>
+{{!-- field answers_1.left: groups of workshop answers, here Discovery (about 11 items) --}}
+{{!-- field answers_1.right: groups of workshop answers, here Segmentation and identity, then Governance and access (about 9 items in total) --}}
+{{!-- field answers_1.left.items.question: a short label of the question --}}
+{{!-- field answers_1.left.items.answer: the answer in plain words --}}
+
+{{!-- field answers_1.right.items.question: a short label of the question --}}
+{{!-- field answers_1.right.items.answer: the answer in plain words --}}
+
+<!-- 13 Appendix A part 2 -->
+<div class="slide-wrap"><section class="slide std">
+<h1 class="title">Appendix A | Workshop answers (part 2)</h1>
+<div class="body up big">
+<div class="g2">
+<div>{{#each answers_2.left}}<h2 class="kvh">{{heading}}</h2><dl class="kv">{{#each items}}<dt>{{question}}</dt><dd>{{answer}}</dd>{{/each}}</dl>{{/each}}</div>
+<div>{{#each answers_2.right}}<h2 class="kvh">{{heading}}</h2><dl class="kv">{{#each items}}<dt>{{question}}</dt><dd>{{answer}}</dd>{{/each}}</dl>{{/each}}</div>
+</div>
+</div>
+</section></div>
+{{!-- field answers_2.left: groups of workshop answers, here Data foundations (about 5 items) --}}
+{{!-- field answers_2.right: groups of workshop answers, here Roles and stakeholders, then Strategy and adoption (about 9 items in total) --}}
+
+{{!-- field answers_2.left.items.question: a short label of the question --}}
+{{!-- field answers_2.left.items.answer: the answer in plain words --}}
+{{!-- field answers_2.right.items.question: a short label of the question --}}
+{{!-- field answers_2.right.items.answer: the answer in plain words --}}
+
+<!-- 14 Appendix B part 1 -->
+<div class="slide-wrap"><section class="slide std">
+<h1 class="title">Appendix B | Tracked items to retain and map</h1>
+<p class="subhead">{{tracked.subhead}}</p>
+<div class="body big">
+<div class="tbl sm" style="--cols:420px 220px 1fr 380px">
+<div class="tr th"><div>Item</div><div>Quantity in use</div><div>Target approach</div><div>Prerequisite or validation</div></div>
+{{#each tracked.rows}}
+<div class="tr"><div class="lbl sm">{{item}}</div><div>{{quantity}}</div><div>{{approach}}</div><div>{{prerequisite}}</div></div>
+{{/each}}
+</div>
+<p class="note">{{tracked.note}}</p>
+</div>
+</section></div>
+
+<!-- 15 Appendix B part 2 -->
+<div class="slide-wrap"><section class="slide std">
+<h1 class="title">Appendix B | Items not tracked</h1>
+<p class="subhead">{{untracked.subhead}}</p>
+<div class="body big">
+<div class="tbl sm" style="--cols:340px 1fr 1fr 190px">
+<div class="tr th"><div>Group</div><div>Items not tracked</div><div>Target approach in brief</div><div>Complexity</div></div>
+{{#each untracked.rows}}
+<div class="tr top"><div class="lbl sm">{{group}}</div><div>{{items}}</div><div>{{approach}}</div><div>{{complexity}}</div></div>
+{{/each}}
+</div>
+<p class="note">{{untracked.note}}</p>
+</div>
+</section></div>
+{{!-- field untracked.rows: up to 4 rows grouped as Retain and map if in use, Reconfigure, Rebuild, Extend --}}
+
+<!-- 16 Appendix C -->
+<div class="slide-wrap"><section class="slide std">
+<h1 class="title">Appendix C | Identity and governance</h1>
+<p class="subhead">{{identity.subhead}}</p>
+<div class="body big">
+<div class="tbl sm" style="--cols:300px 1fr 1fr 1fr">
+<div class="tr th"><div>Area</div><div>Current state</div><div>Target</div><div>Dependencies and validation</div></div>
+{{#each identity.rows}}
+<div class="tr top"><div class="lbl sm">{{area}}</div><div>{{current}}</div><div>{{target}}</div><div>{{dependencies}}</div></div>
+{{/each}}
+</div>
+<p class="note">{{identity.note}}</p>
+</div>
+</section></div>
+{{!-- field identity.rows: two rows, Identity and Governance --}}
+
+<!-- 17 Appendix D -->
+<div class="slide-wrap"><section class="slide std">
+<h1 class="title">Appendix D | Stakeholders and roles</h1>
+<div class="body up big">
+<div class="tbl sm" style="--cols:340px 300px 1fr 1fr">
+<div class="tr th"><div>Role</div><div>Owner</div><div>What changes for the role</div><div>Typical early win</div></div>
+{{#each stakeholders.rows}}
+<div class="tr top"><div class="lbl sm">{{role}}</div><div>{{owner}}</div><div>{{change}}</div><div>{{win}}</div></div>
+{{/each}}
+</div>
+<p class="note">{{stakeholders.note}}</p>
+</div>
+</section></div>
+{{!-- field stakeholders.rows: Analyst, Marketer or campaign manager, Data engineer, IT and governance admin, Executive sponsor --}}
+{{!-- field stakeholders.rows.owner: the named person from the answers, or "Not yet named" --}}
+
+<!-- 18 Appendix E -->
+<div class="slide-wrap"><section class="slide std">
+<h1 class="title">Appendix E | Assumptions and open questions</h1>
+<div class="body up big">
+<div class="g2">
+<div class="panel"><h3>Assumptions</h3><ul class="bul">{{#each assumptions.assumptions}}<li>{{this}}</li>{{/each}}</ul></div>
+<div class="panel"><h3>Open questions</h3><ul class="bul">{{#each assumptions.questions}}<li>{{this}}</li>{{/each}}</ul></div>
+</div>
+</div>
+</section></div>
+
+<!-- 19 Appendix F -->
+<div class="slide-wrap"><section class="slide std">
+<h1 class="title">Appendix F | Terminology</h1>
+<div class="body up big">
+<div class="g2">
+<dl class="kv" style="grid-template-columns:300px 1fr">{{#each terms.left}}<dt>{{term}}</dt><dd>{{definition}}</dd>{{/each}}</dl>
+<dl class="kv" style="grid-template-columns:300px 1fr">{{#each terms.right}}<dt>{{term}}</dt><dd>{{definition}}</dd>{{/each}}</dl>
+</div>
+</div>
+</section></div>
+{{!-- field terms.left: 6 terms from this deck with one-sentence plain-language definitions --}}
+{{!-- field terms.right: 6 more terms --}}
+
+<!-- 20 Closer -->
+<div class="slide-wrap"><section class="slide closer"></section></div>
+
+</main>
+<script>
+(function(){
+  function fit(){document.documentElement.style.setProperty('--s',Math.min(1,(document.documentElement.clientWidth-48)/1920));}
+  fit();window.addEventListener('resize',fit);
+  window.addEventListener('beforeprint',function(){document.documentElement.style.setProperty('--s',1);});
+  window.addEventListener('afterprint',fit);
+})();
+</script>
+</body>
+</html>
