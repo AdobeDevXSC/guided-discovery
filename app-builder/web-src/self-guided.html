@@ -4872,7 +4872,7 @@ if(!GATE_PASSED){
  */
 (function(){
 'use strict';
-const BASE='https://20409-157ochretakin-stage.adobeio-static.net/api/v1/web/marketingprototype';
+const BASE=(location.hostname.endsWith('.adobeio-static.net')?location.origin:'https://20409-157ochretakin-stage.adobeio-static.net')+'/api/v1/web/marketingprototype'; // the API of the environment serving this page (Stage when opened from anywhere else);
 const $=id=>document.getElementById(id);
 const state={submissionId:null,userId:null,responseId:null,catalog:null,busy:false,again:false,sent:new Map(),progressSent:'',completed:false};
 // the seven sections the API knows, as the page's page ids (they are the same keys)

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-  BASE_URL, OVERVIEW, SECTIONS, WALKTHROUGH, ANSWER_FORMATS,
+  BASE_URL, ENVIRONMENTS, ENV_NAME, OVERVIEW, SECTIONS, WALKTHROUGH, ANSWER_FORMATS,
 } from './apiDocsData';
 
 // Renders `code` spans in data strings as <code>.
@@ -158,6 +158,18 @@ export default function ApiDocs() {
 
         <h4>Base URL</h4>
         <p><code className="wrap">{BASE_URL}/&lt;action&gt;</code></p>
+        <p className="muted">
+          This is the {ENV_NAME} endpoint. Each environment has its own, with its own database:
+        </p>
+        <ul>
+          {ENVIRONMENTS.map((e) => (
+            <li key={e.name}>
+              <strong>{e.name}</strong>
+              {': '}
+              <code className="wrap">{`${e.host}/api/v1/web/marketingprototype/<action>`}</code>
+            </li>
+          ))}
+        </ul>
         <p className="muted">The examples assume one of these:</p>
         <CodeBlock label="shell" code={OVERVIEW.setup} />
         <CodeBlock label="JavaScript" code={OVERVIEW.setupFetch} />

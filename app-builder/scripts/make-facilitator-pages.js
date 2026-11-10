@@ -44,7 +44,7 @@ const VIEW_PROFILE = "${view}";`],
     ["{op:'start',assessment:'self-guided',leadRef:state.submissionId,source:'aem-eds:/acs/cja-migration-assessment',",
       '{op:\'start\',assessment:ASSESSMENT,view:VIEW_PROFILE,leadRef:state.submissionId,source:SOURCE,'],
     ["const BASE='https://20409-157ochretakin-stage.adobeio-static.net/api/v1/web/marketingprototype';",
-      `const BASE='https://20409-157ochretakin-stage.adobeio-static.net/api/v1/web/marketingprototype';
+      `const BASE=(location.hostname.endsWith('.adobeio-static.net')?location.origin:'https://20409-157ochretakin-stage.adobeio-static.net')+'/api/v1/web/marketingprototype'; // the API of the environment serving this page (Stage when opened from anywhere else)
 // every profile, response and answer from this page is stored as the facilitator-led assessment,
 // with this page's view ("${view}") on the response
 const ASSESSMENT='facilitator-led';
