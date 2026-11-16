@@ -62,21 +62,21 @@
      instead of two similar-but-different blues competing on screen. */
   --c-btn-blue:var(--c-select-600);
   --c-btn-blue-hover:#274dea; /* manually darkened variant of #1473E6 for :hover */
-  --c-amber-600:#E8A33D;
+  --c-amber-600:#E6AF00;
   --c-amber-100:#FCF0DC;
-  --c-purple-600:#6952C4;
+  --c-purple-600:#9A47E2;
   --c-purple-100:#EEEAFB;
   --c-sage-600:#5B8C5A;
   --c-sage-100:#E9F3E8;
   --c-red-600:#C1443C;
   --c-red-100:#FBEAE8;
-  --c-paper:#F7F8FA;
+  --c-paper:#F8F8F8;
   --c-surface:#FFFFFF;
   --c-surface-alt:#EEF1F5;
   --c-line:#DDE2EA;
-  --c-line-strong:#C4CBD6;
+  --c-line-strong:#b3b3b3;
   --c-text:#2c2c2c;
-  --c-text-soft:#5B6474;
+  --c-text-soft:#2c2c2c;
   --c-text-faint:#6B7280;
 
   --font-display:'adobe-clean','Adobe Clean VF','Trebuchet MS',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
@@ -85,14 +85,13 @@
 
   --radius-sm:6px;
   --radius-md:10px;
-  --radius-lg:16px;
+  --radius-lg:8px;
   --shadow-sm:0 1px 2px rgba(11,30,61,.06);
   --shadow-md:0 4px 16px rgba(11,30,61,.08);
   --shadow-lg:0 12px 32px rgba(11,30,61,.14);
 }
 
 *{box-sizing:border-box;font-family: 'adobe-clean', arial, sans-serif;}
-.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 html,body{height:100%;font-family: 'adobe-clean', arial, sans-serif;}
 /* Visible keyboard-focus ring on every interactive element. Explicit rather than
    relying on the browser default, since the default outline color varies and can
@@ -133,7 +132,7 @@ button.btn-primary:not(.leadsubmit-btn):after{
     height: 11px;
     vertical-align: middle;
 }
-.modal-list button:after  {
+.modal-list button:after, .map-rationale + div button.btn-primary:after {
   display: none!important;
 }
 .card-swap button::after {
@@ -158,11 +157,11 @@ a{color:var(--c-select-600)}
 }
 .hamburger-btn{
   background:none;border:none;color:#fff;font-size:20px;line-height:1;
-  padding:0px 10px;border-radius:8px;margin-right:8px;min-height:56px;
+  padding:0px 10px 7px 7px;border-radius:8px;margin-right:8px;min-height:56px;
 }
-.hamburger-btn:hover{background:rgba(255,255,255,.1)}
+.hamburger-btn:hover{background: none}
 .brand{
-  display:flex;align-items:center;gap:10px;white-space:nowrap;
+  display:flex;align-items:center;gap:15px;white-space:nowrap;
 }
 .brand-mark{
   width:34px;height:34px;border-radius:8px;background:var(--c-teal-600);
@@ -302,7 +301,7 @@ button.nav-link.profile-menu {
 }
 .nav-link{
   background:none;border:none;color:rgba(255,255,255,.68);text-align:left;
-  font-size:15px;font-weight:500;padding:11px 14px;border-radius:8px;
+  font-size:15px;font-weight:500;padding:11px 14px;
   white-space:nowrap;transition:.15s;width:100%;
 }
 .nav-link:hover{color:#fff;background:rgba(255,255,255,.08)}
@@ -329,10 +328,10 @@ button.nav-link.profile-menu {
 .bucket-accent-both{border-left-color:var(--c-purple-600) !important;border-left-width:4px !important}
 
 /* ── Build-your-profile hub ── */
-.hub-layout{display:grid;grid-template-columns:240px 1fr;gap:36px;align-items:center}
+.hub-layout{display:grid;grid-template-columns:400px 1fr;gap:36px;align-items:center}
 @media(max-width:820px){.hub-layout{grid-template-columns:1fr}}
 .hub-wrap{margin-top:0}
-.hub-status{text-align:center;margin-top:8px;font-size:14.5px;color:var(--c-text-soft);font-weight:600}
+.hub-status{text-align:center;margin-top:8px;font-size:14.5px;color:var(--c-text-soft);font-weight:600; max-width: 600px; margin-left: auto;}
 #hub-svg circle, #hub-svg line, #hub-svg path{transition:fill .35s ease,stroke .35s ease,stroke-width .35s ease,fill-opacity .35s ease}
 .hub-node-group{cursor:pointer}
 .hub-node-label{font-size:17px;fill:var(--c-text);font-weight:700}
@@ -369,21 +368,21 @@ button.nav-link.profile-menu {
   .section-page-header{flex-wrap:wrap}
   .section-page-title-group{flex-wrap:wrap}
 }
-.gd-h1{font-size:34px;font-weight:800;line-height:1.15;color:var(--c-ink-900);max-width:820px}
-.gd-h2{font-size:22px;font-weight:600;color:var(--c-ink-900);margin-bottom:6px}
-.gd-lede{font-size:16px;color:var(--c-text-soft);max-width:680px;line-height:1.6;margin-top:14px}
+.gd-h1{font-size:40px;font-weight:800;line-height:1.15;color:var(--c-ink-900);max-width:1000px}
+.gd-h2{font-size:28px;font-weight:600;color:var(--c-ink-900);margin-bottom:6px}
+.gd-lede{font-size:16px;color:var(--c-text-soft);max-width:1000px;line-height:1.6;margin-top:15px; margin-bottom: 20px;}
 .callout-skip{font-size:14.5px;color:var(--c-text-soft);background:transparent;border:none;border-left:3px solid var(--c-line-strong);border-radius:0;padding:2px 0 2px 14px;margin-top:16px;max-width:680px;line-height:1.5;font-style:italic}
 .focus-banner{display:none;font-size:14.5px;color:var(--c-ink-900);background:var(--c-surface-alt);border-left:3px solid var(--c-select-600);padding:10px 16px;margin-top:16px;max-width:760px;line-height:1.5}
 .focus-banner.is-active{display:block}
 .focus-banner strong{font-weight:700}
 .focus-banner a{color:var(--c-select-600);font-weight:600;text-decoration:none;margin-left:10px;white-space:nowrap;cursor:pointer}
 .focus-banner a:hover{text-decoration:underline}
-.selection-hint{font-size:14px;font-weight:600;color:var(--c-text-soft);margin:-6px 0 14px}
+.selection-hint{font-size:14px;font-weight:600;color:var(--c-text-soft);margin:0px 0 25px}
 .route-match-tag{display:inline-block;margin-top:8px;font-size:12.5px;font-weight:700;color:var(--c-select-600);background:var(--c-select-100);padding:3px 9px;border-radius:999px}
 .route-card.is-recommended{border-color:var(--c-select-600);border-width:1.5px;box-shadow:0 0 0 1px var(--c-select-100)}
 .dnd-chip-actions button.btn-radio{border-radius:999px}
 .section{margin-top:48px}
-.section-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px;gap:20px;flex-wrap:wrap}
+.section-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:15px;gap:20px;flex-wrap:wrap}
 
 /* ── Tier rail (signature element: the phased spine) ── */
 .tier-rail{display:flex;align-items:stretch;gap:0;margin-top:36px;border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-md)}
@@ -405,11 +404,12 @@ button.nav-link.profile-menu {
 .grid--2{grid-template-columns:repeat(2,1fr)}
 .grid--3{grid-template-columns:repeat(3,1fr)}
 .grid--4{grid-template-columns:repeat(4,1fr)}
-@media(max-width:1000px){.grid--3,.grid--4{grid-template-columns:repeat(2,1fr)}}
+.grid--5{grid-template-columns:repeat(5,1fr)}
+@media(max-width:1000px){.grid--3,.grid--4,.grid--5{grid-template-columns:repeat(2,1fr)}}
 
 .card{
-  background:var(--c-surface);border:1px solid var(--c-line);border-radius:var(--radius-md);
-  padding:18px;transition:.15s;
+  background:var(--c-surface);border-radius:var(--radius-md);
+  padding:18px;transition:.15s; box-shadow: 0 3px 10px 0 rgba(0, 0, 0, 0.10);
 }
 .card:hover{border-color:var(--c-line-strong);box-shadow:var(--shadow-sm)}
 .card.clickable{cursor:pointer}
@@ -430,6 +430,21 @@ button.nav-link.profile-menu {
 .btn{
   border-radius:999px;padding:4px 25px;font-size:15px;font-weight:600;border:1px solid transparent;
   display:inline-flex;align-items:center;gap:8px;transition:.15s;
+}
+.guided-detail-section + .btn-ghost{
+  background: var(--c-text-soft);
+  color: #fff;
+  border-color: var(--c-text-soft);
+}
+.guided-detail-section + .btn-ghost:hover{
+  background: #171717;
+ 
+}
+.section-complete-note + div button:first-child{
+  padding: 7px 25px;
+    font-size: 16px;
+    border-radius: 999px;
+    min-height: 40px;
 }
 .btn-primary{background:var(--c-btn-blue);color:#fff}
 .btn-primary:hover{background:var(--c-btn-blue-hover)}
@@ -474,10 +489,10 @@ table.gd-table th{
 table.gd-table td{padding:12px 14px;font-size:15px;border-bottom:1px solid var(--c-line);vertical-align:top}
 table.gd-table tr:last-child td{border-bottom:none}
 table.gd-table tr:hover td{background:var(--c-surface-alt)}
-.field-path{font-family:var(--font-mono);font-size:13.5px;background:var(--c-surface-alt);padding:2px 6px;border-radius:5px;color:var(--c-ink-700)}
+.field-path{font-family:var(--font-body);font-size:13.5px;background:var(--c-surface-alt);padding:2px 6px;border-radius:5px;color:var(--c-ink-700)}
 
 /* ── filter bar ── */
-.filterbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
+.filterbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:20px}
 .filterbar .input{min-width:280px}
 .result-count{font-size:14px;color:var(--c-text-faint);margin-left:auto}
 
@@ -488,7 +503,7 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
 
 /* ── wizard ── */
 /* ── persistent step/progress header (v2) ── */
-.global-stepper{background:var(--c-surface);border-bottom:1px solid var(--c-line);padding:14px 65px;flex-shrink:0}
+.global-stepper{background:var(--c-surface);border-bottom:1px solid var(--c-line);padding:15px 65px 20px 65px;flex-shrink:0}
 .global-stepper-row{display:flex;align-items:center;flex-wrap:wrap;gap:12px;overflow-x:auto;margin-left:-10px}
 .gstep{display:inline-flex;align-items:center;gap:8px;background:none;border:none;padding:6px 10px;border-radius:8px;color:var(--c-text-faint);font-weight:600;font-size:14px;cursor:pointer;white-space:nowrap}
 .gstep:hover{background:var(--c-surface-alt)}
@@ -527,7 +542,7 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
 .map-arrow{color:var(--c-teal-600);font-family:var(--font-mono)}
 .map-row{display:grid;grid-template-columns:1fr 30px 1fr;gap:14px;align-items:center}
 .map-col-label{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--c-text-soft);font-weight:600;margin-bottom:5px}
-.map-col-value{font-family:var(--font-mono);font-size:16px;color:var(--c-ink-900);font-weight:500}
+.map-col-value{font-family:var(--font-body);font-size:17px;color:var(--c-ink-900);font-weight:600}
 .map-rationale{margin-top:12px;padding-top:12px;border-top:1px solid var(--c-line);font-size:14px;color:var(--c-text-soft);line-height:1.55}
 
 .score-ring-wrap{display:flex;align-items:center;gap:16px}
@@ -551,7 +566,7 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
 .stage-track{display:flex;gap:0;margin-bottom:28px;border-radius:12px;overflow:hidden;box-shadow:var(--shadow-sm)}
 .stage-tab{flex:1;padding:14px 16px;background:var(--c-surface);border:none;border-right:1px solid var(--c-line);text-align:left}
 .stage-tab:last-child{border-right:none}
-.stage-tab.active{background:var(--c-ink-900);color:#fff}
+.stage-tab.active{background:var(--c-text);color:#fff}
 .stage-tab-num{font-family:var(--font-mono);font-size:11.5px;opacity:.7}
 .stage-tab-name{font-weight:600;font-size:15px;margin-top:2px}
 
@@ -575,7 +590,7 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
 .dnd-chip-actions{display:flex;gap:6px;margin-top:9px}
 .dnd-chip-actions button{font-size:13px;font-weight:600;padding:6px 10px;border-radius:6px;border:1px solid var(--c-line-strong);background:var(--c-surface);color:var(--c-text-soft);cursor:pointer}
 .dnd-chip-actions button:hover{background:var(--c-surface-alt)}
-.dnd-chip-actions button.on{background:var(--c-ink-900);color:#fff;border-color:var(--c-ink-900)}
+.dnd-chip-actions button.on{background:var(--c-btn-blue);color:#fff;border-color:var(--c-btn-blue)}
 .dnd-chip.is-assigned{border-color:var(--c-select-600)}
 
 .role-card{background:var(--c-surface);border:1px solid var(--c-line);border-radius:var(--radius-lg);padding:22px}
@@ -598,7 +613,7 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
 }
 .focus-pill.unset{background:none;border:1px solid rgba(255,255,255,.3);color:rgba(255,255,255,.6);font-weight:500}
 .prompt-list{background:var(--c-surface);border:1px solid var(--c-line);border-radius:var(--radius-md);padding:6px 20px}
-.prompt-item{padding:14px 0;border-bottom:1px solid var(--c-line);display:flex;gap:14px;align-items:flex-start}
+.prompt-item{padding:14px 0 20px;border-bottom:1px solid var(--c-line);display:flex;gap:14px;align-items:flex-start}
 .progress-item{padding:12px 0;border-bottom:1px solid var(--c-line);display:flex;gap:12px;align-items:center;cursor:pointer}
 .progress-bar-track{height:8px;border-radius:5px;background:var(--c-surface-alt);overflow:hidden}
 .progress-bar-fill{height:100%;background:var(--c-btn-blue);border-radius:5px;transition:width .25s ease}
@@ -618,17 +633,26 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
 .prompt-q{font-size:18px;line-height:1.5;font-weight:600;color:var(--c-ink-900);flex:1}
 .prompt-tag{font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--c-text-soft);font-weight:600;padding-top:3px;white-space:nowrap}
 .bucket-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(min-width: 1600px){
+  .page-inner{
+        padding: 65px 200px 80px;
+  }
+  .global-stepper{
+     padding: 15px 200px 20px 200px;
+  }
+}
 @media(max-width:900px){.bucket-grid{grid-template-columns:1fr}}
 .bucket-card{
-  background:var(--c-surface);border:2px solid var(--c-line);border-radius:var(--radius-lg);
+  background:var(--c-surface);border-radius:var(--radius-lg);
   padding:22px;cursor:pointer;transition:.15s;text-align:left;
+  border-bottom: 0px; border-right: 0px; box-shadow: 0 3px 10px 0 rgba(0, 0, 0, 0.10); border: 2px solid #dde2ea00;
 }
-.bucket-card:hover{border-color:var(--c-line-strong)}
+.bucket-card:hover{border-color: transparent}
 .bucket-card.picked{border-color:var(--c-select-600);background:var(--c-select-100)}
 .bucket-title{font-family:var(--font-display);font-weight:700;font-size:16px;margin-bottom:8px}
 .bucket-desc{font-size:14px;color:var(--c-text-soft);line-height:1.55}
 .route-card{background:var(--c-surface);border:1px solid var(--c-line);border-radius:var(--radius-md);padding:16px 18px;display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:10px}
-.bucket-filter-row{display:flex;gap:8px;margin-bottom:16px}
+.bucket-filter-row{display:flex;gap:8px;margin-bottom:20px}
 .bucket-filter-chip{font-size:13.5px;font-weight:600;padding:7px 14px;border-radius:20px;border:1px solid var(--c-line-strong);background:var(--c-surface);color:var(--c-text-soft)}
 .bucket-filter-chip.active{background:var(--c-ink-900);color:#fff;border-color:var(--c-ink-900)}
 .mini-check{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--c-line-strong);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;cursor:pointer;background:var(--c-surface)}
@@ -637,7 +661,7 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
 .answer-chip{font-size:15px;font-weight:500;padding:9px 15px;border-radius:20px;border:1.5px solid var(--c-line-strong);background:var(--c-surface);color:var(--c-text-soft);cursor:pointer;transition:.12s}
 .answer-tile-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
 .answer-tile{
-  position:relative;font-size:14.5px;font-weight:500;padding:16px 14px;border-radius:12px;
+  position:relative;font-size:14.5px;font-weight:500;padding:16px 14px;border-radius:var(--radius-lg);
   border:1.5px solid var(--c-line-strong);background:var(--c-surface);color:var(--c-text);
   cursor:pointer;text-align:center;line-height:1.35;
   transition:transform .12s ease,background .15s ease,border-color .15s ease,color .15s ease,box-shadow .15s ease;
@@ -680,7 +704,7 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
 .spectrum-labels span{flex:1;text-align:center}
 .spectrum-labels span:first-child{text-align:left}
 .spectrum-labels span:last-child{text-align:right}
-.spectrum-caption{font-size:14px;color:var(--c-text-soft);margin-top:10px;min-height:20px;font-style:italic;min-height: 50px;}
+.spectrum-caption{font-size:14px;color:var(--c-text-soft);margin-top:10px;min-height:20px;font-style:italic;min-height: 0px;}
 .spectrum-escape-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
 .spectrum-escape-btn{font-size:13px;font-weight:500;padding:7px 14px;border-radius:14px;border:1.5px solid var(--c-line-strong);background:var(--c-surface);color:var(--c-text-soft);cursor:pointer;transition:.12s}
 .spectrum-escape-btn.selected{background:var(--c-ink-900);border-color:var(--c-ink-900);color:#fff}
@@ -777,7 +801,7 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
   position:absolute;top:14px;right:14px;width:36px;height:36px;border-radius:50%;
   border:1px solid var(--c-line);background:var(--c-surface);color:var(--c-text-soft);
   display:flex;align-items:center;justify-content:center;font-size:22px;line-height:1;
-  cursor:pointer;z-index:2;
+  cursor:pointer;z-index:2; padding-bottom: 5px;
 }
 .guided-modal-close:hover{color:var(--c-ink-900);border-color:var(--c-line-strong);background:var(--c-surface-alt)}
 .guided-modal-body{overflow-y:auto;padding:20px 22px;}
@@ -843,7 +867,7 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
 .gloss-item.highlight{background:var(--c-select-100);margin:0 -22px;padding:13px 22px;border-radius:8px}
 
 /* ── summary page ── */
-.sum-cover{display:flex;align-items:center;gap:18px;padding-bottom:24px;border-bottom:2px solid var(--c-ink-900)}
+.sum-cover{display:flex;align-items:center;gap:18px;padding-bottom:24px;}
 .sum-cover-mark{width:56px;height:56px;border-radius:12px;background:var(--c-teal-600);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:20px;flex-shrink:0}
 .sum-cover-eyebrow{font-size:13px;font-weight:700;letter-spacing:-.01em;color:var(--c-teal-600)}
 .sum-cover-title{font-family:var(--font-display);font-weight:700;font-size:26px;color:var(--c-ink-900);margin-top:4px}
@@ -858,7 +882,7 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
 .sum-empty{font-size:14px;color:var(--c-text-soft);font-style:italic;font-weight:400}
 .sum-chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .sum-chip{font-size:13px;font-weight:600;background:var(--c-select-100);color:var(--c-select-600);padding:4px 10px;border-radius:20px}
-.sum-footer{margin-top:32px;padding-top:20px;border-top:1px solid var(--c-line);font-size:13.5px;color:var(--c-text-faint);text-align:center}
+.sum-footer{margin-top:32px;padding-top:20px;border-top:1px solid var(--c-line);font-size:13.5px;color:var(--c-text-soft);text-align:center}
 
 /* ── print ── */
 @media print{
@@ -882,67 +906,7 @@ table.gd-table tr:hover td{background:var(--c-surface-alt)}
 .op-contact-row:last-child{border-bottom:none}
 .op-contact-name{font-size:16px;font-weight:600;color:var(--c-ink-900)}
 .op-contact-role{font-size:14px;color:var(--c-text-soft)}
-.op-disclaimer{font-size:12px;color:var(--c-text-faint);line-height:1.6;margin-top:18px;padding-top:14px;border-top:1px solid var(--c-line)}
-
-/* Modernization Guide transition and artifact */
-.mg-hero{max-width:760px;margin-bottom:26px}
-.mg-eyebrow{font-size:13px;font-weight:700;color:var(--c-accent-600);margin-bottom:10px}
-.mg-layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr);gap:22px;align-items:start}
-.mg-status-card{
-  background:var(--c-ink-900);color:#fff;border-radius:var(--radius-lg);padding:26px;
-  box-shadow:var(--shadow-md);position:sticky;top:24px
-}
-.mg-status-kicker{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:rgba(255,255,255,.65)}
-.mg-status-title{font-family:var(--font-display);font-size:22px;font-weight:700;line-height:1.25;margin:10px 0 8px}
-.mg-status-copy{font-size:15px;line-height:1.55;color:rgba(255,255,255,.76);margin:0}
-.mg-progress{height:4px;border-radius:4px;background:rgba(255,255,255,.18);overflow:hidden;margin:20px 0}
-.mg-progress-bar{height:100%;width:38%;border-radius:4px;background:var(--c-select-600);animation:mgProgress 1.4s ease-in-out infinite}
-@keyframes mgProgress{0%{transform:translateX(-120%)}50%{transform:translateX(105%)}100%{transform:translateX(280%)}}
-.mg-status-card[data-status="idle"] .mg-progress,
-.mg-status-card[data-status="ready"] .mg-progress,
-.mg-status-card[data-status="error"] .mg-progress{display:none}
-.mg-status-card[data-status="ready"]{background:var(--c-ink-800)}
-.mg-status-card[data-status="error"]{background:var(--c-ink-800)}
-.mg-status-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
-.mg-status-actions .btn:disabled{opacity:.55;cursor:not-allowed}
-.mg-content{min-width:0}
-.mg-section{margin-bottom:30px}
-.mg-section-title{font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--c-ink-900);margin-bottom:14px}
-.mg-pillars{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-.mg-pillar{background:var(--c-surface);border:1px solid var(--c-line);border-radius:var(--radius-md);padding:18px;min-height:172px}
-.mg-pillar-num{font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--c-select-600);margin-bottom:14px}
-.mg-pillar-title{font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--c-ink-900);margin-bottom:7px}
-.mg-pillar-copy{font-size:14px;color:var(--c-text-soft);line-height:1.55}
-.mg-sequence{background:var(--c-surface);border:1px solid var(--c-line);border-radius:var(--radius-lg);padding:8px 22px}
-.mg-sequence-step{display:grid;grid-template-columns:34px 1fr;gap:13px;padding:17px 0;border-bottom:1px solid var(--c-line)}
-.mg-sequence-step:last-child{border-bottom:none}
-.mg-sequence-num{width:28px;height:28px;border-radius:50%;background:var(--c-select-100);color:var(--c-select-600);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
-.mg-sequence-title{font-size:15.5px;font-weight:700;color:var(--c-ink-900);margin-bottom:3px}
-.mg-sequence-copy{font-size:14px;line-height:1.5;color:var(--c-text-soft)}
-.mg-document{
-  display:grid;grid-template-columns:74px minmax(0,1fr) auto;gap:16px;align-items:center;
-  background:linear-gradient(135deg,var(--c-surface) 0%,var(--c-surface-alt) 100%);
-  border:1px solid var(--c-line);border-radius:var(--radius-lg);padding:22px
-}
-.mg-document-icon{width:62px;height:76px;border-radius:8px;background:#fff;border:1px solid var(--c-line);box-shadow:var(--shadow-sm);position:relative}
-.mg-document-icon::before{content:"";position:absolute;left:13px;right:13px;top:20px;height:3px;background:var(--c-accent-600);box-shadow:0 10px 0 var(--c-line-strong),0 20px 0 var(--c-line-strong),0 30px 0 var(--c-line-strong)}
-.mg-document-title{font-family:var(--font-display);font-size:19px;font-weight:700;color:var(--c-ink-900)}
-.mg-document-meta{font-size:14px;color:var(--c-text-soft);line-height:1.55;margin-top:5px}
-.mg-ready-badge{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--c-sage-600);margin-top:9px}
-.mg-resource-callout{background:var(--c-select-100);border-radius:var(--radius-md);padding:18px 20px;margin-top:14px}
-.mg-resource-callout-title{font-size:16px;font-weight:700;color:var(--c-ink-900);margin-bottom:5px}
-.mg-resource-callout-copy{font-size:14px;color:var(--c-text-soft);line-height:1.55}
-@media(max-width:900px){
-  .mg-layout{grid-template-columns:1fr}
-  .mg-status-card{position:static}
-}
-@media(max-width:620px){
-  .mg-pillars{grid-template-columns:1fr}
-  .mg-document{grid-template-columns:58px 1fr}
-  .mg-document-icon{width:50px;height:64px}
-  .mg-document .btn{grid-column:1/-1;width:100%}
-}
-@media(prefers-reduced-motion:reduce){.mg-progress-bar{animation:none;width:100%;opacity:.75}}
+.op-disclaimer{font-size:12px;color:var(--c-text-soft);line-height:1.6;margin-top:25px;padding-top:15px;border-top:1px solid var(--c-line)}
 
 /* custom css */
 .question-display p {
@@ -1084,22 +1048,81 @@ div#guided-card-back[aria-hidden="true"] {
         <div class="question-display"><p>Primary product of interest<span style="color:#eb1000">*</span></p>
         <select class="select" id="gate-product" onchange="gateValidate()">
           <option value="" disabled selected>Primary product of interest</option>
-          <option>Customer Journey Analytics</option>
+          <option>Acrobat</option>
+          <option>Acrobat Sign</option>
           <option>Adobe Analytics</option>
+          <option>Adobe Audience Manager</option>
+          <option>Adobe Brand Concierge</option>
+          <option>Adobe Brand Intelligence</option>
+          <option>Adobe Brand Visibility</option>
+          <option>Adobe Campaign</option>
+          <option>Adobe Commerce</option>
+          <option>Adobe Customer Journey Analytics B2B Edition</option>
+          <option>Adobe Experience Manager</option>
+          <option>Adobe Experience Manager Assets</option>
+          <option>Adobe Experience Manager Forms</option>
+          <option>Adobe Experience Manager Sites</option>
           <option>Adobe Experience Platform</option>
+          <option>Adobe Experience Platform Agents</option>
+          <option>Adobe Express</option>
+          <option>Adobe Firefly Foundry</option>
+          <option>Adobe GenStudio</option>
+          <option>Adobe GenStudio for Commerce Media Networks</option>
+          <option>Adobe GenStudio for Content Marketing</option>
+          <option>Adobe GenStudio for Performance Marketing</option>
           <option>Adobe Journey Optimizer</option>
+          <option>Adobe Journey Optimizer B2B Edition</option>
+          <option>Adobe Journey Optimizer Loyalty</option>
+          <option>Adobe Learning Manager</option>
+          <option>Adobe LLM Optimizer</option>
+          <option>Adobe Mix Modeler</option>
+          <option>Adobe Real-Time CDP Collaboration</option>
+          <option>Adobe Target</option>
+          <option>Creative Cloud</option>
+          <option>Customer Journey Analytics</option>
+          <option>Experience Platform Launch</option>
+          <option>Firefly</option>
+          <option>Frame.io</option>
+          <option>Intelligent Services</option>
+          <option>Marketo Engage</option>
           <option>Real-Time CDP</option>
-          <option>Other</option>
+          <option>Substance</option>
+          <option>Workfront</option>
         </select>
         </div>
         <div class="question-display"><p>Industry<span style="color:#eb1000">*</span></p>
         <select class="select" id="gate-industry" onchange="gateValidate()">
           <option value="" disabled selected>Industry</option>
-          <option value="retail">Retail</option>
+          <option value="generic">Advertising</option>
+          <option value="generic">Agriculture &amp; Forestry</option>
+          <option value="generic">Construction</option>
+          <option value="generic">Education - Higher Ed</option>
+          <option value="generic">Education - K12</option>
+          <option value="generic">Energy, Mining, Oil &amp; Gas</option>
           <option value="financial-services">Financial Services</option>
-          <option value="media-travel">Media &amp; Travel</option>
-          <option value="healthcare">Healthcare</option>
-          <option value="generic">Other / Not listed</option>
+          <option value="generic">Government-Federal</option>
+          <option value="generic">Government Local</option>
+          <option value="generic">Government Military</option>
+          <option value="generic">Government State</option>
+          <option value="healthcare">Health Care</option>
+          <option value="financial-services">Insurance</option>
+          <option value="generic">Manufacturing Aerospace</option>
+          <option value="generic">Manufacturing Automotive</option>
+          <option value="generic">Manufacturing Consumergoods</option>
+          <option value="generic">Manufacturing Industrial</option>
+          <option value="media-travel">Media Entertainment</option>
+          <option value="generic">Membership Organizations</option>
+          <option value="generic">Non Profit</option>
+          <option value="healthcare">Pharmaceuticals Biotech</option>
+          <option value="generic">Professional Technicalservices</option>
+          <option value="generic">Realestate Rental Leasing</option>
+          <option value="retail">Retail</option>
+          <option value="generic">Technology Hardware</option>
+          <option value="generic">Technology Software Services</option>
+          <option value="generic">Telecommunications</option>
+          <option value="generic">Transportation Warehousing</option>
+          <option value="media-travel">Travel Leisure Hospitality</option>
+          <option value="generic">Utilities</option>
         </select>
         </div>
       </div>
@@ -1122,6 +1145,8 @@ div#guided-card-back[aria-hidden="true"] {
     <button class="hamburger-btn" onclick="toggleSidebar()" aria-label="Open menu">☰</button>
     <div class="brand">
       <!-- <div class="brand-mark" id="brand-mark">GD</div> -->
+       <div class="brand-logo"><img src="https://landing.adobe.com/dam/uploads/2023-APS/Global/adobe-summit-logo-Red.svg" alt="Adobe" width="60px"></div>
+       <div style="font-size: 22px; padding-bottom: 6px; color: #b3b3b3;"> | </div>
       <div class="brand-text"><b id="brand-name">Guided Discovery</b></div>
     </div>
     <div class="nav-spacer"></div>
@@ -1155,7 +1180,7 @@ div#guided-card-back[aria-hidden="true"] {
         <button class="nav-link" data-page="strategy-adoption">Strategy &amp; Adoption</button>
       </div>
       <!-- <button class="nav-link" data-page="roadmap">Migration Roadmap</button> -->
-      <button class="nav-link" data-page="summary" style="margin-top: 10px;">Your Results</button>
+      <button class="nav-link" data-page="summary" style="margin-top: 10px;">Summary &amp; Next Steps</button>
       <!-- <div class="sidebar-divider">Reference</div>
       <button class="nav-link" data-page="crosswalk">Metric Crosswalk</button>
       <button class="nav-link" data-page="architecture">Architecture</button> -->
@@ -1166,29 +1191,29 @@ div#guided-card-back[aria-hidden="true"] {
   <div class="page active" id="page-overview">
     <div class="page-inner">
       <!-- <div class="eyebrow" id="ov-eyebrow">Guided Discovery Workshop</div> -->
-      <h1 class="gd-h1">Evolve how you understand your customers, safely and in sequence, with your data.</h1>
-      <p class="gd-lede" id="ov-lede">This session walks through how <span id="ov-client-inline">your organization</span>'s current Adobe Analytics implementation maps into Customer Journey Analytics: what moves directly, what needs to be rebuilt, and what becomes possible for the first time once your data lives in a person-centric, cross-channel data lake.</p>
+      <h1 class="gd-h1" style="text-align: center; margin: auto;">Evolve how you understand your customers, safely and in sequence, with your data.</h1>
+      <p class="gd-lede" id="ov-lede" style="margin-right: auto; text-align: center; margin-left: auto;">This session walks through how <span id="ov-client-inline">your organization</span>'s current Adobe Analytics implementation maps into Customer Journey Analytics: what moves directly, what needs to be rebuilt, and what becomes possible for the first time once your data lives in a person-centric, cross-channel data lake.</p>
 
       <div id="ov-awareness-tip"></div>
 
       <div class="section" id="ov-roi-section" style="margin-top:36px">
-        <div class="section-head"><h2 class="gd-h2">Benefits of CJA</h2></div>
+        <div class="section-head" style="justify-content: center;"><h2 class="gd-h2">Benefits of CJA</h2></div>
         <div class="grid grid--3" id="ov-roi-grid"></div>
       </div>
 
       <div class="section" id="ov-outcomes-section" style="margin-top:8px">
-        <div style="font-size:18px;color:var(--c-text-soft);margin:20px 0px">Everything you check along the way turns into:</div>
-        <div id="ov-outcomes-list" style="display:flex;flex-wrap:wrap;gap:10px 28px;font-size:16px;color:var(--c-text-soft)"></div>
+        <div style="font-size:20px;color:var(--c-text-soft);margin:40px 0px 30px; text-align: center;">Everything you check along the way turns into:</div>
+        <div id="ov-outcomes-list" style="display:flex;flex-wrap:wrap;gap:10px 28px;font-size:16px;color:var(--c-text-soft); justify-content: space-between;"></div>
       </div>
 
       <div class="section">
         <div class="section-head">
-          <h2 class="gd-h2" id="ov-progress-heading">Your progress in this session</h2>
+          <h2 class="gd-h2" id="ov-progress-heading" style="width: 100%; text-align: center;">Your progress in this session</h2>
           <span class="result-count" id="ov-progress-count"></span>
         </div>
         <div id="ov-progress-list" class="progress-pill-row" style="margin-top:14px"></div>
         <div class="progress-bar-track" id="ov-progress-bar-track" style="margin-top:16px"><div class="progress-bar-fill" id="ov-progress-fill" style="width:0%"></div></div>
-        <div id="ov-progress-cta" style="margin-top:18px"></div>
+        <div id="ov-progress-cta" style="margin-top:18px; text-align: center;"></div>
       </div>
     </div>
   </div>
@@ -1209,8 +1234,8 @@ div#guided-card-back[aria-hidden="true"] {
       <div class="callout-skip">Pick a focus above and select at least one need to continue - everything else on this page is optional, and "Not sure yet" is always a valid answer.</div>
 
       <div class="section">
-        <div class="section-head"><h2 class="gd-h2">Where's your focus?</h2></div>
-        <p style="font-size:16px;color:var(--c-text-soft);margin:-4px 0 18px;max-width:680px;line-height:1.55">
+        <div class="section-head" style="margin-bottom: 10px;"><h2 class="gd-h2">Where's your focus?</h2></div>
+        <p style="font-size:16px;color:var(--c-text-soft);margin: 0px 0 20px;max-width:680px;line-height:1.55">
           Pick whichever describes you best right now. Not sure? "Both" works fine.
         </p>
         <div class="bucket-grid" id="disc-bucket-grid"></div>
@@ -1221,15 +1246,15 @@ div#guided-card-back[aria-hidden="true"] {
           <h2 class="gd-h2">What's really driving this?</h2>
           <button class="btn btn-ghost btn-sm" onclick="openDiscoveryFlowAt('needs')">Swipe mode</button>
         </div>
-        <p style="font-size:16px;color:var(--c-text-soft);margin:-4px 0 18px;max-width:680px;line-height:1.55" id="disc-needs-intro">
+        <p style="font-size:16px;color:var(--c-text-soft);margin:0px 0 20px;max-width:680px;line-height:1.55" id="disc-needs-intro">
           Select anything below that's in play. There's no wrong answer, and it's normal to select more than one.
         </p>
-        <div style="display:flex;gap:18px;margin:-8px 0 16px;font-size:13px;color:var(--c-text-soft)">
+        <div style="display:flex;gap:18px;margin:0px 0 25px;font-size:13px;color:var(--c-text-soft)">
           <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--c-select-600);margin-right:6px"></span>Analysis</span>
           <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--c-amber-600);margin-right:6px"></span>Activation</span>
           <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--c-purple-600);margin-right:6px"></span>Both</span>
         </div>
-        <div class="grid grid--3" id="disc-needs-grid" style="margin-bottom:22px"></div>
+        <div class="grid grid--5" id="disc-needs-grid" style="margin-bottom:22px"></div>
       </div>
 
       <div class="section">
@@ -1265,7 +1290,7 @@ div#guided-card-back[aria-hidden="true"] {
           <p class="gd-lede" style="font-size:14.5px;margin-top:10px">This is exactly what CJA does with fragmented data: nothing here has to happen in order. Connect these in whatever sequence makes sense for you - the picture comes together either way.</p>
         </div>
         <div class="hub-wrap">
-          <svg id="hub-svg" viewBox="0 0 640 480" style="width:100%;max-width:600px;display:block;margin:0 auto">
+          <svg id="hub-svg" viewBox="0 0 640 480" style="width:100%;max-width:600px;display:block;margin-left: auto">
             <g id="hub-lines"></g>
             <g id="hub-center"></g>
             <g id="hub-nodes"></g>
@@ -1303,7 +1328,7 @@ div#guided-card-back[aria-hidden="true"] {
         </div>
         <p class="gd-lede" style="margin-top:6px">Select the eVars, props, events and other implementation pieces currently in use. We'll map each one to its Customer Journey Analytics equivalent in the next step.</p>
         <div id="df-role-hint" style="font-size:14px;color:var(--c-text-soft);margin-top:10px"></div>
-        <div class="filterbar" style="margin-top:22px">
+        <div class="filterbar" style="margin-top:20px">
           <input class="input" id="df-search" placeholder="Search implementation elements…" oninput="dfRender()">
           <select class="select" id="df-f-category" onchange="dfRender()">
             <option value="">All categories</option>
@@ -1321,12 +1346,12 @@ div#guided-card-back[aria-hidden="true"] {
           </select>
           <span class="result-count" id="df-result-count"></span>
         </div>
-        <div style="display:flex;gap:18px;margin:14px 0 4px;font-size:13px;color:var(--c-text-soft)">
+        <div style="display:flex;gap:18px;margin:0px 0 25px;font-size:13px;color:var(--c-text-soft)">
           <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--c-select-600);margin-right:6px"></span>Analysis</span>
           <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--c-amber-600);margin-right:6px"></span>Activation</span>
           <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--c-purple-600);margin-right:6px"></span>Both</span>
         </div>
-        <div class="grid grid--3" id="df-signal-grid"></div>
+        <div class="grid grid--4" id="df-signal-grid"></div>
       </div>
 
       <div id="df-step-2" style="display:none">
@@ -1341,7 +1366,7 @@ div#guided-card-back[aria-hidden="true"] {
       <div class="section-complete">
         <div class="section-complete-note">Select what you track, then continue to see the CJA mapping.</div>
         <div style="display:flex;gap:12px;align-items:center">
-          <button class="btn btn-ghost" id="df-back-btn" onclick="dfBack()" style="visibility:hidden">← Back</button>
+          <button class="btn btn-ghost" id="df-back-btn" onclick="dfBack()" style="visibility:hidden">Back</button>
           <button class="btn btn-primary btn-lg" id="df-next-btn" onclick="dfNext()" disabled>Continue</button>
           <button class="btn btn-primary btn-lg" id="df-complete-btn" onclick="markComplete('data-foundations')" style="display:none">Continue</button>
         </div>
@@ -1366,19 +1391,19 @@ div#guided-card-back[aria-hidden="true"] {
       <p class="gd-lede">Click a pattern below to see how its container logic changes and what it looks like in <span id="seg-industry-inline">your industry</span>. Then drag the ones worth rebuilding into the priority zone below.</p>
       <div class="callout-skip">Don't know an answer? Skip it or pick "Not sure yet" - nothing here is being graded, and every question is optional.</div>
       <div class="bucket-filter-row" id="seg-bucket-filter" style="margin-top:24px"></div>
-      <div style="display:flex;gap:18px;margin:4px 0 14px;font-size:13px;color:var(--c-text-soft)">
+      <div style="display:flex;gap:18px;margin:0px 0 25px;font-size:13px;color:var(--c-text-soft)">
         <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--c-select-600);margin-right:6px"></span>Analysis</span>
         <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--c-amber-600);margin-right:6px"></span>Activation</span>
         <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--c-purple-600);margin-right:6px"></span>Both</span>
       </div>
       <div id="seg-detail" style="margin-bottom:20px"></div>
-      <div class="grid grid--3" id="seg-pattern-grid"></div>
+      <div class="grid grid--4" id="seg-pattern-grid"></div>
 
       <div class="section" style="margin-top:36px">
         <div class="section-head">
           <h2 class="gd-h2">Flag the ones worth rebuilding</h2>
         </div>
-        <p style="font-size:16px;color:var(--c-text-soft);margin:-4px 0 8px;max-width:680px;line-height:1.55">Drag any pattern into the box below, or use its button in the list.</p>
+        <p style="font-size:16px;color:var(--c-text-soft);margin:0px 0 25px;max-width:680px;line-height:1.55">Drag any pattern into the box below, or use its button in the list.</p>
         <div class="dnd-zone" id="seg-zone-priority" ondragover="dndAllow(event)" ondragleave="dndLeave(event)" ondrop="dndDrop(event,'priority','seg')">
           <div class="dnd-zone-label">Priority to rebuild <span class="dnd-zone-count" id="seg-count-priority"></span></div>
           <div id="seg-zone-priority-content"></div>
@@ -1419,7 +1444,7 @@ div#guided-card-back[aria-hidden="true"] {
 
       <div class="section">
         <div class="section-head"><h2 class="gd-h2">Place each stage where it belongs</h2></div>
-        <p style="font-size:16px;color:var(--c-text-soft);margin:-4px 0 8px;max-width:680px;line-height:1.55">Now that you've seen what each stage means, drag a stage into a box below, or use the buttons on each card.</p>
+        <p style="font-size:16px;color:var(--c-text-soft);margin:0px 0 20px;max-width:680px;line-height:1.55">Now that you've seen what each stage means, drag a stage into a box below, or use the buttons on each card.</p>
         <div class="selection-hint">Pick exactly one stage as Today and one as Target - like a multiple-choice question.</div>
         <div class="dnd-zones">
           <div class="dnd-zone" id="id-zone-current" ondragover="dndAllow(event)" ondragleave="dndLeave(event)" ondrop="dndDrop(event,'current','id')">
@@ -1467,7 +1492,7 @@ div#guided-card-back[aria-hidden="true"] {
 
       <div class="section">
         <div class="section-head"><h2 class="gd-h2">Sort each control</h2></div>
-        <p style="font-size:16px;color:var(--c-text-soft);margin:-4px 0 8px;max-width:680px;line-height:1.55">Now that you've seen how each control works, drag it into a box below, or use the buttons on each card.</p>
+        <p style="font-size:16px;color:var(--c-text-soft);margin:0px 0 20px;max-width:680px;line-height:1.55">Now that you've seen how each control works, drag it into a box below, or use the buttons on each card.</p>
         <div class="selection-hint">Assign a status to as many controls as apply - each one is independent, so more than one can be "In place."</div>
         <div class="dnd-zones">
           <div class="dnd-zone" id="gov-zone-gap" ondragover="dndAllow(event)" ondragleave="dndLeave(event)" ondrop="dndDrop(event,'gap','gov')">
@@ -1506,7 +1531,7 @@ div#guided-card-back[aria-hidden="true"] {
       <p class="gd-lede">Use this to set expectations with each team before go-live. Note an owner for each role and flag anyone who needs a follow-up conversation.</p>
       <div class="focus-banner" id="focus-banner-roles"></div>
       <div class="callout-skip">Don't know who owns an area? Mark that it needs a follow-up conversation</div>
-      <div class="grid grid--2" id="roles-grid" style="margin-top:28px"></div>
+      <div class="grid grid--4" id="roles-grid" style="margin-top:28px"></div>
 
       <div class="section-complete">
         <div class="section-complete-note">Assign owners where you can, then continue when you're ready.</div>
@@ -1532,11 +1557,11 @@ div#guided-card-back[aria-hidden="true"] {
       <p class="gd-lede">CJA can answer questions AA never could, but that only pays off if there's a plan for who owns it, how it gets adopted, and what happens once better answers start showing up.</p>
       <div class="focus-banner" id="focus-banner-strategy-adoption"></div>
       <div class="callout-skip">Answer at least the AI/agentic workflows question to continue - "Not sure yet" counts. Everything else here is optional.</div>
-      <div class="prompt-list" id="strategy-prompts" style="margin-top:8px"></div>
+      <div class="prompt-list" id="strategy-prompts" style="margin-top:20px"></div>
 
       <div class="section" style="margin-top:32px">
         <div class="section-head"><h2 class="gd-h2">What AI-readiness actually looks like</h2></div>
-        <p style="font-size:16px;color:var(--c-text-soft);margin:-4px 0 18px;max-width:680px;line-height:1.55">Click the ones that would help your team most right now - this feeds directly into your recommendation at the end.</p>
+        <p style="font-size:16px;color:var(--c-text-soft);margin:0px 0 20px;max-width:680px;line-height:1.55">Click the ones that would help your team most right now - this feeds directly into your recommendation at the end.</p>
         <div class="grid grid--2" id="strategy-ai-capabilities"></div>
       </div>
 
@@ -1572,85 +1597,11 @@ div#guided-card-back[aria-hidden="true"] {
     </div>
   </div>
 
-  <!-- ===================== PREPARE MODERNIZATION GUIDE ===================== -->
-  <div class="page" id="page-modernization-guide">
-    <div class="page-inner page-inner--wide">
-      <div class="mg-hero">
-        <div class="mg-eyebrow">Your personalized next step</div>
-        <h1 class="gd-h1" style="font-size:34px;margin-bottom:12px">Preparing Your Analytics Modernization Guide</h1>
-        <p class="gd-lede" style="margin:0">You've given us the signals. Now we're bringing them together into a practical view of your Adobe Analytics to Customer Journey Analytics modernization opportunity.</p>
-      </div>
-
-      <div class="mg-layout">
-        <div class="mg-content">
-          <section class="mg-section" aria-labelledby="mg-pillars-title">
-            <h2 class="mg-section-title" id="mg-pillars-title">What successful analytics modernization connects</h2>
-            <div class="mg-pillars">
-              <article class="mg-pillar">
-                <div class="mg-pillar-num">01</div>
-                <div class="mg-pillar-title">Architecture</div>
-                <div class="mg-pillar-copy">A modern analytics foundation should be flexible, scalable, governed, and capable of supporting evolving data requirements.</div>
-              </article>
-              <article class="mg-pillar">
-                <div class="mg-pillar-num">02</div>
-                <div class="mg-pillar-title">Identity</div>
-                <div class="mg-pillar-copy">Customer interactions span channels and devices. Connecting identities turns fragmented activity into a more complete customer journey.</div>
-              </article>
-              <article class="mg-pillar">
-                <div class="mg-pillar-num">03</div>
-                <div class="mg-pillar-title">Actionability</div>
-                <div class="mg-pillar-copy">Insights create value when teams can use them quickly through better decisions, audiences, journeys, experimentation, and activation.</div>
-              </article>
-              <article class="mg-pillar">
-                <div class="mg-pillar-num">04</div>
-                <div class="mg-pillar-title">AI Readiness</div>
-                <div class="mg-pillar-copy">AI becomes more useful when it operates on connected, enriched, trustworthy data with meaningful business context.</div>
-              </article>
-            </div>
-          </section>
-
-          <section class="mg-section" aria-labelledby="mg-sequence-title">
-            <h2 class="mg-section-title" id="mg-sequence-title">What we're bringing together</h2>
-            <div class="mg-sequence">
-              <div class="mg-sequence-step">
-                <div class="mg-sequence-num">1</div>
-                <div><div class="mg-sequence-title">Your current state</div><div class="mg-sequence-copy">The priorities, implementation signals, organizational considerations, and modernization gaps identified in this discovery.</div></div>
-              </div>
-              <div class="mg-sequence-step">
-                <div class="mg-sequence-num">2</div>
-                <div><div class="mg-sequence-title">What changes in CJA</div><div class="mg-sequence-copy">What can carry forward, what may need to be rebuilt, and which new capabilities become possible.</div></div>
-              </div>
-              <div class="mg-sequence-step">
-                <div class="mg-sequence-num">3</div>
-                <div><div class="mg-sequence-title">A practical path forward</div><div class="mg-sequence-copy">A modernization path that can help analytics, marketing, IT, data, governance, and leadership align around priorities.</div></div>
-              </div>
-              <div class="mg-sequence-step">
-                <div class="mg-sequence-num">4</div>
-                <div><div class="mg-sequence-title">A conversation starter</div><div class="mg-sequence-copy">Something tangible to review and share with your team before determining what should happen next.</div></div>
-              </div>
-            </div>
-          </section>
-        </div>
-
-        <aside class="mg-status-card" id="mg-status-card" data-status="idle" aria-labelledby="mg-status-title">
-          <div class="mg-status-kicker">Modernization Guide</div>
-          <div class="mg-status-title" id="mg-status-title">Preparing your guide</div>
-          <p class="mg-status-copy" id="mg-status-copy">We're connecting your discovery responses, modernization priorities, and CJA considerations into a personalized guide.</p>
-          <div class="mg-progress" id="mg-progress" aria-hidden="true"><div class="mg-progress-bar"></div></div>
-          <div class="mg-status-actions">
-            <button class="btn btn-primary" id="mg-results-btn" onclick="continueToResults()" disabled>Preparing results...</button>
-          </div>
-          <div id="mg-status-announcement" class="sr-only" role="status" aria-live="polite"></div>
-        </aside>
-      </div>
-    </div>
-  </div>
-
   <!-- ===================== SUMMARY & WRAP-UP ===================== -->
   <div class="page" id="page-summary">
     <div class="page-inner page-inner--wide">
       <div class="no-print" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:28px">
-        <button class="btn btn-primary btn-lg" onclick="continueToResults()">Go to Your Results</button>
+        <button class="btn btn-primary btn-lg" onclick="showPage('onepager')">Go to Your Summary &amp; Next Steps</button>
         <button class="btn btn-ghost" id="sum-btn-print-full" onclick="printSummary()">Download PDF</button>
       </div>
 
@@ -1658,7 +1609,7 @@ div#guided-card-back[aria-hidden="true"] {
         <div class="sum-cover">
           <div class="sum-cover-mark" id="sum-cover-mark">GD</div>
           <div class="sum-cover-text">
-            <div class="sum-cover-eyebrow">Guided Discovery &middot; AA to CJA Migration</div>
+            <!-- <div class="sum-cover-eyebrow">Guided Discovery &middot; AA to CJA Migration</div> -->
             <div class="sum-cover-title" id="sum-cover-title">Summary &amp; Wrap-up</div>
             <div class="sum-cover-meta" id="sum-cover-meta"></div>
           </div>
@@ -1693,18 +1644,15 @@ div#guided-card-back[aria-hidden="true"] {
   <div class="page" id="page-onepager">
     <div class="page-inner page-inner--wide">
       <div class="no-print" style="margin-bottom:20px;display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between">
-        <button class="btn btn-ghost btn-sm" id="op-back-btn" onclick="showPage('summary')">View detailed answer log →</button>
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <button class="btn btn-ghost btn-sm" onclick="downloadOnePager()">Download results PDF</button>
-          <button class="btn btn-primary btn-sm" onclick="downloadModernizationGuide()">Download Modernization Guide</button>
-        </div>
+        <button class="btn btn-ghost btn-sm" id="op-back-btn" onclick="showPage('summary')">View detailed answer log</button>
+        <button class="btn btn-primary btn-sm" onclick="downloadOnePager()">Download PDF</button>
       </div>
       <div id="onepager-content">
         <div class="sum-cover">
           <div class="sum-cover-mark" id="op-cover-mark">GD</div>
           <div class="sum-cover-text">
             <!-- <div class="sum-cover-eyebrow">Guided Discovery &middot; AA to CJA Migration</div> -->
-            <div class="sum-cover-title">Your Analytics Modernization Results</div>
+            <div class="sum-cover-title">Your Summary &amp; Next Steps</div>
             <div class="sum-cover-meta" id="op-cover-meta"></div>
           </div>
         </div>
@@ -1722,19 +1670,17 @@ div#guided-card-back[aria-hidden="true"] {
         </div>
 
         <div class="sum-block">
-          <div class="sum-block-title">Your Analytics Modernization Guide</div>
-          <p style="font-size:15px;color:var(--c-text-soft);line-height:1.6;margin:0 0 16px">Your personalized guide brings together what you shared during discovery and translates it into a practical view of your AA-to-CJA modernization opportunity.</p>
-          <div id="op-modernization-guide"></div>
+          <div class="sum-block-title">Suggested Engagement</div>
+          <div id="op-engagement"></div>
         </div>
 
         <div class="sum-block">
-          <div class="sum-block-title">A practical way forward</div>
+          <div class="sum-block-title">Recommended Next Steps</div>
           <div class="op-steps" id="op-steps"></div>
         </div>
 
-        <div class="sum-block" id="op-adobe-resource" style="display:none">
-          <div class="sum-block-title">Adobe Professional Services as an optional resource</div>
-          <p id="op-resource-copy" style="font-size:14px;color:var(--c-text-soft);line-height:1.55;margin:0 0 12px">If your team wants support interpreting the findings or planning next steps, Adobe Professional Services can help facilitate that conversation.</p>
+        <div class="sum-block">
+          <div class="sum-block-title">Your Adobe Team</div>
           <div id="op-contacts"></div>
         </div>
 
@@ -1906,20 +1852,20 @@ const HUB_NODES = [
 function isHubProfile(){ return VIEW_PROFILE === "selfguided" || VIEW_PROFILE === "practitioner"; }
 function hubDoneCount(){ return HUB_PAGES.filter(p=>COMPLETED.has(p)).length; }
 
-/* Continue completes the remaining hub work in sequence. Finish & Wrap Up
-   is intentionally different: it preserves whatever is complete and moves
-   directly into finalization without marking skipped sections complete. */
+/* The hub's own "Continue" button: goes to Roadmap if this profile
+   has one and it isn't done yet, otherwise the session is complete. */
 function hubContinue(){
   const nextIncomplete = HUB_PAGES.find(p=>!COMPLETED.has(p));
   if(nextIncomplete){ showPage(nextIncomplete); return; }
-  if(PROFILE_PAGES[VIEW_PROFILE].includes('roadmap') && !COMPLETED.has('roadmap')){
-    showPage('roadmap');
-    return;
-  }
-  beginFinalization();
+  hubFinishWrapUp();
 }
 function hubFinishWrapUp(){
-  beginFinalization();
+  if(PROFILE_PAGES[VIEW_PROFILE].includes('roadmap') && !COMPLETED.has('roadmap')){
+    showPage('roadmap');
+  } else {
+    autoSubmitOnCompletion();
+    showPage('onepager');
+  }
 }
 
 function renderHub(){
@@ -2054,7 +2000,7 @@ const CONFIG = {
     consultancyName: "Your Consultancy", // optional, shown in footer-style contexts
     industry: "retail",                  // one of: retail | financial-services | media-travel | generic
     logoInitials: "YC",
-    primaryColor: "#000000",             // ink / nav (defaults to Adobe Black)
+    primaryColor: "#2c2c2c",             // ink / nav (defaults to Adobe Black)
     accentColor: "#FA0F00",              // accent / CTA (defaults to Adobe Red)
     accountDirector: "",                 // optional. Shown on the client one-pager if set
     acsAccountExecutive: ""              // optional. Shown on the client one-pager if set
@@ -2064,13 +2010,7 @@ const CONFIG = {
      than pretend to succeed). Once there's a real internal endpoint,
      put it here. The payload is a plain JSON object built by
      buildResponsePayload() below. */
-  submitEndpoint: "",
-  /* Backend adapter for the personalized PPTX/PDF. Leave blank for the
-     local simulated flow. The response mapping lives only in
-     mapModernizationGuideResponse() so the eventual contract can change
-     without redesigning the customer experience. */
-  modernizationGuideEndpoint: "",
-  adobeTeamUrl: ""
+  submitEndpoint: ""
 };
 
 /* ================================================================
@@ -2906,6 +2846,7 @@ function submitGate(){
   LEAD.zip = document.getElementById('gate-zip').value.trim();
   LEAD.product = document.getElementById('gate-product').value;
   LEAD.industry = document.getElementById('gate-industry').value;
+  { const _i=document.getElementById('gate-industry'); LEAD.industryName=_i.options[_i.selectedIndex].text; }
   if(LEAD.industry) CONFIG.client.industry = LEAD.industry;
   GATE_PASSED = true;
   if(LEAD.org){
@@ -3396,9 +3337,9 @@ function renderPromptList(hostId, prompts, rerenderFn){
   document.getElementById(hostId).innerHTML = prompts.map(p=>{
     if(p.slider) return renderSliderPrompt(p, fn);
     return `
-    <div class="prompt-item" style="flex-direction:column;align-items:stretch;gap:10px">
+    <div class="prompt-item" style="flex-direction:column;align-items:stretch;gap:0px">
       <div class="prompt-q">${glossify(p.q)}</div>
-      <div style="font-size:14px;font-weight:600;color:var(--c-text-soft);margin-top:-6px">${p.single ? 'Select one' : 'Select all that apply'}</div>
+      <div style="font-size:14px;font-weight:400;color:var(--c-text-soft);margin-top:5px; margin-bottom: 20px;">${p.single ? 'Select one' : 'Select all that apply'}</div>
       <div class="answer-tile-grid">
         ${p.options.map(o=>`<button class="answer-tile ${DISC.answers[p.id]&&DISC.answers[p.id].has(o)?'selected':''}" data-qid="${p.id}" data-val="${o}" data-rerender="${fn}" onclick="discAnswerClick(this)"><span class="answer-tile-check">✓</span>${o}</button>`).join('')}
       </div>
@@ -3744,7 +3685,7 @@ function renderDiscovery(){
       if(n>0) hint = `<div style="margin-top:10px;font-size:14px;font-weight:600;color:${b.color}">${n} of ${DISCOVERY_NEEDS.filter(c=>c.bucket===b.id).length} selected point here</div>`;
     }
     const picked = DISC.bucket===b.id;
-    const style = `border-color:${picked?b.color:'var(--c-line)'};background:${picked?b.bg:'var(--c-surface)'};border-top-width:4px;border-top-color:${b.color}`;
+    const style = `border-color:${picked?b.color:'var(--c-line)'};background:${picked?b.bg:'var(--c-surface)'};border-width:0px 0px 0px 6px; border-top: 0px;border-left-color:${b.color}`;
     return `
     <button class="bucket-card ${picked?'picked':''}" style="${style}" onclick="discSelectBucket('${b.id}')">
       <div class="bucket-title" style="color:${b.color}">${b.name}</div>
@@ -4071,7 +4012,6 @@ function currentWorkflowSteps(){
 function renderGlobalStepper(pageId){
   const host = document.getElementById('global-stepper');
   if(!host) return;
-  if(['modernization-guide','onepager','summary'].includes(pageId)){ renderFinalJourneyStepper(pageId, host); return; }
   if(isHubProfile()){ renderHubStepper(pageId, host); return; }
   const steps = currentWorkflowSteps();
   const idx = steps.findIndex(s=>s.id===pageId);
@@ -4089,71 +4029,29 @@ function renderGlobalStepper(pageId){
   document.getElementById('global-stepper-meta').textContent = PAGE_LABELS[pageId];
 }
 
-function renderFinalJourneyStepper(pageId, host){
-  const macro = [{id:'discovery',short:'Discovery'}];
-  if(isHubProfile()) macro.push({id:'hub',short:'Build Your Profile'});
-  if(PROFILE_PAGES[VIEW_PROFILE].includes('roadmap')) macro.push({id:'roadmap',short:'Roadmap'});
-  macro.push({id:'modernization-guide',short:'Prepare Your Guide'},{id:'results',short:'Results'});
-  const activeId = pageId==='modernization-guide' ? 'modernization-guide' : 'results';
-  host.style.display='block';
-  document.getElementById('global-stepper-row').innerHTML = macro.map((step,index)=>{
-    const active = step.id===activeId;
-    const done = step.id==='discovery' ? COMPLETED.has('discovery')
-      : step.id==='hub' ? hubDoneCount()===HUB_PAGES.length
-      : step.id==='roadmap' ? COMPLETED.has('roadmap')
-      : step.id==='modernization-guide' ? activeId==='results'
-      : false;
-    const target = step.id==='hub' ? "showPage('hub')"
-      : step.id==='modernization-guide' ? 'beginFinalization()'
-      : step.id==='results' ? 'continueToResults()'
-      : `showPage('${step.id}')`;
-    return `<button class="gstep ${active?'active':(done?'done':'')}" onclick="${target}" title="${step.short}">
-      <span class="gstep-num">${done&&!active?'✓':index+1}</span><span class="gstep-label">${step.short}</span>
-    </button>${index<macro.length-1?'<span class="gstep-arrow">→</span>':''}`;
-  }).join('');
-  document.getElementById('global-stepper-meta').textContent = activeId==='modernization-guide'
-    ? 'Preparing your personalized guide'
-    : 'Your Summary & Next Steps';
-}
-
 /* Macro-step stepper for Self-Guided/Practitioner: Discovery, then one
-   collapsed "Build Your Profile" step covering all 6 hub sections,
-   followed by guide preparation and results.
+   collapsed "Build Your Profile" step covering all 6 hub sections
+   (with a live X of 6 sub-count), then Roadmap if present, then done.
    Reflects the real non-linear structure instead of stale numbering. */
 function renderHubStepper(pageId, host){
   const macro = [{ id:"discovery", short:"Discovery" }, { id:"hub", short:"Build Your Profile" }];
   if(PROFILE_PAGES[VIEW_PROFILE].includes('roadmap')) macro.push({ id:"roadmap", short:"Roadmap" });
-  macro.push({id:'modernization-guide',short:'Prepare Your Guide'},{id:'results',short:'Results'});
-  const activeMacroId = (pageId==='discovery') ? 'discovery'
-    : (HUB_PAGES.includes(pageId) || pageId==='hub') ? 'hub'
-    : (pageId==='roadmap' ? 'roadmap'
-    : (pageId==='modernization-guide' ? 'modernization-guide'
-    : (pageId==='onepager' || pageId==='summary' ? 'results' : null)));
+  const activeMacroId = (pageId==='discovery') ? 'discovery' : (HUB_PAGES.includes(pageId) || pageId==='hub') ? 'hub' : (pageId==='roadmap' ? 'roadmap' : null);
   if(!activeMacroId){ host.style.display='none'; return; }
   host.style.display='block';
   const idx = macro.findIndex(s=>s.id===activeMacroId);
   const total = macro.length;
   document.getElementById('global-stepper-row').innerHTML = macro.map((s,i)=>{
-    const isDone = s.id==='discovery' ? COMPLETED.has('discovery')
-      : s.id==='hub' ? hubDoneCount()===HUB_PAGES.length
-      : s.id==='roadmap' ? COMPLETED.has('roadmap')
-      : s.id==='modernization-guide' ? activeMacroId==='results'
-      : false;
+    const isDone = s.id==='discovery' ? COMPLETED.has('discovery') : (s.id==='hub' ? hubDoneCount()===HUB_PAGES.length : COMPLETED.has('roadmap'));
     const isActive = i===idx;
     const cls = isActive ? 'active' : (isDone ? 'done' : '');
     const label = s.id==='hub' ? `${s.short} (${hubDoneCount()}/${HUB_PAGES.length})` : s.short;
-    const action = s.id==='hub' ? "showPage('hub')"
-      : s.id==='modernization-guide' ? 'beginFinalization()'
-      : s.id==='results' ? 'continueToResults()'
-      : `showPage('${s.id}')`;
-    return `<button class="gstep ${cls}" onclick="${action}" title="${s.short}">
+    const target = s.id==='hub' ? 'hub' : s.id;
+    return `<button class="gstep ${cls}" onclick="showPage('${target}')" title="${s.short}">
       <span class="gstep-num">${isDone && !isActive ? '✓' : i+1}</span><span class="gstep-label">${label}</span>
     </button>${i<total-1 ? '<span class="gstep-arrow">→</span>' : ''}`;
   }).join('');
-  const metaLabel = activeMacroId==='hub' ? `Customer journey completeness · ${hubDoneCount()} of ${HUB_PAGES.length} signals stitched`
-    : activeMacroId==='modernization-guide' ? 'Preparing your personalized guide'
-    : activeMacroId==='results' ? 'Your Summary & Next Steps'
-    : PAGE_LABELS[pageId];
+  const metaLabel = activeMacroId==='hub' ? `Customer journey completeness · ${hubDoneCount()} of ${HUB_PAGES.length} signals stitched` : PAGE_LABELS[pageId];
   document.getElementById('global-stepper-meta').textContent = metaLabel;
 }
 
@@ -4202,11 +4100,10 @@ function showPage(id){
   target.classList.add('active');
   target.scrollTop = 0;
   window.scrollTo(0, 0);
-  document.querySelectorAll('.nav-link').forEach(b=>b.classList.toggle('active', b.dataset.page===id || (b.dataset.page==='summary' && ['modernization-guide','onepager'].includes(id))));
+  document.querySelectorAll('.nav-link').forEach(b=>b.classList.toggle('active', b.dataset.page===id || (b.dataset.page==='summary' && id==='onepager')));
   if(id==='overview') renderOverviewProgress();
   if(id==='summary') renderSummary();
   if(id==='onepager') renderOnePager();
-  if(id==='modernization-guide') renderModernizationGuidePage();
   if(id==='roles') renderRoles();
   if(id==='strategy-adoption') renderStrategyAdoption();
   if(id==='data-foundations'){ renderDfRoleHint(); dfRenderSteps(); }
@@ -4330,7 +4227,8 @@ function markComplete(pageId){
   if(next && next !== 'summary'){
     showPage(next);
   } else {
-    beginFinalization();
+    autoSubmitOnCompletion();
+    showPage('onepager');
   }
 }
 
@@ -4357,23 +4255,28 @@ function renderOverview(){
   }
 
   const roi = [
-    { title:"Whole customer analysis", bucket:"analysis", desc:"Channel-specific views leave gaps in measurement and limit personalization. CJA unifies every channel into one Person-based view, so you're working from a complete picture instead of fragments." },
-    { title:"Activation", bucket:"activation", desc:"Insights only create value once they drive action. CJA connects analysis directly to activation channels, so an audience can move from insight to a live campaign in minutes, not weeks." },
-    { title:"AI readiness gap", bucket:"both", desc:"AI is only as capable as the data behind it. A connected, enriched data foundation is what makes AI-driven insights and agentic workflows possible, instead of just aspirational." }
+    { image: "https://engage.adobe.com/rs/360-KCI-804/images/checkmark-icon.svg?version=0", title:"Whole customer analysis", bucket:"analysis", desc:"Channel-specific views leave gaps in measurement and limit personalization. CJA unifies every channel into one Person-based view, so you're working from a complete picture instead of fragments." },
+    { image: "https://engage.adobe.com/rs/360-KCI-804/images/activation-icon.svg?version=0", title:"Activation", bucket:"activation", desc:"Insights only create value once they drive action. CJA connects analysis directly to activation channels, so an audience can move from insight to a live campaign in minutes, not weeks." },
+    { image: "https://engage.adobe.com/rs/360-KCI-804/images/AI-readiness-icon.svg?version=0", title:"AI readiness gap", bucket:"both", desc:"AI is only as capable as the data behind it. A connected, enriched data foundation is what makes AI-driven insights and agentic workflows possible, instead of just aspirational." }
   ];
   document.getElementById('ov-roi-grid').innerHTML = roi.map(r=>`
-    <div class="card bucket-accent-${r.bucket}">
-      <div style="font-weight:600;font-size:15.5px;margin-bottom:6px">${r.title}</div>
-      <div style="font-size:14px;color:var(--c-text-soft);line-height:1.5">${r.desc}</div>
+    <div class="card">
+      <img src="${r.image}" alt="${r.title}" style="width:45px;object-fit:contain;margin:0 auto 15px;display:block;"/>
+      <div style="font-weight:600;font-size:18px;margin-bottom:15px; text-align: center;">${r.title}</div>
+      <div style="font-size:14px;color:var(--c-text-soft);line-height:1.5; text-align: center;">${r.desc}</div>
     </div>`).join('');
 
   const outcomes = [
-    "A personalized modernization guide",
+    "A personalized recommendation",
     "Specific CJA capabilities for your priorities",
-    "A practical path for team discussion"
+    "A rough engagement size"
   ];
   document.getElementById('ov-outcomes-list').innerHTML = outcomes.map(o=>`
-    <div style="display:flex;align-items:center;gap:8px"><span style="color:var(--c-select-600);font-weight:700">✓</span>${o}</div>`).join('');
+    <div style="display:flex;align-items:center;gap:15px; flex-direction: column; flex: 1"> <img
+      src="https://engage.adobe.com/rs/360-KCI-804/images/check_box_icon.svg?version=0"
+      alt="Check"
+      style="width:24px;height:24px;object-fit:contain;"
+    />${o}</div>`).join('');
 
   renderOverviewProgress();
 }
@@ -4381,8 +4284,7 @@ function renderOverview(){
 const PAGE_LABELS = {
   discovery:"Discovery", hub:"Build Your Profile", "data-foundations":"Data Foundations", segmentation:"Segmentation Rebuild",
   identity:"Identity & Stitching", governance:"Governance & Access", roles:"Roles & Stakeholders",
-  roadmap:"Migration Roadmap", "strategy-adoption":"Strategy & Adoption", "modernization-guide":"Prepare Your Guide",
-  onepager:"Your Results", summary:"Detailed Answer Log", crosswalk:"Metric Crosswalk", architecture:"Architecture"
+  roadmap:"Migration Roadmap", "strategy-adoption":"Strategy & Adoption", summary:"Summary & Wrap-up", crosswalk:"Metric Crosswalk", architecture:"Architecture"
 };
 
 /* ================================================================
@@ -4413,7 +4315,7 @@ function setContinueLabels(){
       return;
     }
     const next = nextWorkflowPage(pageId);
-    btn.textContent = next==='summary' ? "Continue to prepare your guide" : (next ? `Continue to ${PAGE_LABELS[next]}` : "Continue to prepare your guide");
+    btn.textContent = next ? `Continue to ${PAGE_LABELS[next]}` : "Continue to Summary";
   });
 }
 
@@ -4463,7 +4365,7 @@ function renderOverviewProgress(){
     const next = pages.find(p=>!COMPLETED.has(p)) || pages[0];
     ctaHost.innerHTML = `<button class="btn btn-primary btn-lg" onclick="showPage('${next}')">Continue</button>`;
   } else {
-    ctaHost.innerHTML = `<button class="btn btn-primary btn-lg" onclick="continueToResults()">Go to Your Results</button>`;
+    ctaHost.innerHTML = `<button class="btn btn-primary btn-sm" onclick="showPage('onepager')">Go to Your Summary &amp; Next Steps</button>`;
   }
 }
 
@@ -5185,166 +5087,6 @@ function buildResponsePayload(){
   return payload;
 }
 
-const MODERNIZATION_GUIDE = {
-  status: 'idle',
-  downloadUrl: '',
-  fileName: '',
-  fileType: '',
-  error: '',
-  request: null
-};
-
-function buildModernizationGuidePayload(){
-  const response = buildResponsePayload();
-  const expectedSections = workflowPages().filter(p=>p!=='summary');
-  const completedSections = expectedSections.filter(p=>COMPLETED.has(p));
-  const incompleteSections = expectedSections.filter(p=>!COMPLETED.has(p));
-  const recommendation = computeRecommendation();
-  return {
-    ...response,
-    artifact: {
-      type: 'analytics-modernization-guide',
-      requestedFormats: ['pptx','pdf'],
-      title: `${CONFIG.client.name} Analytics Modernization Guide`
-    },
-    completionContext: {
-      completedSections,
-      incompleteSections,
-      completedCount: completedSections.length,
-      expectedCount: expectedSections.length,
-      hubSectionsCompleted: HUB_PAGES.filter(p=>COMPLETED.has(p)),
-      hubSectionsIncomplete: HUB_PAGES.filter(p=>PROFILE_PAGES[VIEW_PROFILE].includes(p) && !COMPLETED.has(p))
-    },
-    modernizationSignals: {
-      headline: recommendation.headline,
-      matchedCapabilities: recommendation.matchedCapabilities.map(item=>({
-        id: item.capability.id,
-        name: item.capability.name,
-        description: item.capability.desc,
-        reasons: item.reasons
-      })),
-      discoverySnapshot: recommendation.snapshot.map(([label,value])=>({label,value}))
-    }
-  };
-}
-
-function mapModernizationGuideResponse(data){
-  const file = data && typeof data==='object' ? (data.file || data.artifact || data) : {};
-  const downloadUrl = file.downloadUrl || file.url || '';
-  if(!downloadUrl || typeof downloadUrl!=='string'){
-    throw new Error('The guide service did not return a downloadable file.');
-  }
-  return {
-    downloadUrl,
-    fileName: file.fileName || file.filename || `${CONFIG.client.name.replace(/\s+/g,'-')}-Analytics-Modernization-Guide.pptx`,
-    fileType: file.fileType || file.type || 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
-  };
-}
-
-function beginFinalization(){
-  autoSubmitOnCompletion();
-  showPage('modernization-guide');
-  if(MODERNIZATION_GUIDE.status==='idle' || MODERNIZATION_GUIDE.status==='error') generateModernizationGuide();
-}
-
-async function generateModernizationGuide(){
-  if(MODERNIZATION_GUIDE.status==='generating' || MODERNIZATION_GUIDE.status==='ready') return;
-  MODERNIZATION_GUIDE.status = 'generating';
-  MODERNIZATION_GUIDE.error = '';
-  MODERNIZATION_GUIDE.request = buildModernizationGuidePayload();
-  renderModernizationGuidePage();
-  try{
-    if(!CONFIG.modernizationGuideEndpoint){
-      await new Promise(resolve=>setTimeout(resolve, 2800));
-      MODERNIZATION_GUIDE.downloadUrl = '';
-      MODERNIZATION_GUIDE.fileName = `${CONFIG.client.name.replace(/\s+/g,'-')}-Analytics-Modernization-Guide.pptx`;
-      MODERNIZATION_GUIDE.fileType = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
-    } else {
-      const res = await fetch(CONFIG.modernizationGuideEndpoint, {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify(MODERNIZATION_GUIDE.request)
-      });
-      if(!res.ok) throw new Error(`Guide generation failed (${res.status}).`);
-      const mapped = mapModernizationGuideResponse(await res.json());
-      MODERNIZATION_GUIDE.downloadUrl = mapped.downloadUrl;
-      MODERNIZATION_GUIDE.fileName = mapped.fileName;
-      MODERNIZATION_GUIDE.fileType = mapped.fileType;
-    }
-    MODERNIZATION_GUIDE.status = 'ready';
-  }catch(err){
-    MODERNIZATION_GUIDE.status = 'error';
-    MODERNIZATION_GUIDE.error = err instanceof Error ? err.message : 'We could not prepare the guide right now.';
-    console.error('Modernization Guide generation error:', err);
-  }
-  renderModernizationGuidePage();
-  if(window.CURRENT_PAGE_ID==='onepager') renderOnePager();
-}
-
-function renderModernizationGuidePage(){
-  const card = document.getElementById('mg-status-card');
-  if(!card) return;
-  const title = document.getElementById('mg-status-title');
-  const copy = document.getElementById('mg-status-copy');
-  const progress = document.getElementById('mg-progress');
-  const actions = card.querySelector('.mg-status-actions');
-  const announcement = document.getElementById('mg-status-announcement');
-  card.dataset.status = MODERNIZATION_GUIDE.status;
-  if(MODERNIZATION_GUIDE.status==='ready'){
-    title.textContent = 'Your guide is ready';
-    copy.textContent = 'Your discovery signals have been brought together. Continue to your results to review the highlights and next steps.';
-    progress.style.display = 'none';
-    actions.innerHTML = `<button class="btn btn-primary" onclick="continueToResults()">Continue to results</button>
-      <button class="btn btn-ghost" onclick="downloadModernizationGuide()">Download guide</button>`;
-    announcement.textContent = 'Your Analytics Modernization Guide is ready.';
-  } else if(MODERNIZATION_GUIDE.status==='error'){
-    title.textContent = 'Your results are still available';
-    copy.textContent = MODERNIZATION_GUIDE.error || 'We could not prepare the downloadable guide right now. You can retry or continue to review your results.';
-    progress.style.display = 'none';
-    actions.innerHTML = `<button class="btn btn-primary" onclick="generateModernizationGuide()">Try again</button>
-      <button class="btn btn-ghost" onclick="continueToResults()">Continue to results</button>`;
-    announcement.textContent = 'The downloadable guide could not be prepared. You can retry or continue to results.';
-  } else {
-    title.textContent = 'Preparing your guide';
-    copy.textContent = "We're connecting your discovery responses, modernization priorities, and CJA considerations into a personalized guide.";
-    progress.style.display = '';
-    actions.innerHTML = '<button class="btn btn-primary" disabled>Preparing results...</button>';
-    announcement.textContent = 'Preparing your Analytics Modernization Guide.';
-  }
-  if(window.CURRENT_PAGE_ID==='modernization-guide') renderGlobalStepper('modernization-guide');
-}
-
-function continueToResults(){
-  if(MODERNIZATION_GUIDE.status==='idle'){
-    beginFinalization();
-    return;
-  }
-  if(MODERNIZATION_GUIDE.status==='generating'){
-    showPage('modernization-guide');
-    return;
-  }
-  window.showPage('onepager');
-}
-
-function downloadModernizationGuide(){
-  if(MODERNIZATION_GUIDE.status!=='ready'){
-    showToast('Your guide is still being prepared.');
-    return;
-  }
-  if(!MODERNIZATION_GUIDE.downloadUrl){
-    showToast('Your generated PPTX or PDF will be available here once the guide service is connected.');
-    return;
-  }
-  const link = document.createElement('a');
-  link.href = MODERNIZATION_GUIDE.downloadUrl;
-  link.download = MODERNIZATION_GUIDE.fileName || 'Analytics-Modernization-Guide';
-  link.target = '_blank';
-  link.rel = 'noopener';
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-}
-
 function renderSummary(){
   const pages = PROFILE_PAGES[VIEW_PROFILE];
   const wf = workflowPages().filter(p=>p!=='summary');
@@ -5614,7 +5356,7 @@ function renderOnePager(){
   const rec = computeRecommendation();
   document.getElementById('op-cover-mark').textContent = CONFIG.client.logoInitials;
   const today = new Date().toLocaleDateString(undefined, { year:'numeric', month:'long', day:'numeric' });
-  document.getElementById('op-cover-meta').textContent = CONFIG.client.name + ' \u00b7 Prepared ' + today;
+  document.getElementById('op-cover-meta').textContent = CONFIG.client.name + ' \u00b7 ' + rec.headline + ' \u00b7 Prepared ' + today;
   const sharedNote = document.getElementById('op-shared-note');
   if(sharedNote) sharedNote.style.display = SUBMITTED ? 'block' : 'none';
 
@@ -5636,52 +5378,24 @@ function renderOnePager(){
     capBlock.style.display = 'none';
   }
 
-  const guideHost = document.getElementById('op-modernization-guide');
-  if(MODERNIZATION_GUIDE.status==='ready'){
-    guideHost.innerHTML = `<div class="mg-document">
-      <div class="mg-document-icon" aria-hidden="true"></div>
-      <div>
-        <div class="mg-document-title">${MODERNIZATION_GUIDE.fileName || 'Your Analytics Modernization Guide'}</div>
-        <div class="mg-document-meta">${MODERNIZATION_GUIDE.downloadUrl ? 'Ready to download and share with your team.' : 'Your guide is prepared. The downloadable file will appear here when the guide service is connected.'}</div>
-      </div>
-      <button class="btn btn-primary btn-sm" onclick="downloadModernizationGuide()">Download guide</button>
-    </div>`;
-  } else if(MODERNIZATION_GUIDE.status==='error'){
-    guideHost.innerHTML = `<div class="mg-document">
-      <div class="mg-document-icon" aria-hidden="true"></div>
-      <div><div class="mg-document-title">Guide preparation needs another try</div><div class="mg-document-meta">${MODERNIZATION_GUIDE.error || 'The downloadable file is not available yet.'}</div></div>
-      <button class="btn btn-ghost btn-sm" onclick="beginFinalization()">Try again</button>
-    </div>`;
-  } else {
-    guideHost.innerHTML = `<div class="mg-document">
-      <div class="mg-document-icon" aria-hidden="true"></div>
-      <div><div class="mg-document-title">Prepare your personalized guide</div><div class="mg-document-meta">Bring your discovery responses and modernization signals together into one shareable artifact.</div></div>
-      <button class="btn btn-primary btn-sm" onclick="beginFinalization()">Prepare guide</button>
-    </div>`;
-  }
+  const eng = rec.engagement;
+  document.getElementById('op-engagement').innerHTML =
+    '<div class="sum-row"><div class="sum-row-label">Rough size</div><div class="sum-row-value">' + eng.size + '</div></div>' +
+    '<div class="sum-row"><div class="sum-row-label">Typical duration</div><div class="sum-row-value">' + eng.duration + '</div></div>' +
+    '<div class="sum-row"><div class="sum-row-label">Engagement model</div><div class="sum-row-value">' + eng.model + '</div></div>' +
+    '<div style="font-size:14px;color:var(--c-text-soft);line-height:1.5;margin-top:10px">' + eng.desc + '</div>' +
+    '<div style="font-size:12.5px;color:var(--c-text-soft);font-style:italic;margin-top:8px">A rough sizing signal based on what you shared today, not a quote or a commitment.</div>';
 
-  const nextSteps = [
-    ['Download your Modernization Guide', 'Keep the personalized guide as a practical record of the signals and opportunities identified in this discovery.'],
-    ['Review the findings', 'Look across the current-state signals, modernization pillars, and areas that may need deeper validation.'],
-    ['Share it with your team', 'Use the guide to bring analytics, marketing, data, IT, identity, governance, and leadership into the same conversation.'],
-    ['Determine the right next move', 'Decide what your team wants to validate, prioritize, or explore next based on your own goals and readiness.']
-  ];
-  document.getElementById('op-steps').innerHTML = nextSteps.map(([title,desc],i)=>
+  document.getElementById('op-steps').innerHTML = rec.steps.map(([title,desc],i)=>
     '<div class="op-step"><div class="op-step-num">' + (i+1) + '</div><div class="op-step-body"><div class="op-step-title">' + title + '</div><div class="op-step-desc">' + desc + '</div></div></div>'
   ).join('');
 
-  const contactRows = [];
+  const contactRows = CONTACTS.slice();
   if(CONFIG.client.accountDirector) contactRows.push({ name: CONFIG.client.accountDirector, role: 'Account Director' });
   if(CONFIG.client.acsAccountExecutive) contactRows.push({ name: CONFIG.client.acsAccountExecutive, role: 'ACS Account Executive' });
-  const resourceBlock = document.getElementById('op-adobe-resource');
-  if(contactRows.length || CONFIG.adobeTeamUrl){
-    resourceBlock.style.display = '';
-    document.getElementById('op-contacts').innerHTML = contactRows.map(c=>
-      '<div class="op-contact-row"><div class="op-contact-name">' + c.name + '</div><div class="op-contact-role">' + c.role + '</div></div>'
-    ).join('') + (CONFIG.adobeTeamUrl ? `<a class="btn btn-ghost btn-sm" href="${CONFIG.adobeTeamUrl}" target="_blank" rel="noopener" style="margin-top:12px">Connect with Adobe</a>` : '');
-  } else {
-    resourceBlock.style.display = 'none';
-  }
+  document.getElementById('op-contacts').innerHTML = contactRows.map(c=>
+    '<div class="op-contact-row"><div class="op-contact-name">' + c.name + '</div><div class="op-contact-role">' + c.role + '</div></div>'
+  ).join('');
 }
 
 function printOnePager(){
@@ -5744,7 +5458,7 @@ async function submitToAdobeServer(){
 
 /* ---------------- BOOT ---------------- */
 document.querySelectorAll('.nav-link').forEach(btn=>{
-  btn.addEventListener('click', ()=>btn.dataset.page === 'summary' ? continueToResults() : showPage(btn.dataset.page));
+  btn.addEventListener('click', ()=>showPage(btn.dataset.page === 'summary' ? 'onepager' : btn.dataset.page));
 });
 
 applyConfig();
@@ -5773,6 +5487,7 @@ if(!GATE_PASSED){
 </script>
 
 <style>
+#ab-sync{display:none!important;}
 #ab-sync{position:fixed;right:12px;bottom:12px;z-index:1200;background:white;border:1px solid #1473e6;border-radius:10px;padding:10px 12px;max-width:360px;box-shadow:0 5px 22px #0002;font:13px/1.4 Arial,sans-serif}
 #ab-sync button{background:#1473e6;color:white;border:0;border-radius:5px;padding:7px 10px;cursor:pointer;margin:5px 5px 0 0}
 #ab-sync button:disabled{opacity:.5}
@@ -5816,6 +5531,7 @@ if(!GATE_PASSED){
 'use strict';
 const API_HOST_OUTSIDE_APP_BUILDER='https://20409-157ochretakin-stage.adobeio-static.net'; // when hosted outside App Builder: set to https://20409-157ochretakin.adobeio-static.net for production
 const BASE=(location.hostname.endsWith('.adobeio-static.net')?location.origin:API_HOST_OUTSIDE_APP_BUILDER)+'/api/v1/web/marketingprototype';
+
 const $=id=>document.getElementById(id);
 const state={submissionId:null,userId:null,responseId:null,catalog:null,busy:false,again:false,sent:new Map(),progressSent:'',completed:false};
 // the seven sections the API knows, as the page's page ids (they are the same keys)
@@ -5899,7 +5615,7 @@ async function initProfile(){
  if(state.busy)return;
  state.busy=true;const btn=$('gate-submit-btn');btn.disabled=true;status('Creating your profile…');
  try{
-  const industryName=(INDUSTRY_EXAMPLES[LEAD.industry]||INDUSTRY_EXAMPLES.generic).label;
+  const industryName=LEAD.industryName||'';
   const data=await api('/assessments','POST',{op:'create',consent:true,assessment:'self-guided',source:'aem-eds:/acs/cja-migration-assessment',profile:{firstName:LEAD.firstName,lastName:LEAD.lastName,email:LEAD.email,phone:LEAD.phone,jobTitle:LEAD.jobTitle,department:LEAD.department,organization:LEAD.org,country:LEAD.country,state:LEAD.state,postalCode:LEAD.zip,primaryProduct:LEAD.product,industry:industryName}});
   state.submissionId=data.submissionId;state.userId=data.userId;
   // leadRef links the response to the profile; answers are only accepted for linked responses
