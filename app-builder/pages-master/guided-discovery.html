@@ -1044,6 +1044,11 @@ div#guided-card-back[aria-hidden="true"] {
         <input class="input" id="gate-zip" oninput="gateValidate()">
         </div>
       </div>
+      <div class="gate-row" id="gate-country-other-row" style="display:none;grid-template-columns:1fr">
+        <div class="question-display"><p>Your country<span style="color:#eb1000">*</span></p>
+        <input class="input" id="gate-country-other" maxlength="100" oninput="gateValidate()">
+        </div>
+      </div>
       <div class="gate-row">
         <div class="question-display"><p>Primary product of interest<span style="color:#eb1000">*</span></p>
         <select class="select" id="gate-product" onchange="gateValidate()">
@@ -2826,8 +2831,12 @@ function gateValidate(){
   const zip = document.getElementById('gate-zip').value.trim();
   const product = document.getElementById('gate-product').value;
   const industry = document.getElementById('gate-industry').value;
+  const otherRow = document.getElementById('gate-country-other-row');
+  const needOther = country === 'Other';
+  if(otherRow) otherRow.style.display = needOther ? '' : 'none';
+  const otherOk = !needOther || document.getElementById('gate-country-other').value.trim() !== '';
   const emailValid = /^\S+@\S+\.\S+$/.test(email);
-  document.getElementById('gate-submit-btn').disabled = !(first && last && emailValid && phone && jobTitle && department && org && country && state && zip && product && industry);
+  document.getElementById('gate-submit-btn').disabled = !(first && last && emailValid && phone && jobTitle && department && org && country && state && zip && product && industry && otherOk);
 }
 function deriveInitials(str){
   const letters = (str||'').trim().split(/\s+/).map(w=>w[0]).filter(Boolean).join('').toUpperCase();
@@ -5615,8 +5624,9 @@ async function initProfile(){
  if(state.busy)return;
  state.busy=true;const btn=$('gate-submit-btn');btn.disabled=true;status('Creating your profile…');
  try{
-  const industryName=LEAD.industryName||'';
-  const data=await api('/assessments','POST',{op:'create',consent:true,assessment:'self-guided',source:'aem-eds:/acs/cja-migration-assessment',profile:{firstName:LEAD.firstName,lastName:LEAD.lastName,email:LEAD.email,phone:LEAD.phone,jobTitle:LEAD.jobTitle,department:LEAD.department,organization:LEAD.org,country:LEAD.country,state:LEAD.state,postalCode:LEAD.zip,primaryProduct:LEAD.product,industry:industryName}});
+  const _ind=$('gate-industry');const industryName=_ind&&_ind.selectedIndex>0?_ind.options[_ind.selectedIndex].text:'';
+  const countryOther=LEAD.country==='Other'?$('gate-country-other').value.trim():'';
+  const data=await api('/assessments','POST',{op:'create',consent:true,assessment:'self-guided',source:'aem-eds:/acs/cja-migration-assessment',profile:{firstName:LEAD.firstName,lastName:LEAD.lastName,email:LEAD.email,phone:LEAD.phone,jobTitle:LEAD.jobTitle,department:LEAD.department,organization:LEAD.org,country:LEAD.country,...(countryOther?{countryOther}:{}),state:LEAD.state,postalCode:LEAD.zip,primaryProduct:LEAD.product,industry:industryName}});
   state.submissionId=data.submissionId;state.userId=data.userId;
   // leadRef links the response to the profile; answers are only accepted for linked responses
   const started=await api('/guided-discovery','POST',{op:'start',assessment:'self-guided',leadRef:state.submissionId,source:'aem-eds:/acs/cja-migration-assessment',contentVersion:'structured-content'});
