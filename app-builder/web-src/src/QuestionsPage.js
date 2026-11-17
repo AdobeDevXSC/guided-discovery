@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { fetchQuestions, saveQuestion } from './api';
+import {
+  fetchProfileQuestions, fetchQuestions, saveProfileQuestion, saveQuestion,
+} from './api';
 
 // The question bank for one assessment: full question text and keys, editable, plus "Add question".
 // Keys are fixed once saved and saved options can be relabelled but not removed, so stored answers
@@ -19,6 +21,12 @@ const TYPE_OF_DISPLAY = {
   'owner-cards': 'Owner per option',
 };
 const NEW_TYPES = [['single', 'Single choice'], ['multiple', 'Multiple choice'], ['text', 'Free text']];
+const PROFILE_TYPE_LABELS = {
+  text: 'Free text',
+  email: 'Email',
+  phone: 'Phone',
+  select: 'Dropdown',
+};
 const SPECIAL = ['sort', 'per-item', 'owner-cards', 'inventory', 'swipe', 'slider'];
 const KEY_RE = /^[a-z0-9][a-z0-9-]{0,63}$/;
 const slug = (v) => String(v || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
@@ -48,6 +56,90 @@ const toDraft = (q) => ({
   required: Boolean(q.required),
   options: (q.options || []).map((o) => ({ key: o.id, label: o.label || '', isNew: false })),
 });
+const toProfileDraft = (q) => ({
+  isNew: false,
+  questionId: q.questionId,
+  field: q.field,
+  type: q.type,
+  title: q.title || '',
+  help: q.help || '',
+  required: Boolean(q.required),
+  options: (q.options || []).map((o) => ({ key: o.id, label: o.label || '', isNew: false })),
+});
+
+function ProfileEditor({ draft, setDraft, onSave, onClose, saving, errors, message }) {
+  const set = (patch) => setDraft((d) => ({ ...d, ...patch }));
+  const setOption = (i, patch) => setDraft((d) => ({
+    ...d, options: d.options.map((o, j) => (j === i ? { ...o, ...patch } : o)),
+  }));
+  const optionErrors = Object.keys(errors || {}).filter((k) => k.startsWith('options'));
+  return (
+    <aside className="detail question-editor" aria-label="Edit RFI question">
+      <div className="detail-head">
+        <h2>Edit RFI question</h2>
+        <button type="button" className="ghost" onClick={onClose}>Close</button>
+      </div>
+      <form onSubmit={(e) => { e.preventDefault(); onSave(); }}>
+        <p className="muted">
+          Field: <code>{draft.field}</code> · {PROFILE_TYPE_LABELS[draft.type]}
+        </p>
+        <label className="field">
+          Question
+          <textarea rows={3} value={draft.title} onChange={(e) => set({ title: e.target.value })} />
+          <FieldError errors={errors} name="title" />
+        </label>
+        <label className="field">
+          Help text <span className="muted small">(optional)</span>
+          <textarea rows={2} value={draft.help} onChange={(e) => set({ help: e.target.value })} />
+          <FieldError errors={errors} name="help" />
+        </label>
+        <label className="check">
+          <input type="checkbox" checked={draft.required} onChange={(e) => set({ required: e.target.checked })} />
+          Required
+        </label>
+        {draft.type === 'select' && (
+          <fieldset className="options">
+            <legend>Options</legend>
+            <div className="option-head muted small"><span>Key</span><span>Label</span></div>
+            {draft.options.map((o, i) => (
+              // eslint-disable-next-line react/no-array-index-key
+              <div className="option-row" key={i}>
+                <input
+                  aria-label={`Option ${i + 1} key`}
+                  value={o.key}
+                  readOnly={!o.isNew}
+                  onChange={(e) => setOption(i, { key: e.target.value, keyTouched: true })}
+                />
+                <input
+                  aria-label={`Option ${i + 1} label`}
+                  value={o.label}
+                  onChange={(e) => setOption(i, {
+                    label: e.target.value,
+                    ...(o.isNew && !o.keyTouched ? { key: slug(e.target.value) } : {}),
+                  })}
+                />
+                {o.isNew ? (
+                  <button type="button" className="ghost" onClick={() => setDraft((d) => ({ ...d, options: d.options.filter((_, j) => j !== i) }))}>Remove</button>
+                ) : <span className="muted small locked">saved</span>}
+              </div>
+            ))}
+            <button type="button" className="ghost" onClick={() => setDraft((d) => ({
+              ...d,
+              options: [...d.options, { key: '', label: '', isNew: true }],
+            }))}>+ Add option</button>
+            {optionErrors.map((k) => <FieldError key={k} errors={errors} name={k} />)}
+            <p className="muted small">Saved option keys cannot be removed or changed.</p>
+          </fieldset>
+        )}
+        <div className="editor-actions">
+          <button type="submit" className="primary" disabled={saving}>{saving ? 'Saving…' : 'Save question'}</button>
+          <button type="button" className="ghost" onClick={onClose} disabled={saving}>Cancel</button>
+          {message && <span className={message.ok ? 'saved-note' : 'error'} role="status">{message.text}</span>}
+        </div>
+      </form>
+    </aside>
+  );
+}
 
 function FieldError({ errors, name }) {
   const msg = errors && errors[name];
@@ -195,6 +287,7 @@ function Editor({
 export default function QuestionsPage({
   token, org, profile, assessment, assessmentLabel,
 }) {
+  const [bank, setBank] = useState('assessment');
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -209,13 +302,16 @@ export default function QuestionsPage({
     setLoading(true);
     setError(null);
     try {
-      setItems((await fetchQuestions({ token, org, assessment })).items || []);
+      const result = bank === 'profile'
+        ? await fetchProfileQuestions({ token, org })
+        : await fetchQuestions({ token, org, assessment });
+      setItems(result.items || []);
     } catch (e) {
       setError(e);
     } finally {
       setLoading(false);
     }
-  }, [token, org, assessment]);
+  }, [token, org, assessment, bank]);
   useEffect(() => { load(); }, [load]);
 
   const sections = useMemo(() => {
@@ -237,25 +333,35 @@ export default function QuestionsPage({
     setErrors(null);
     setMessage(null);
     const d = draft;
-    const question = {
-      questionId: d.questionId.trim(),
-      title: d.title,
-      help: d.help,
-      required: d.required,
-      options: (d.isNew ? d.type === 'text' : d.display === 'text') ? [] : d.options.map((o) => ({ key: o.key.trim(), label: o.label })),
-      ...(d.isNew ? { section: d.section.trim(), sectionTitle: d.sectionTitle, type: d.type } : { update: true }),
-    };
+    const question = bank === 'profile'
+      ? {
+          questionId: d.questionId,
+          title: d.title,
+          help: d.help,
+          required: d.required,
+          options: d.options.map((o) => ({ key: o.key.trim(), label: o.label })),
+          update: true,
+        }
+      : {
+          questionId: d.questionId.trim(),
+          title: d.title,
+          help: d.help,
+          required: d.required,
+          options: (d.isNew ? d.type === 'text' : d.display === 'text') ? [] : d.options.map((o) => ({ key: o.key.trim(), label: o.label })),
+          ...(d.isNew ? { section: d.section.trim(), sectionTitle: d.sectionTitle, type: d.type } : { update: true }),
+        };
     try {
-      const res = await saveQuestion({
-        token, org, assessment, question, editor: profile && (profile.email || profile.name),
-      });
+      const editor = profile && (profile.email || profile.name);
+      const res = bank === 'profile'
+        ? await saveProfileQuestion({ token, org, question, editor })
+        : await saveQuestion({ token, org, assessment, question, editor });
       const saved = res.question;
       setItems((list) => {
         const i = list.findIndex((x) => x.questionId === saved.questionId);
         const next = i >= 0 ? list.map((x, j) => (j === i ? saved : x)) : [...list, saved];
         return next.sort((a, b) => (a.sectionOrder - b.sectionOrder) || (a.order - b.order));
       });
-      setDraft(toDraft(saved));
+      setDraft(bank === 'profile' ? toProfileDraft(saved) : toDraft(saved));
       setMessage({ ok: true, text: res.created ? 'Question added.' : 'Saved.' });
     } catch (e) {
       setErrors(e.errors);
@@ -269,17 +375,28 @@ export default function QuestionsPage({
       <header className="top no-print">
         <div>
           <h1>Questions</h1>
-          <p className="muted">{assessmentLabel} · {items.length} questions in {sections.length} sections</p>
+          <p className="muted">
+            {bank === 'profile' ? 'RFI intake' : assessmentLabel}
+            {' · '}{items.length} questions in {sections.length} sections
+          </p>
         </div>
         <div className="actions">
           <button type="button" className="ghost" onClick={load} disabled={loading}>{loading ? 'Loading…' : 'Refresh'}</button>
-          <button type="button" className="primary" onClick={() => open(blank(section))}>Add question</button>
+          {bank === 'assessment' && (
+            <button type="button" className="primary" onClick={() => open(blank(section))}>Add question</button>
+          )}
         </div>
       </header>
 
+      <nav className="tabs no-print" aria-label="Question set">
+        <button type="button" className={bank === 'assessment' ? 'tab on' : 'tab'} aria-current={bank === 'assessment' ? 'page' : undefined} onClick={() => { setBank('assessment'); setDraft(null); setSection(''); }}>Assessment questions</button>
+        <button type="button" className={bank === 'profile' ? 'tab on' : 'tab'} aria-current={bank === 'profile' ? 'page' : undefined} onClick={() => { setBank('profile'); setDraft(null); setSection(''); }}>RFI intake</button>
+      </nav>
+
       <p className="muted small notice">
-        The answers API checks answers against these questions, and changes apply there within about 30 seconds.
-        The page on the EDS site still shows its own copy of the wording.
+        {bank === 'profile'
+          ? 'These RFI definitions are stored for admin reference only. Editing them does not change the live self-guided intake form.'
+          : 'The answers API checks answers against these questions. Changes apply there within about 30 seconds.'}
       </p>
 
       <section className="filters no-print">
@@ -309,14 +426,14 @@ export default function QuestionsPage({
                 <tr
                   key={q.questionId}
                   className={draft && !draft.isNew && draft.questionId === q.questionId ? 'on' : ''}
-                  onClick={() => open(toDraft(q))}
-                  onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && open(toDraft(q))}
+                  onClick={() => open(bank === 'profile' ? toProfileDraft(q) : toDraft(q))}
+                  onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && open(bank === 'profile' ? toProfileDraft(q) : toDraft(q))}
                   tabIndex={0}
                 >
                   <td>{q.sectionTitle || q.section}</td>
                   <td><code>{q.questionId}</code></td>
                   <td className="q-text">{q.title}</td>
-                  <td>{typeLabel(q)}</td>
+                  <td>{bank === 'profile' ? PROFILE_TYPE_LABELS[q.type] : typeLabel(q)}</td>
                   <td title={(q.options || []).map((o) => `${o.id}: ${o.label}`).join('\n')}>{(q.options || []).length || '—'}</td>
                   <td>{q.required ? 'Yes' : ''}</td>
                 </tr>
@@ -327,7 +444,18 @@ export default function QuestionsPage({
             </tbody>
           </table>
         </div>
-        {draft && (
+        {draft && bank === 'profile' && (
+          <ProfileEditor
+            draft={draft}
+            setDraft={setDraft}
+            onSave={save}
+            onClose={() => setDraft(null)}
+            saving={saving}
+            errors={errors}
+            message={message}
+          />
+        )}
+        {draft && bank === 'assessment' && (
           <Editor
             draft={draft}
             setDraft={setDraft}
