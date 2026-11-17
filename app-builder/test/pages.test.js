@@ -61,6 +61,12 @@ test('the public landing page links to each environment and routes admin links t
   assert.ok(landing.includes('Additional products will appear here as they become available.'))
   assert.ok(!landing.includes('Facilitator — Practitioner'))
   assert.ok(!landing.includes('Facilitator — Executive'))
+  const externalLinks = [...landing.matchAll(/<a\b[^>]*href="https?:\/\/[^"]*"[^>]*>/g)].map(([tag]) => tag)
+  assert.ok(externalLinks.length > 0)
+  for (const tag of externalLinks) {
+    assert.match(tag, /\btarget="_blank"/)
+    assert.match(tag, /\brel="noopener noreferrer"/)
+  }
   assert.ok(admin.includes('src="./src/index.js"'))
 })
 
