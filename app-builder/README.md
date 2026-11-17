@@ -23,6 +23,7 @@ Stage deploys from every branch push and Production from `main` (see `docs/ci-cd
 | Responses API | `actions/guided-discovery`: answers, progress and results (`assessment_responses`), plus `GET ?op=questions` |
 | Admin API | `actions/assessments-admin`: lists, deletes, the question bank, exports; needs an Adobe IMS token (`require-adobe-auth`) |
 | Question bank | `assessment_questions`, edited on the viewer's Questions page (`actions/lib/questions.js`) |
+| RFI intake definitions | `profile_questions`, seeded on first admin read and editable in the Questions page's RFI intake section; reference only and not connected to the public form |
 | Scoring rules | `actions/lib/scoring-config.json`, used by `actions/lib/scoring.js` |
 | Settings (AI API key, shared prompt, skill and template) | the viewer's Settings page: `app_settings` and `ai_prompts`, via `actions/lib/settings.js`. The API key is stored encrypted and never returned. Send to AI and Finish & Wrap Up use the same prompt, skill/resources and template |
 | AI analyses | `ai_analyses`: one record per Send to AI or Finish & Wrap Up, with the input sent, the prompt, and Claude's reply. Both entry points build the same request via `actions/lib/guide.js`; analysis runs in the non-web `ai-analysis` action via `actions/lib/ai.js` |
