@@ -228,4 +228,6 @@ button.inline { align-self: flex-start; padding: 2px 0; border: 0; background: n
 .llm-meta dt { color: var(--muted); }
 .llm-meta dd { margin: 0; overflow-wrap: anywhere; }
 .llm-pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; max-height: 360px; overflow: auto; border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; }
+.wrapup-slides-header { margin-bottom: 12px; }
+.wrapup-slides-frame { display: block; width: 100%; height: calc(100vh - 220px); min-height: 560px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
 .file-pick { cursor: pointer; }

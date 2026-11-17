@@ -18,7 +18,7 @@ Stage deploys from every branch push and Production from `main` (see `docs/ci-cd
 | Public assessment page | `web-src/self-guided.html`, served at https://20409-157ochretakin-stage.adobeio-static.net/self-guided.html (no sign-in) |
 | Facilitator-led page | `web-src/facilitator.html`, served at https://20409-157ochretakin-stage.adobeio-static.net/facilitator.html. The link picks the session: `?view=practitioner` (the default) or `?view=executive`; each saves as assessment `facilitator-led` with that `view`, and shows the pages of that version. |
 | Page master | `pages-master/guided-discovery.html` is the source of both pages. `web-src/self-guided.html` and `web-src/facilitator.html` are built from it with `node scripts/build-pages.js` (App Builder's API base and the wrap-up code are added there); change the master or the script and rebuild, never edit the built pages. A test fails if they are out of date. |
-| Admin viewer (profiles, questions, API reference) | `web-src/src/`, opened through Experience Cloud: `https://experience.adobe.com/?devMode=true#/custom-apps/?localDevUrl=https://20409-157ochretakin-stage.adobeio-static.net/index.html` |
+| Admin viewer (profiles, questions, LLM log, API reference) | `web-src/src/`, opened through Experience Cloud: `https://experience.adobe.com/?devMode=true#/custom-apps/?localDevUrl=https://20409-157ochretakin-stage.adobeio-static.net/index.html` |
 | Profiles API | `actions/assessments`: the assessment's initial form (`cja_assessments`, people in `cja_users`) |
 | Responses API | `actions/guided-discovery`: answers, progress and results (`assessment_responses`), plus `GET ?op=questions` |
 | Admin API | `actions/assessments-admin`: lists, deletes, the question bank, exports; needs an Adobe IMS token (`require-adobe-auth`) |
@@ -26,7 +26,7 @@ Stage deploys from every branch push and Production from `main` (see `docs/ci-cd
 | RFI intake definitions | `profile_questions`, seeded on first admin read and editable in the Questions page's RFI intake section; reference only and not connected to the public form |
 | Scoring rules | `actions/lib/scoring-config.json`, used by `actions/lib/scoring.js` |
 | Settings (AI API key, shared prompt, skill and template) | the viewer's Settings page: `app_settings` and `ai_prompts`, via `actions/lib/settings.js`. The API key is stored encrypted and never returned. Send to AI and Finish & Wrap Up use the same prompt, skill/resources and template |
-| AI analyses | `ai_analyses`: one record per Send to AI or Finish & Wrap Up, with the input sent, the prompt, and Claude's reply. Both entry points build the same request via `actions/lib/guide.js`; analysis runs in the non-web `ai-analysis` action via `actions/lib/ai.js` |
+| AI analyses | `ai_analyses`: one record per Send to AI or Finish & Wrap Up, with the input sent, the prompt, and Claude's reply. Both entry points build the same request via `actions/lib/guide.js`; analysis runs in the non-web `ai-analysis` action via `actions/lib/ai.js`. Completed HTML wrap-ups have a signed-in-admin link in the LLM log to view their saved slides; the link works while the analysis record exists. |
 
 Docs:
 - [docs/cja-assessment-schema.md](docs/cja-assessment-schema.md): profiles

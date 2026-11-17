@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { fetchLlmLog, fetchLlmLogEntry, deleteLlmEntry, rerunLlmEntry } from './api';
 import { fmt } from './Detail';
+import { hasHtmlSlides, wrapupSlidesUrl } from './WrapupSlidesPage';
 
 // LLM log: every query sent to the model, newest first - the admin's "Send to AI" and the wrap-up
 // that runs when a user finishes the assessment. Click a row for the full system prompt, prompt,
@@ -59,6 +60,16 @@ function Entry({
         <dt>Time</dt><dd>{secs(entry.latencyMs)}</dd>
         <dt>Sent</dt><dd>{fmt(entry.createdAt)}</dd>
         <dt>Response</dt><dd><code>{entry.responseId}</code></dd>
+        {hasHtmlSlides(entry) && (
+          <>
+            <dt>Slides URL</dt>
+            <dd>
+              <a href={wrapupSlidesUrl(entry.analysisId)} target="_blank" rel="noopener noreferrer">
+                Open saved wrap-up slides
+              </a>
+            </dd>
+          </>
+        )}
       </dl>
       <Block title="System prompt (skill)" text={entry.systemText} />
       <Block title="Prompt" text={entry.promptText} />
