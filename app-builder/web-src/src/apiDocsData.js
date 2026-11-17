@@ -621,6 +621,7 @@ const questionsApi = {
     'The question bank (collection `assessment_questions`) holds every question of an assessment: section, key, full text, answer type and options. The responses API checks answers against it, and the Questions page of this viewer edits it.',
     'Keys are the stable IDs stored with answers: `section` and `question` in `answer` / `save` calls, and option `key`s as values. Keys are fixed once saved; saved options can be relabelled but not removed, and a saved question\'s answer type cannot change.',
     'Changes reach the responses API within about 30 seconds. Scoring thresholds and capability copy come from `lib/scoring-config.json` (facilitator-led uses the self-guided rules, see `lib/scoring-rules.js`).',
+    'The separate RFI intake definitions (`profile_questions`) are admin-only reference data. They are editable in the Questions page, but do not change the live self-guided form.',
   ],
   ops: [
     {
@@ -709,6 +710,66 @@ const questionsApi = {
       curl: [curlPost('assessments-admin', saveExisting, ADMIN_CURL_HEADERS), '', '# add a question', curlPost('assessments-admin', saveNew, ADMIN_CURL_HEADERS)].join('\n'),
       fetch: fetchPost('assessments-admin', saveNew, ADMIN_FETCH_HEADERS + ', '),
       notes: ['There is no delete: stored answers reference question and option keys.'],
+    },
+    {
+      id: 'rfi-questions-list',
+      title: 'List RFI intake definitions (admin)',
+      method: 'GET',
+      summary: '`?dataset=profile-questions` on `assessments-admin`. The first read seeds the 13 profile intake fields into `profile_questions`; requires an Adobe IMS user token.',
+      fieldsLabel: 'Query parameters',
+      fields: [['dataset', '"profile-questions"', 'yes', '']],
+      success: {
+        status: 200,
+        body: json({
+          ok: true,
+          dataset: 'profile-questions',
+          total: 13,
+          count: 13,
+          items: [{ questionId: 'first-name', field: 'firstName', section: 'rfi-intake', sectionTitle: 'RFI intake', title: 'First name', type: 'text', required: true, options: [], updatedAt: NOW, updatedBy: '' }, { '...': 'one per RFI intake field' }],
+        }),
+      },
+      errors: [
+        { status: 401, when: 'Missing or invalid IMS token (gateway error body)', body: '{ "error": "<gateway message>" }' },
+      ],
+      curl: curlGet('assessments-admin', 'dataset=profile-questions', ADMIN_CURL_HEADERS),
+      fetch: fetchGet('assessments-admin', 'dataset=profile-questions', ADMIN_FETCH_HEADERS),
+      notes: ['These definitions are for admin reference only; editing them does not change the public intake form.'],
+    },
+    {
+      id: 'rfi-question-save',
+      title: 'Update an RFI intake definition (admin)',
+      method: 'POST',
+      summary: '`op: "profile-question-save"` updates an existing RFI definition. Field identity and type are fixed; saved option keys cannot be removed or changed. Requires an Adobe IMS user token.',
+      fields: [
+        ['op', '"profile-question-save"', 'yes', ''],
+        ['question.questionId', 'string', 'yes', 'The existing RFI definition key.'],
+        ['question.update', 'true', 'yes', 'Must be `true`; new RFI fields cannot be added here.'],
+        ['question.title', 'string', 'yes', 'Question label, up to 500 characters.'],
+        ['question.help', 'string', 'no', 'Help text, up to 1000 characters.'],
+        ['question.required', 'boolean', 'no', 'Whether the stored definition is marked required.'],
+        ['question.options', '{key, label}[]', 'yes', 'Required for dropdown fields; saved keys must all remain. Text fields have no options.'],
+        ['editor', 'string', 'no', 'Who made the change (stored as `updatedBy`).'],
+      ],
+      success: {
+        status: 200,
+        body: json({ ok: true, created: false, question: { questionId: 'first-name', field: 'firstName', title: 'Given name', type: 'text', required: true, options: [], updatedBy: 'admin@example.com', '...': '...' } }),
+      },
+      errors: [
+        { status: 400, when: 'Invalid field values or attempting to create a new RFI definition', body: json({ ok: false, errors: { title: 'required' } }) },
+        { status: 404, when: '`update: true` but no saved RFI definition has that key', body: json({ ok: false, errors: { questionId: 'not found' } }) },
+        { status: 401, when: 'Missing or invalid IMS token (gateway error body)', body: '{ "error": "<gateway message>" }' },
+      ],
+      curl: curlPost('assessments-admin', {
+        op: 'profile-question-save',
+        question: { questionId: 'first-name', update: true, title: 'Given name', help: '', required: true, options: [] },
+        editor: 'admin@example.com',
+      }, ADMIN_CURL_HEADERS),
+      fetch: fetchPost('assessments-admin', {
+        op: 'profile-question-save',
+        question: { questionId: 'first-name', update: true, title: 'Given name', help: '', required: true, options: [] },
+        editor: 'admin@example.com',
+      }, ADMIN_FETCH_HEADERS + ', '),
+      notes: ['This endpoint only edits admin reference data. It does not update the public intake page or its profile validation.'],
     },
   ],
 };

@@ -6,6 +6,7 @@ const questions = require('../lib/questions')
 const { labelResult } = require('../lib/result')
 const settings = require('../lib/settings')
 const ai = require('../lib/ai')
+const profileQuestions = require('../lib/profile-questions')
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
@@ -66,6 +67,7 @@ const DATASETS = {
 //        (see lib/questions.js)
 async function main (params) {
   if (params.op === 'question-save' || params.dataset === 'questions') return questionBank(params)
+  if (params.op === 'profile-question-save' || params.dataset === 'profile-questions') return profileQuestionBank(params)
   if (params.dataset === 'profile-answers') return profileAnswers(params)
   if (params.dataset === 'ai-analyses' || params.op === 'ai-send') return aiAnalyses(params)
   if (params.dataset === 'answers-export') return answersExport(params)
@@ -383,6 +385,57 @@ async function questionBank (params) {
     console.error('assessments-admin questions failed:', e.name, e.httpStatusCode, e.message)
     return reply(500, { ok: false, error: 'internal error' })
   }
+}
+
+// The RFI intake definitions are stored for admin reference and editing only; the public form
+// remains its own static copy.
+async function profileQuestionBank (params) {
+  const method = (params.__ow_method || 'get').toLowerCase()
+  if (method !== 'get' && method !== 'post') return reply(405, { ok: false, error: 'method not allowed' })
+  if (method === 'post' && params.op !== 'profile-question-save') {
+    return reply(400, { ok: false, error: 'op must be profile-question-save' })
+  }
+  try {
+    return await withDb(params, async (client) => {
+      const col = client.collection(profileQuestions.COLLECTION)
+      await ensureIndexes(col, profileQuestions.INDEXES)
+      await profileQuestions.seedMissing(col)
+      if (method === 'get') {
+        const items = await col.find({}).limit(100).toArray()
+        items.sort((a, b) => a.order - b.order)
+        return reply(200, {
+          ok: true,
+          dataset: 'profile-questions',
+          total: items.length,
+          count: items.length,
+          items: items.map(profileQuestions.publicQuestion)
+        })
+      }
+      return saveProfileQuestion(col, params)
+    })
+  } catch (e) {
+    console.error('assessments-admin profile questions failed:', e.name, e.httpStatusCode, e.message)
+    return reply(500, { ok: false, error: 'internal error' })
+  }
+}
+
+async function saveProfileQuestion (col, params) {
+  const input = params.question || {}
+  const key = String(input.questionId || '').trim()
+  const existing = key ? await findOneOrNull(col, { questionId: key }) : null
+  if (input.update !== true || !existing) {
+    return reply(input.update === true ? 404 : 400, {
+      ok: false,
+      errors: { questionId: input.update === true ? 'not found' : 'RFI fields cannot be added here' }
+    })
+  }
+  const now = new Date().toISOString()
+  const { doc, errors } = profileQuestions.validateEdit(input, existing, now, editorOf(params))
+  if (Object.keys(errors).length) return reply(400, { ok: false, errors })
+  await col.updateOne({ questionId: key }, { $set: doc })
+  const saved = await findOneOrNull(col, { questionId: key })
+  console.log('assessments-admin updated RFI question', key)
+  return reply(200, { ok: true, created: false, question: profileQuestions.publicQuestion(saved) })
 }
 
 // The answers behind one profile: its linked responses, each as a full question-by-question sheet.
