@@ -31,6 +31,7 @@ function defaults (now = new Date().toISOString()) {
     field: field.field,
     section: 'rfi-intake',
     sectionTitle: 'RFI intake',
+    sectionOrder: 7,
     title: field.title,
     help: '',
     type: field.type,

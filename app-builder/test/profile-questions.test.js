@@ -5,6 +5,7 @@ describe('RFI profile question definitions', () => {
 
   test('seeds each profile intake field with its existing label and field mapping', () => {
     expect(seeded).toHaveLength(13)
+    expect(seeded.every((q) => q.section === 'rfi-intake' && q.sectionTitle === 'RFI intake' && q.sectionOrder === 7)).toBe(true)
     expect(seeded.map(({ field }) => field)).toEqual([
       'firstName', 'lastName', 'email', 'phone', 'jobTitle', 'department',
       'organization', 'country', 'countryOther', 'state', 'postalCode',

@@ -287,7 +287,6 @@ function Editor({
 export default function QuestionsPage({
   token, org, profile, assessment, assessmentLabel,
 }) {
-  const [bank, setBank] = useState('assessment');
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -302,16 +301,17 @@ export default function QuestionsPage({
     setLoading(true);
     setError(null);
     try {
-      const result = bank === 'profile'
-        ? await fetchProfileQuestions({ token, org })
-        : await fetchQuestions({ token, org, assessment });
-      setItems(result.items || []);
+      const [assessmentQuestions, profileQuestions] = await Promise.all([
+        fetchQuestions({ token, org, assessment }),
+        fetchProfileQuestions({ token, org }),
+      ]);
+      setItems([...(assessmentQuestions.items || []), ...(profileQuestions.items || [])]);
     } catch (e) {
       setError(e);
     } finally {
       setLoading(false);
     }
-  }, [token, org, assessment, bank]);
+  }, [token, org, assessment]);
   useEffect(() => { load(); }, [load]);
 
   const sections = useMemo(() => {
@@ -333,7 +333,8 @@ export default function QuestionsPage({
     setErrors(null);
     setMessage(null);
     const d = draft;
-    const question = bank === 'profile'
+    const isProfileQuestion = Boolean(d.field);
+    const question = isProfileQuestion
       ? {
           questionId: d.questionId,
           title: d.title,
@@ -352,7 +353,7 @@ export default function QuestionsPage({
         };
     try {
       const editor = profile && (profile.email || profile.name);
-      const res = bank === 'profile'
+      const res = isProfileQuestion
         ? await saveProfileQuestion({ token, org, question, editor })
         : await saveQuestion({ token, org, assessment, question, editor });
       const saved = res.question;
@@ -361,7 +362,7 @@ export default function QuestionsPage({
         const next = i >= 0 ? list.map((x, j) => (j === i ? saved : x)) : [...list, saved];
         return next.sort((a, b) => (a.sectionOrder - b.sectionOrder) || (a.order - b.order));
       });
-      setDraft(bank === 'profile' ? toProfileDraft(saved) : toDraft(saved));
+      setDraft(isProfileQuestion ? toProfileDraft(saved) : toDraft(saved));
       setMessage({ ok: true, text: res.created ? 'Question added.' : 'Saved.' });
     } catch (e) {
       setErrors(e.errors);
@@ -376,27 +377,19 @@ export default function QuestionsPage({
         <div>
           <h1>Questions</h1>
           <p className="muted">
-            {bank === 'profile' ? 'RFI intake' : assessmentLabel}
-            {' · '}{items.length} questions in {sections.length} sections
+            {assessmentLabel} · {items.length} questions in {sections.length} sections
           </p>
         </div>
         <div className="actions">
           <button type="button" className="ghost" onClick={load} disabled={loading}>{loading ? 'Loading…' : 'Refresh'}</button>
-          {bank === 'assessment' && (
+          {section !== 'rfi-intake' && (
             <button type="button" className="primary" onClick={() => open(blank(section))}>Add question</button>
           )}
         </div>
       </header>
 
-      <nav className="tabs no-print" aria-label="Question set">
-        <button type="button" className={bank === 'assessment' ? 'tab on' : 'tab'} aria-current={bank === 'assessment' ? 'page' : undefined} onClick={() => { setBank('assessment'); setDraft(null); setSection(''); }}>Assessment questions</button>
-        <button type="button" className={bank === 'profile' ? 'tab on' : 'tab'} aria-current={bank === 'profile' ? 'page' : undefined} onClick={() => { setBank('profile'); setDraft(null); setSection(''); }}>RFI intake</button>
-      </nav>
-
       <p className="muted small notice">
-        {bank === 'profile'
-          ? 'These RFI definitions are stored for admin reference only. Editing them does not change the live self-guided intake form.'
-          : 'The answers API checks answers against these questions. Changes apply there within about 30 seconds.'}
+        Assessment questions are checked by the answers API. RFI intake definitions are admin-only and do not change the live self-guided form.
       </p>
 
       <section className="filters no-print">
@@ -426,14 +419,14 @@ export default function QuestionsPage({
                 <tr
                   key={q.questionId}
                   className={draft && !draft.isNew && draft.questionId === q.questionId ? 'on' : ''}
-                  onClick={() => open(bank === 'profile' ? toProfileDraft(q) : toDraft(q))}
-                  onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && open(bank === 'profile' ? toProfileDraft(q) : toDraft(q))}
+                  onClick={() => open(q.field ? toProfileDraft(q) : toDraft(q))}
+                  onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && open(q.field ? toProfileDraft(q) : toDraft(q))}
                   tabIndex={0}
                 >
                   <td>{q.sectionTitle || q.section}</td>
                   <td><code>{q.questionId}</code></td>
                   <td className="q-text">{q.title}</td>
-                  <td>{bank === 'profile' ? PROFILE_TYPE_LABELS[q.type] : typeLabel(q)}</td>
+                  <td>{q.field ? PROFILE_TYPE_LABELS[q.type] : typeLabel(q)}</td>
                   <td title={(q.options || []).map((o) => `${o.id}: ${o.label}`).join('\n')}>{(q.options || []).length || '—'}</td>
                   <td>{q.required ? 'Yes' : ''}</td>
                 </tr>
@@ -444,7 +437,7 @@ export default function QuestionsPage({
             </tbody>
           </table>
         </div>
-        {draft && bank === 'profile' && (
+        {draft && draft.field && (
           <ProfileEditor
             draft={draft}
             setDraft={setDraft}
@@ -455,7 +448,7 @@ export default function QuestionsPage({
             message={message}
           />
         )}
-        {draft && bank === 'assessment' && (
+        {draft && !draft.field && (
           <Editor
             draft={draft}
             setDraft={setDraft}
