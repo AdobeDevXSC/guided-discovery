@@ -1,56 +1,180 @@
 <!DOCTYPE html>
+<!--
+THESIS: A direct environment switchboard, not a marketing hero.
+OWN-WORLD: Adobe Spectrum neutrals, Adobe Clean UI typography, blue action links, compact borders, and clear focus.
+STORY: Choose Stage or Production, then open an assessment or the signed-in admin viewer.
+FIRST VIEWPORT: Product title and one-line instruction above two equal environment panels with grouped links.
+FORM: User-selected Adobe Spectrum, applied as a responsive two-column link hub without external fonts or components.
+-->
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <link rel="icon" type="image/png" href="./static/favicon-32.png" sizes="32x32">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#17172b" />
+    <meta name="theme-color" content="#f8f8f8" />
     <meta name="description" content="Guided Discovery assessment links for Stage and Production." />
     <title>Guided Discovery</title>
     <style>
-      :root { color-scheme: light; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #24243a; background: #f5f5f8; }
+      :root {
+        color-scheme: light;
+        font-family: "Adobe Clean", "Source Sans Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: #2c2c2c;
+        background: #f8f8f8;
+        --canvas: #f8f8f8;
+        --surface: #fff;
+        --text: #2c2c2c;
+        --muted: #6e6e6e;
+        --border: #e1e1e1;
+        --border-hover: #b1b1b1;
+        --blue: #1473e6;
+        --blue-hover: #0d66d0;
+        --blue-focus: #2680eb;
+      }
+
       * { box-sizing: border-box; }
-      body { margin: 0; }
-      header { padding: 3rem max(1.5rem, calc((100% - 960px) / 2)); color: white; background: #17172b; }
-      header p { margin: .75rem 0 0; color: #c9c9d6; }
-      main { max-width: 960px; margin: 2rem auto; padding: 0 1.5rem; }
-      .environments { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; }
-      section { padding: 1.5rem; border: 1px solid #dedee7; border-radius: 12px; background: white; }
-      h1 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(2rem, 5vw, 3rem); }
-      h2 { margin: 0 0 1rem; font-family: Georgia, "Times New Roman", serif; }
-      ul { display: grid; gap: .75rem; margin: 0; padding: 0; list-style: none; }
-      a { display: block; padding: .85rem 1rem; border: 1px solid #c8c8d6; border-radius: 8px; color: #29296f; font-weight: 600; text-decoration: none; }
-      a:hover, a:focus-visible { border-color: #5555b8; background: #f4f4ff; }
-      footer { margin-top: 1.5rem; color: #626273; font-size: .9rem; }
+      body { margin: 0; min-width: 320px; background: var(--canvas); color: var(--text); font-size: 15px; line-height: 1.5; }
+      a { color: inherit; }
+      a:focus-visible { outline: 2px solid var(--blue-focus); outline-offset: 3px; }
+
+      .site-header { background: var(--surface); border-bottom: 1px solid var(--border); }
+      .masthead { display: flex; align-items: center; max-width: 1120px; min-height: 60px; margin: 0 auto; padding: 0 24px; }
+      .brand { color: var(--text); font-size: 16px; font-weight: 700; letter-spacing: -.01em; text-decoration: none; }
+
+      main { max-width: 1120px; margin: 0 auto; padding: 44px 24px 40px; }
+      .page-intro { margin-bottom: 28px; }
+      h1 { margin: 0; font-size: clamp(28px, 4vw, 36px); font-weight: 700; letter-spacing: -.025em; line-height: 1.2; }
+      .page-intro p { max-width: 62ch; margin: 10px 0 0; color: var(--muted); font-size: 16px; }
+
+      .environments { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+      .environment { min-width: 0; overflow: hidden; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+      .environment-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 20px; border-bottom: 1px solid var(--border); }
+      h2 { margin: 0; font-size: 20px; font-weight: 700; line-height: 1.3; }
+      .environment-label { color: var(--muted); font-size: 13px; }
+      .environment-content { padding: 16px 20px 20px; }
+      h3 { margin: 0 0 8px; color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+      .link-list { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+      .resource-link { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 56px; padding: 9px 10px; border: 1px solid transparent; border-radius: 4px; text-decoration: none; transition: background-color 120ms ease, border-color 120ms ease; }
+      .resource-link:hover { border-color: var(--border); background: #f8f8f8; }
+      .resource-copy { display: grid; gap: 1px; min-width: 0; }
+      .resource-title { font-weight: 600; }
+      .resource-description { color: var(--muted); font-size: 13px; }
+      .resource-link:hover .resource-title { color: var(--blue-hover); }
+      .resource-arrow { flex: none; color: var(--blue); font-size: 20px; line-height: 1; }
+      .facilitator-entry { padding: 11px 10px 12px; border-radius: 4px; }
+      .view-options { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+      .view-option { padding: 3px 8px; border: 1px solid var(--border); border-radius: 4px; color: var(--blue-hover); font-size: 13px; font-weight: 600; text-decoration: none; }
+      .view-option:hover { border-color: #b1d5ff; background: #f2f8ff; }
+      .admin-group { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+      .admin-link .resource-title { color: var(--blue-hover); }
+
+      .access-note { display: flex; align-items: flex-start; gap: 10px; margin-top: 20px; padding: 14px 16px; border: 1px solid #d3e6ff; border-radius: 6px; background: #f2f8ff; }
+      .info-icon { display: grid; flex: none; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--blue); color: white; font-size: 13px; font-weight: 700; line-height: 1; }
+      .access-note p { margin: 0; }
+      .access-note strong { font-weight: 700; }
+
+      @media (max-width: 700px) {
+        main { padding-top: 32px; }
+        .environments { grid-template-columns: 1fr; gap: 16px; }
+      }
+
+      @media (max-width: 420px) {
+        .masthead { min-height: 54px; padding: 0 16px; }
+        main { padding: 28px 16px 32px; }
+        .environment-heading { padding: 16px; }
+        .environment-content { padding: 14px 14px 16px; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+      }
     </style>
   </head>
   <body>
-    <header>
-      <h1>Guided Discovery</h1>
-      <p>Choose an environment and open an assessment or the admin viewer.</p>
+    <header class="site-header">
+      <div class="masthead">
+        <a class="brand" href="./" aria-label="Guided Discovery home">Guided Discovery</a>
+      </div>
     </header>
     <a href="./admin.html" hidden>Admin viewer</a>
     <main>
+      <div class="page-intro">
+        <h1>Choose an environment</h1>
+        <p>Open an assessment or the admin viewer in Stage or Production.</p>
+      </div>
       <div class="environments">
-        <section aria-labelledby="stage-heading">
-          <h2 id="stage-heading">Stage</h2>
-          <ul>
-            <li><a href="https://20409-157ochretakin-stage.adobeio-static.net/self-guided.html">Self-guided assessment</a></li>
-            <li><a href="https://20409-157ochretakin-stage.adobeio-static.net/facilitator.html?view=practitioner">Facilitator assessment — Practitioner</a></li>
-            <li><a href="https://20409-157ochretakin-stage.adobeio-static.net/facilitator.html?view=executive">Facilitator assessment — Executive</a></li>
-            <li><a href="https://experience.adobe.com/?devMode=true&amp;orgId=adobe-lamont-crook#/custom-apps/?localDevUrl=https%3A%2F%2F20409-157ochretakin-stage.adobeio-static.net%2Fadmin.html">Admin viewer (sign-in required)</a></li>
-          </ul>
+        <section class="environment" aria-labelledby="stage-heading">
+          <div class="environment-heading">
+            <h2 id="stage-heading">Stage</h2>
+            <span class="environment-label">Testing environment</span>
+          </div>
+          <div class="environment-content">
+            <h3>Assessments</h3>
+            <ul class="link-list">
+              <li><a class="resource-link" href="https://20409-157ochretakin-stage.adobeio-static.net/self-guided.html">
+                <span class="resource-copy"><span class="resource-title">Self-guided assessment</span><span class="resource-description">Complete an assessment independently</span></span>
+                <span class="resource-arrow" aria-hidden="true">›</span>
+              </a></li>
+              <li class="facilitator-entry">
+                <div class="resource-copy">
+                  <span class="resource-title">Facilitator-led assessment</span>
+                  <span class="resource-description">Choose a view for your session</span>
+                </div>
+                <div class="view-options" aria-label="Facilitator assessment views">
+                  <a class="view-option" href="https://20409-157ochretakin-stage.adobeio-static.net/facilitator.html?view=practitioner">Practitioner view</a>
+                  <a class="view-option" href="https://20409-157ochretakin-stage.adobeio-static.net/facilitator.html?view=executive">Executive view</a>
+                </div>
+              </li>
+            </ul>
+            <div class="admin-group">
+              <h3>Administration</h3>
+              <ul class="link-list">
+                <li><a class="resource-link admin-link" href="https://experience.adobe.com/?devMode=true&amp;orgId=adobe-lamont-crook#/custom-apps/?localDevUrl=https%3A%2F%2F20409-157ochretakin-stage.adobeio-static.net%2Fadmin.html">
+                  <span class="resource-copy"><span class="resource-title">Open admin viewer</span><span class="resource-description">Profiles, questions, settings, and API reference · Sign-in required</span></span>
+                  <span class="resource-arrow" aria-hidden="true">↗</span>
+                </a></li>
+              </ul>
+            </div>
+          </div>
         </section>
-        <section aria-labelledby="production-heading">
-          <h2 id="production-heading">Production</h2>
-          <ul>
-            <li><a href="https://20409-157ochretakin.adobeio-static.net/self-guided.html">Self-guided assessment</a></li>
-            <li><a href="https://20409-157ochretakin.adobeio-static.net/facilitator.html?view=practitioner">Facilitator assessment — Practitioner</a></li>
-            <li><a href="https://20409-157ochretakin.adobeio-static.net/facilitator.html?view=executive">Facilitator assessment — Executive</a></li>
-            <li><a href="https://experience.adobe.com/?devMode=true&amp;orgId=adobe-lamont-crook#/custom-apps/?localDevUrl=https%3A%2F%2F20409-157ochretakin.adobeio-static.net%2Fadmin.html">Admin viewer (sign-in required)</a></li>
-          </ul>
+        <section class="environment" aria-labelledby="production-heading">
+          <div class="environment-heading">
+            <h2 id="production-heading">Production</h2>
+            <span class="environment-label">Live environment</span>
+          </div>
+          <div class="environment-content">
+            <h3>Assessments</h3>
+            <ul class="link-list">
+              <li><a class="resource-link" href="https://20409-157ochretakin.adobeio-static.net/self-guided.html">
+                <span class="resource-copy"><span class="resource-title">Self-guided assessment</span><span class="resource-description">Complete an assessment independently</span></span>
+                <span class="resource-arrow" aria-hidden="true">›</span>
+              </a></li>
+              <li class="facilitator-entry">
+                <div class="resource-copy">
+                  <span class="resource-title">Facilitator-led assessment</span>
+                  <span class="resource-description">Choose a view for your session</span>
+                </div>
+                <div class="view-options" aria-label="Facilitator assessment views">
+                  <a class="view-option" href="https://20409-157ochretakin.adobeio-static.net/facilitator.html?view=practitioner">Practitioner view</a>
+                  <a class="view-option" href="https://20409-157ochretakin.adobeio-static.net/facilitator.html?view=executive">Executive view</a>
+                </div>
+              </li>
+            </ul>
+            <div class="admin-group">
+              <h3>Administration</h3>
+              <ul class="link-list">
+                <li><a class="resource-link admin-link" href="https://experience.adobe.com/?devMode=true&amp;orgId=adobe-lamont-crook#/custom-apps/?localDevUrl=https%3A%2F%2F20409-157ochretakin.adobeio-static.net%2Fadmin.html">
+                  <span class="resource-copy"><span class="resource-title">Open admin viewer</span><span class="resource-description">Profiles, questions, settings, and API reference · Sign-in required</span></span>
+                  <span class="resource-arrow" aria-hidden="true">↗</span>
+                </a></li>
+              </ul>
+            </div>
+          </div>
         </section>
       </div>
-      <footer>Assessment pages are public. The admin viewer requires an Adobe sign-in for the Guided Discovery IMS organization.</footer>
+      <aside class="access-note" aria-label="Sign-in information">
+        <span class="info-icon" aria-hidden="true">i</span>
+        <p>Assessment pages are public. The admin viewer opens in Adobe Experience Cloud and requires an Adobe sign-in for the Guided Discovery organization.</p>
+      </aside>
     </main>
   </body>
 </html>
