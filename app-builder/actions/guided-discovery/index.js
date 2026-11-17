@@ -11,6 +11,7 @@ const questions = require('../lib/questions')
 const { labelResult } = require('../lib/result')
 const settings = require('../lib/settings')
 const ai = require('../lib/ai')
+const guide = require('../lib/guide')
 
 const headers = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
 const reply = (statusCode, body) => ({ statusCode, headers, body })
@@ -401,9 +402,9 @@ async function wrapupSend (client, col, responseId, params) {
   }
   if (mine.length >= 5) return reply(429, { ok: false, error: 'too many attempts for this assessment' })
 
+  const configuration = await guide.loadConfiguration(client)
+  if (!configuration.skill || !configuration.skill.text) return reply(400, { ok: false, error: 'no wrap-up skill is configured' })
   const store = client.collection(settings.SETTINGS_COLLECTION)
-  const skill = await findOneOrNull(store, { key: settings.SKILL_KEY })
-  if (!skill || !skill.text) return reply(400, { ok: false, error: 'no wrap-up skill is configured' })
   if (!settings.hasKey(await findOneOrNull(store, { key: settings.AI_KEY }))) return reply(400, { ok: false, error: 'no API key is configured' })
 
   // answers must be scored before they are sent
@@ -415,18 +416,13 @@ async function wrapupSend (client, col, responseId, params) {
     ? await findOneOrNull(client.collection(assessments.COLLECTION), { submissionId: response.submissionId })
     : null
   const sections = await questions.sectionsOf(client, response.assessment)
-  const lines = ai.profileLines(profile && profile.profile)
-  const input = (lines.length ? ['## Profile', '', ...lines, ''].join('\n') + '\n' : '') +
-    ai.buildInput({ assessment: response.assessment, response, sections })
-
-  // with a saved template Claude returns only the content as JSON and the template is filled from it
-  const tpl = await findOneOrNull(store, { key: settings.TEMPLATE_KEY })
-  const templated = tpl && tpl.text
-    ? {
-        templateText: tpl.text,
-        computed: ai.computedFacts({ assessment: response.assessment, response, profile: profile && profile.profile })
-      }
-    : {}
+  const request = guide.prepare({
+    assessment: response.assessment,
+    response,
+    profile: profile && profile.profile,
+    sections,
+    ...configuration
+  })
 
   const now = new Date().toISOString()
   const rec = {
@@ -435,13 +431,8 @@ async function wrapupSend (client, col, responseId, params) {
     submissionId: response.submissionId || null,
     assessment: response.assessment,
     trigger: 'wrapup',
-    skillName: skill.name || '',
-    systemText: settings.skillSystemText(skill) + (templated.templateText ? require('../lib/template').outputInstructions(templated.templateText) : ''),
-    ...templated,
-    promptName: 'Wrap-up guide',
-    promptText: ai.WRAPUP_PROMPT,
+    ...request,
     model: ai.MODEL,
-    input,
     status: 'queued',
     createdAt: now,
     createdBy: 'wrapup'

@@ -475,7 +475,10 @@ export default function SettingsPage({ token, org, profile }) {
   }, [token, org]);
   useEffect(() => { load(); }, [load]);
 
-  const byName = (list) => [...list].sort((a, b) => a.name.localeCompare(b.name));
+  const byName = (list) => [...list].sort((a, b) => {
+    if (a.name !== b.name) return a.name < b.name ? -1 : 1;
+    return a.promptId === b.promptId ? 0 : (a.promptId < b.promptId ? -1 : 1);
+  });
   const open = (p) => setEditing({ ...p, openKey: Date.now() });
   const onPromptSaved = (p) => {
     setState((s) => ({ ...s, prompts: byName([...s.prompts.filter((x) => x.promptId !== p.promptId), p]) }));
@@ -510,12 +513,13 @@ export default function SettingsPage({ token, org, profile }) {
 
             <section className="settings-card" aria-labelledby="prompts-h">
               <div className="settings-card-head">
-                <h2 id="prompts-h">Prompts</h2>
-                <button type="button" className="primary" onClick={() => open({ name: '', text: '' })}>Add prompt</button>
+                <h2 id="prompts-h">Shared prompt</h2>
+                {!state.prompts.length && <button type="button" className="primary" onClick={() => open({ name: '', text: '' })}>Add shared prompt</button>}
               </div>
+              <p className="muted small">Send to AI and Finish &amp; Wrap Up use the first prompt in this list, together with the wrap-up skill and template. Keep one prompt here so both flows use the same instructions.</p>
               {!state.prompts.length && <p className="muted">No prompts yet.</p>}
               <ul className="prompt-list">
-                {state.prompts.map((p) => (
+                {state.prompts.map((p, index) => (
                   <li key={p.promptId}>
                     <button
                       type="button"
@@ -523,6 +527,7 @@ export default function SettingsPage({ token, org, profile }) {
                       onClick={() => open(p)}
                     >
                       <strong>{p.name}</strong>
+                      <span className="muted small">{index === 0 ? 'Used by both AI flows' : 'Not used by either AI flow'}</span>
                       <span className="muted small">{p.text.length > 140 ? `${p.text.slice(0, 140)}…` : p.text}</span>
                       <span className="muted small">Updated {fmt(p.updatedAt)}</span>
                     </button>

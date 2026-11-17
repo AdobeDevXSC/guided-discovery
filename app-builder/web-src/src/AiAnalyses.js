@@ -2,9 +2,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { fetchAnalyses, fetchSettings, sendToAi } from './api';
 import { fmt } from './Detail';
 
-// Send to AI, on a completed run in the profile panel: pick a stored prompt and send the run's
-// questions and answers to Claude (server to server). The analysis runs in the background; this
-// polls until it finishes and lists every stored reply, newest first.
+// Send to AI uses the same saved prompt, skill, template and assessment input as Finish & Wrap Up.
+// The analysis runs in the background; this polls until it finishes and lists every stored reply.
 
 const POLL_MS = 4000;
 const LABELS = {
@@ -40,9 +39,10 @@ function Analysis({ a, open }) {
 
 export default function AiAnalyses({ responseId, auth }) {
   const { token, org, profile } = auth;
-  const [prompts, setPrompts] = useState(null);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [hasKey, setHasKey] = useState(false);
-  const [promptId, setPromptId] = useState('');
+  const [hasSkill, setHasSkill] = useState(false);
+  const [hasPrompt, setHasPrompt] = useState(false);
   const [analyses, setAnalyses] = useState([]);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState(null);
@@ -52,11 +52,12 @@ export default function AiAnalyses({ responseId, auth }) {
     fetchSettings({ token, org })
       .then((res) => {
         if (!alive) return;
-        setPrompts(res.prompts || []);
+        setSettingsLoaded(true);
         setHasKey(Boolean(res.ai && res.ai.hasKey));
-        if (res.prompts && res.prompts.length) setPromptId(res.prompts[0].promptId);
+        setHasSkill(Boolean(res.skill && res.skill.text));
+        setHasPrompt(Boolean(res.prompts && res.prompts.length));
       })
-      .catch((e) => { if (alive) { setPrompts([]); setError(e.message); } });
+      .catch((e) => { if (alive) { setSettingsLoaded(true); setError(e.message); } });
     return () => { alive = false; };
   }, [token, org]);
 
@@ -81,7 +82,7 @@ export default function AiAnalyses({ responseId, auth }) {
     setError(null);
     try {
       const res = await sendToAi({
-        token, org, responseId, promptId, editor: profile && (profile.email || profile.name),
+        token, org, responseId, editor: profile && (profile.email || profile.name),
       });
       setAnalyses((list) => [res.analysis, ...list]);
     } catch (e) {
@@ -90,25 +91,22 @@ export default function AiAnalyses({ responseId, auth }) {
     setSending(false);
   };
 
-  const ready = prompts && prompts.length > 0 && hasKey;
+  const ready = settingsLoaded && hasKey && hasSkill;
   return (
     <div className="ai-panel">
       <div className="ai-send">
         <strong>Send to AI</strong>
-        {prompts && prompts.length > 0 && (
-          <select aria-label="Prompt" value={promptId} onChange={(e) => setPromptId(e.target.value)} disabled={sending}>
-            {prompts.map((p) => <option key={p.promptId} value={p.promptId}>{p.name}</option>)}
-          </select>
-        )}
-        <button type="button" className="primary" onClick={send} disabled={!ready || !promptId || sending || running}>
+        <span className="muted small">Uses the shared prompt, skill and template from Settings.</span>
+        <button type="button" className="primary" onClick={send} disabled={!ready || sending || running}>
           {sending ? 'Sending…' : 'Send to AI'}
         </button>
       </div>
-      {prompts && !ready && (
+      {settingsLoaded && !ready && !error && (
         <p className="muted small">
-          {!hasKey ? 'Add the Amazon Bedrock API key' : 'Add a prompt'} on the <a href="#settings">Settings</a> page to send answers to AI.
+          {!hasKey ? 'Add the Amazon Bedrock API key' : 'Add the wrap-up skill'} on the <a href="#settings">Settings</a> page to send answers to AI.
         </p>
       )}
+      {settingsLoaded && ready && !hasPrompt && <p className="muted small">No saved prompt is configured; the built-in guide prompt will be used.</p>}
       {error && <p role="alert" className="error">{error}</p>}
       {analyses.map((a, i) => <Analysis key={a.analysisId} a={a} open={i === 0} />)}
     </div>
