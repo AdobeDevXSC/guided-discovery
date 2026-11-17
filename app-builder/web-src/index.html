@@ -2,48 +2,55 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" type="image/png" href="./static/favicon-32.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="./static/favicon-192.png" sizes="192x192">
-    <link rel="icon" type="image/png" href="./static/favicon-512.png" sizes="512x512">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Viewer for CJA migration assessment submissions"
-    />
-    <link rel="apple-touch-icon" href="./static/favicon-192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
-    <link rel="manifest" href="./manifest.json" />
-        
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
-
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>Assessment profiles</title>
+    <meta name="theme-color" content="#17172b" />
+    <meta name="description" content="Guided Discovery assessment links for Stage and Production." />
+    <title>Guided Discovery</title>
+    <style>
+      :root { color-scheme: light; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #24243a; background: #f5f5f8; }
+      * { box-sizing: border-box; }
+      body { margin: 0; }
+      header { padding: 3rem max(1.5rem, calc((100% - 960px) / 2)); color: white; background: #17172b; }
+      header p { margin: .75rem 0 0; color: #c9c9d6; }
+      main { max-width: 960px; margin: 2rem auto; padding: 0 1.5rem; }
+      .environments { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; }
+      section { padding: 1.5rem; border: 1px solid #dedee7; border-radius: 12px; background: white; }
+      h1 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(2rem, 5vw, 3rem); }
+      h2 { margin: 0 0 1rem; font-family: Georgia, "Times New Roman", serif; }
+      ul { display: grid; gap: .75rem; margin: 0; padding: 0; list-style: none; }
+      a { display: block; padding: .85rem 1rem; border: 1px solid #c8c8d6; border-radius: 8px; color: #29296f; font-weight: 600; text-decoration: none; }
+      a:hover, a:focus-visible { border-color: #5555b8; background: #f4f4ff; }
+      footer { margin-top: 1.5rem; color: #626273; font-size: .9rem; }
+    </style>
   </head>
   <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <!-- public self-guided assessment page (no sign-in); linking it here makes the build publish it -->
-    <a href="./self-guided.html" hidden>Self-guided assessment</a>
-    <div id="root"></div>
-    <script type="module" src="./src/index.js" async="true"></script>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
-
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
-
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
+    <header>
+      <h1>Guided Discovery</h1>
+      <p>Choose an environment and open an assessment or the admin viewer.</p>
+    </header>
+    <a href="./admin.html" hidden>Admin viewer</a>
+    <main>
+      <div class="environments">
+        <section aria-labelledby="stage-heading">
+          <h2 id="stage-heading">Stage</h2>
+          <ul>
+            <li><a href="https://20409-157ochretakin-stage.adobeio-static.net/self-guided.html">Self-guided assessment</a></li>
+            <li><a href="https://20409-157ochretakin-stage.adobeio-static.net/facilitator.html?view=practitioner">Facilitator assessment — Practitioner</a></li>
+            <li><a href="https://20409-157ochretakin-stage.adobeio-static.net/facilitator.html?view=executive">Facilitator assessment — Executive</a></li>
+            <li><a href="https://experience.adobe.com/?devMode=true&amp;orgId=adobe-lamont-crook#/custom-apps/?localDevUrl=https%3A%2F%2F20409-157ochretakin-stage.adobeio-static.net%2Fadmin.html">Admin viewer (sign-in required)</a></li>
+          </ul>
+        </section>
+        <section aria-labelledby="production-heading">
+          <h2 id="production-heading">Production</h2>
+          <ul>
+            <li><a href="https://20409-157ochretakin.adobeio-static.net/self-guided.html">Self-guided assessment</a></li>
+            <li><a href="https://20409-157ochretakin.adobeio-static.net/facilitator.html?view=practitioner">Facilitator assessment — Practitioner</a></li>
+            <li><a href="https://20409-157ochretakin.adobeio-static.net/facilitator.html?view=executive">Facilitator assessment — Executive</a></li>
+            <li><a href="https://experience.adobe.com/?devMode=true&amp;orgId=adobe-lamont-crook#/custom-apps/?localDevUrl=https%3A%2F%2F20409-157ochretakin.adobeio-static.net%2Fadmin.html">Admin viewer (sign-in required)</a></li>
+          </ul>
+        </section>
+      </div>
+      <footer>Assessment pages are public. The admin viewer requires an Adobe sign-in for the Guided Discovery IMS organization.</footer>
+    </main>
   </body>
 </html>

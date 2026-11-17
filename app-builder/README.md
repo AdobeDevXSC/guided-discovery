@@ -13,12 +13,14 @@ Stage deploys from every branch push and Production from `main` (see `docs/ci-cd
 
 **Stage:** project `marketingprototype`, workspace Stage, org `adobe-lamont-crook`.
 
+The public environment landing page is served at `/` on either host. It links to both environments' self-guided and facilitator assessments and opens each admin viewer through Experience Cloud Shell with the project's IMS org selected. The admin UI is at `/admin.html` and requires sign-in.
+
 | Piece | Where |
 |---|---|
 | Public assessment page | `web-src/self-guided.html`, served at https://20409-157ochretakin-stage.adobeio-static.net/self-guided.html (no sign-in) |
 | Facilitator-led page | `web-src/facilitator.html`, served at https://20409-157ochretakin-stage.adobeio-static.net/facilitator.html. The link picks the session: `?view=practitioner` (the default) or `?view=executive`; each saves as assessment `facilitator-led` with that `view`, and shows the pages of that version. |
 | Page master | `pages-master/guided-discovery.html` is the source of both pages. `web-src/self-guided.html` and `web-src/facilitator.html` are built from it with `node scripts/build-pages.js` (App Builder's API base and the wrap-up code are added there); change the master or the script and rebuild, never edit the built pages. A test fails if they are out of date. |
-| Admin viewer (profiles, questions, API reference) | `web-src/src/`, opened through Experience Cloud: `https://experience.adobe.com/?devMode=true#/custom-apps/?localDevUrl=https://20409-157ochretakin-stage.adobeio-static.net/index.html` |
+| Admin viewer (profiles, questions, API reference) | `web-src/src/`, opened through Experience Cloud: `https://experience.adobe.com/?devMode=true&orgId=adobe-lamont-crook#/custom-apps/?localDevUrl=https://20409-157ochretakin-stage.adobeio-static.net/admin.html` |
 | Profiles API | `actions/assessments`: the assessment's initial form (`cja_assessments`, people in `cja_users`) |
 | Responses API | `actions/guided-discovery`: answers, progress and results (`assessment_responses`), plus `GET ?op=questions` |
 | Admin API | `actions/assessments-admin`: lists, deletes, the question bank, exports; needs an Adobe IMS token (`require-adobe-auth`) |
@@ -34,7 +36,7 @@ Docs:
 
 ## Working on it
 
-- **The public page** is one self-contained HTML file: its own page code, plus an "App Builder sync" block at the end that talks to the APIs. The build publishes it because `web-src/index.html` links to it.
+- **The public assessment page** is one self-contained HTML file: its own page code, plus an "App Builder sync" block at the end that talks to the APIs. The root landing page links to the assessments and admin viewer.
 - **Tests:** `npm test` (Jest) covers scoring and answer validation against a fixture of the real questions (`test/fixtures/self-guided-questions.json`). Re-export the fixture when the question bank changes.
 - **Deploy:** `aio app deploy` (actions and web), or `--no-web-assets` / `--no-actions` for one half. Deploying is manual; merging doesn't deploy.
 - **Allowed browser origins** are in `actions/lib/cors.js`: `landing.adobe.com`, this app's static host, localhost and 127.0.0.1. Calls without an `Origin` header (curl, servers) are accepted.
