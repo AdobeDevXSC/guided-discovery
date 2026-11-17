@@ -45,7 +45,13 @@ function defaults (now = new Date().toISOString()) {
 }
 
 async function seedMissing (col) {
-  const saved = await col.find({}).limit(100).toArray()
+  let saved
+  try {
+    saved = await col.find({}).limit(100).toArray()
+  } catch (e) {
+    if (!/not found|does not exist/i.test((e && e.message) || '')) throw e
+    saved = []
+  }
   const ids = new Set(saved.map((item) => item.questionId))
   const missing = defaults().filter((item) => !ids.has(item.questionId))
   for (const item of missing) {

@@ -32,6 +32,29 @@ describe('RFI profile question definitions', () => {
     expect(docs[0].title).toBe('Admin edit')
   })
 
+  test('seeds definitions when the collection does not exist yet', async () => {
+    const docs = []
+    let collectionMissing = true
+    const col = {
+      find: () => ({
+        limit: () => ({
+          toArray: async () => {
+            if (collectionMissing) {
+              collectionMissing = false
+              throw new Error('Collection not found')
+            }
+            return docs
+          }
+        })
+      }),
+      insertOne: async (doc) => docs.push(doc)
+    }
+
+    await profileQuestions.seedMissing(col)
+
+    expect(docs).toHaveLength(13)
+  })
+
   test('updates text and option labels while keeping field identity and saved option keys', () => {
     const existing = seeded.find((q) => q.field === 'country')
     const { doc, errors } = profileQuestions.validateEdit({
