@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <!--
-THESIS: A direct environment switchboard, not a marketing hero.
+THESIS: An environment switchboard organized by product, not a generic assessment directory.
 OWN-WORLD: Adobe Spectrum neutrals, Adobe Clean UI typography, blue action links, compact borders, and clear focus.
-STORY: Choose Stage or Production, then open an assessment or the signed-in admin viewer.
-FIRST VIEWPORT: Product title and one-line instruction above two equal environment panels with grouped links.
+STORY: Choose an environment, then an AA-to-CJA assessment; future products can have their own groups.
+FIRST VIEWPORT: Product context and a concise instruction above equal Stage and Production panels.
 FORM: User-selected Adobe Spectrum, applied as a responsive two-column link hub without external fonts or components.
 -->
 <html lang="en">
@@ -52,6 +52,8 @@ FORM: User-selected Adobe Spectrum, applied as a responsive two-column link hub 
       .environment-label { color: var(--muted); font-size: 13px; }
       .environment-content { padding: 16px 20px 20px; }
       h3 { margin: 0 0 8px; color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+      .product-heading { margin: 0 0 12px; color: var(--text); font-size: 17px; font-weight: 700; letter-spacing: -.01em; text-transform: none; }
+      .assessment-label { margin: 0 0 8px; color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
       .link-list { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
       .resource-link { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 56px; padding: 9px 10px; border: 1px solid transparent; border-radius: 4px; text-decoration: none; transition: background-color 120ms ease, border-color 120ms ease; }
       .resource-link:hover { border-color: var(--border); background: #f8f8f8; }
@@ -99,7 +101,7 @@ FORM: User-selected Adobe Spectrum, applied as a responsive two-column link hub 
     <main>
       <div class="page-intro">
         <h1>Choose an environment</h1>
-        <p>Open an assessment or the admin viewer in Stage or Production.</p>
+        <p>Select Stage or Production, then choose an AA-to-CJA assessment. Additional products will appear here as they become available.</p>
       </div>
       <div class="environments">
         <section class="environment" aria-labelledby="stage-heading">
@@ -108,7 +110,8 @@ FORM: User-selected Adobe Spectrum, applied as a responsive two-column link hub 
             <span class="environment-label">Testing environment</span>
           </div>
           <div class="environment-content">
-            <h3>Assessments</h3>
+            <h3 class="product-heading">AA-to-CJA</h3>
+            <h4 class="assessment-label">Assessments</h4>
             <ul class="link-list">
               <li><a class="resource-link" href="https://20409-157ochretakin-stage.adobeio-static.net/self-guided.html">
                 <span class="resource-copy"><span class="resource-title">Self-guided assessment</span><span class="resource-description">Complete an assessment independently</span></span>
@@ -142,7 +145,8 @@ FORM: User-selected Adobe Spectrum, applied as a responsive two-column link hub 
             <span class="environment-label">Live environment</span>
           </div>
           <div class="environment-content">
-            <h3>Assessments</h3>
+            <h3 class="product-heading">AA-to-CJA</h3>
+            <h4 class="assessment-label">Assessments</h4>
             <ul class="link-list">
               <li><a class="resource-link" href="https://20409-157ochretakin.adobeio-static.net/self-guided.html">
                 <span class="resource-copy"><span class="resource-title">Self-guided assessment</span><span class="resource-description">Complete an assessment independently</span></span>
