@@ -56,6 +56,7 @@ test('the public landing page links to each environment and routes admin links t
   }
   assert.strictEqual((landing.match(/orgId=adobe-lamont-crook/g) || []).length, 2)
   assert.strictEqual((landing.match(/Facilitator-led assessment/g) || []).length, 2)
+  assert.strictEqual((landing.match(/One form; choose a view/g) || []).length, 2)
   assert.strictEqual((landing.match(/class="view-option"/g) || []).length, 4)
   assert.strictEqual((landing.match(/class="product-heading"/g) || []).length, 2)
   assert.ok(landing.includes('Additional products will appear here as they become available.'))
