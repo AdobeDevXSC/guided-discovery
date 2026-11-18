@@ -9,6 +9,7 @@ import QuestionsPage from './QuestionsPage';
 import ApiDocs from './ApiDocs';
 import SettingsPage from './SettingsPage';
 import LlmLogPage from './LlmLogPage';
+import WrapupSlidesPage from './WrapupSlidesPage';
 import { ASSESSMENTS, answerColumns } from './datasets';
 import { ENV_NAME } from './apiDocsData';
 import './App.css';
@@ -18,9 +19,11 @@ const ENVIRONMENT_LABEL = ENV_NAME === 'Production' ? 'PROD' : 'STAGE';
 
 // Pages of the viewer, addressable by hash (#questions) so they can be linked to.
 const VIEWS = [['profiles', 'Profiles'], ['questions', 'Questions'], ['llm-log', 'LLM log'], ['settings', 'Settings'], ['api', 'API reference']];
+const guideIdFromUrl = () => new URLSearchParams(window.location.search).get('guide');
 const viewFromHash = () => {
   const h = window.location.hash.replace(/^#\/?/, '').split('/')[0]; // #api/<part> is still the api page
-  return VIEWS.some(([k]) => k === h) ? h : 'profiles';
+  if (VIEWS.some(([k]) => k === h)) return h;
+  return guideIdFromUrl() ? 'guide' : 'profiles';
 };
 function useView() {
   const [view, setView] = useState(viewFromHash);
@@ -250,6 +253,14 @@ export default function App() {
     return (
       <Viewer view={view}>
         <LlmLogPage token={token} org={org} />
+      </Viewer>
+    );
+  }
+
+  if (view === 'guide') {
+    return (
+      <Viewer view="llm-log">
+        <WrapupSlidesPage token={token} org={org} analysisId={guideIdFromUrl()} />
       </Viewer>
     );
   }
