@@ -10,9 +10,11 @@ import ApiDocs from './ApiDocs';
 import SettingsPage from './SettingsPage';
 import LlmLogPage from './LlmLogPage';
 import { ASSESSMENTS, answerColumns } from './datasets';
+import { ENV_NAME } from './apiDocsData';
 import './App.css';
 
 const ASSESSMENT_KEYS = Object.keys(ASSESSMENTS);
+const ENVIRONMENT_LABEL = ENV_NAME === 'Production' ? 'PROD' : 'STAGE';
 
 // Pages of the viewer, addressable by hash (#questions) so they can be linked to.
 const VIEWS = [['profiles', 'Profiles'], ['questions', 'Questions'], ['llm-log', 'LLM log'], ['settings', 'Settings'], ['api', 'API reference']];
@@ -37,6 +39,18 @@ function Nav({ view }) {
         <a key={key} href={`#${key}`} className={key === view ? 'on' : ''} aria-current={key === view ? 'page' : undefined}>{label}</a>
       ))}
     </nav>
+  );
+}
+
+function Viewer({ view, children }) {
+  return (
+    <div className="viewer">
+      <Nav view={view} />
+      {children}
+      <footer className="environment-footer no-print" aria-label={`Environment: ${ENV_NAME}`}>
+        {ENVIRONMENT_LABEL}
+      </footer>
+    </div>
   );
 }
 const DELETE_BATCH = 100; // the admin action's per-request limit
@@ -221,44 +235,35 @@ export default function App() {
   const denied = error && (error.status === 401 || error.status === 403);
 
   if (view === 'api') {
-    return (
-      <div className="viewer">
-        <Nav view={view} />
-        <ApiDocs />
-      </div>
-    );
+    return <Viewer view={view}><ApiDocs /></Viewer>;
   }
 
   if (view === 'settings') {
     return (
-      <div className="viewer">
-        <Nav view={view} />
+      <Viewer view={view}>
         <SettingsPage token={token} org={org} profile={auth.profile} />
-      </div>
+      </Viewer>
     );
   }
 
   if (view === 'llm-log') {
     return (
-      <div className="viewer">
-        <Nav view={view} />
+      <Viewer view={view}>
         <LlmLogPage token={token} org={org} />
-      </div>
+      </Viewer>
     );
   }
 
   if (view === 'questions') {
     return (
-      <div className="viewer">
-        <Nav view={view} />
+      <Viewer view={view}>
         <QuestionsPage token={token} org={org} profile={auth.profile} assessment={ds.assessment} assessmentLabel={ds.label} />
-      </div>
+      </Viewer>
     );
   }
 
   return (
-    <div className="viewer">
-      <Nav view={view} />
+    <Viewer view={view}>
       <header className="top no-print">
         <div>
           <h1>{ds.label}</h1>
@@ -375,6 +380,6 @@ export default function App() {
           </Detail>
         )}
       </div>
-    </div>
+    </Viewer>
   );
 }

@@ -6,6 +6,8 @@ const questions = require('../lib/questions')
 const { labelResult } = require('../lib/result')
 const settings = require('../lib/settings')
 const ai = require('../lib/ai')
+const guide = require('../lib/guide')
+const profileQuestions = require('../lib/profile-questions')
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
@@ -48,13 +50,13 @@ const DATASETS = {
 //   GET ?dataset=llm-log &status= &trigger=manual|wrapup &limit= &skip= -> { ok, total, items } every LLM query,
 //        newest first, without the long input/output; &analysisId=... -> { ok, entry } one in full
 //   GET ?dataset=ai-analyses&responseId=... -> { ok, analyses } AI replies for one response, newest first
-//   POST {op:'ai-send', responseId, promptId, editor?} -> 201 { ok, analysis } sends a completed
-//        response (full question text and answers, no contact details) with a stored prompt to
-//        Claude in the background (action ai-analysis); poll the list until status is done/failed
+//   POST {op:'ai-send', responseId, editor?} -> 201 { ok, analysis } sends a completed response
+//        using the shared prompt, skill/resources and template used by Finish & Wrap Up; poll the
+//        list until status is done/failed
 //   POST {op:'prompt-save', prompt:{promptId?, name, text}, editor?} -> { ok, prompt, created }
 //   POST {op:'prompt-delete', promptId} -> { ok, deleted }
-//   POST {op:'llm-rerun', analysisId, editor?} -> 201 { ok, analysis } sends that query again as a new entry (a wrap-up uses the
-//        skill as saved now); 409 while a query for the same assessment is running
+//   POST {op:'llm-rerun', analysisId, editor?} -> 201 { ok, analysis } sends that query again as a new entry
+//        (a wrap-up uses the shared prompt, skill and template as saved now); 409 while running
 //   POST {op:'llm-delete', analysisId} -> { ok, deleted } removes one LLM log entry (wrap-up or admin query), by id only;
 //        409 while it is queued or running. Deleting a wrap-up lets that response be wrapped up again.
 //   GET ?dataset=answers-export&assessment=self-guided -> { ok, columns, rows } for the CSV export:
@@ -66,6 +68,7 @@ const DATASETS = {
 //        (see lib/questions.js)
 async function main (params) {
   if (params.op === 'question-save' || params.dataset === 'questions') return questionBank(params)
+  if (params.op === 'profile-question-save' || params.dataset === 'profile-questions') return profileQuestionBank(params)
   if (params.dataset === 'profile-answers') return profileAnswers(params)
   if (params.dataset === 'ai-analyses' || params.op === 'ai-send') return aiAnalyses(params)
   if (params.dataset === 'answers-export') return answersExport(params)
@@ -137,28 +140,33 @@ async function aiAnalyses (params) {
       const response = await findOneOrNull(client.collection(responses.COLLECTION), { responseId })
       if (!response) return reply(404, { ok: false, error: 'not found' })
       if (response.status !== 'completed') return reply(400, { ok: false, error: 'only completed assessments can be sent to AI' })
-      const prompt = settings.PROMPT_ID_RE.test(String(params.promptId || ''))
-        ? await findOneOrNull(client.collection(settings.PROMPTS_COLLECTION), { promptId: params.promptId })
-        : null
-      if (!prompt) return reply(400, { ok: false, error: 'choose a saved prompt' })
       const saved = await findOneOrNull(client.collection(settings.SETTINGS_COLLECTION), { key: settings.AI_KEY })
       if (!settings.hasKey(saved)) return reply(400, { ok: false, error: 'no API key is saved; add one on the Settings page' })
+      const configuration = await guide.loadConfiguration(client)
+      if (!configuration.skill || !configuration.skill.text) return reply(400, { ok: false, error: 'no wrap-up skill is configured' })
       const pending = (await col.find({ responseId, status: { $in: ['queued', 'running'] } }).limit(10).toArray())
         .map((d) => ai.publicAnalysis(d)).filter((d) => d.status !== 'failed')
       if (pending.length) return reply(409, { ok: false, error: 'an analysis of this assessment is already running' })
 
+      const profile = response.submissionId
+        ? await findOneOrNull(client.collection(assessments.COLLECTION), { submissionId: response.submissionId })
+        : null
+      const request = guide.prepare({
+        assessment: response.assessment,
+        response,
+        profile: profile && profile.profile,
+        sections: await questions.sectionsOf(client, response.assessment),
+        ...configuration
+      })
       const now = new Date().toISOString()
       const doc = {
         analysisId: crypto.randomUUID(),
         responseId,
         submissionId: response.submissionId || null,
         assessment: response.assessment,
-        promptId: prompt.promptId,
-        promptName: prompt.name,
-        promptText: prompt.text,
         trigger: 'manual',
         model: ai.MODEL,
-        input: ai.buildInput({ assessment: response.assessment, response, sections: await questions.sectionsOf(client, response.assessment) }),
+        ...request,
         status: 'queued',
         createdAt: now,
         createdBy: editorOf(params)
@@ -202,18 +210,21 @@ async function llmRerun (params) {
       if (pending.length) return reply(409, { ok: false, error: 'a query for this assessment is already running' })
 
       let systemText = old.systemText
-      let templateText = null // a wrap-up uses the template as saved now, filled with the same computed facts
+      let templateText = old.templateText || null
       let skillName = old.skillName || ''
+      let promptId = old.promptId
+      let promptName = old.promptName
+      let promptText = old.promptText
       if (old.trigger === 'wrapup') {
-        const skill = await findOneOrNull(store, { key: settings.SKILL_KEY })
-        if (!skill || !skill.text) return reply(400, { ok: false, error: 'no wrap-up skill is configured' })
-        systemText = settings.skillSystemText(skill)
-        skillName = skill.name || ''
-        const tplDoc = await findOneOrNull(store, { key: settings.TEMPLATE_KEY })
-        if (tplDoc && tplDoc.text) {
-          templateText = tplDoc.text
-          systemText += require('../lib/template').outputInstructions(templateText)
-        }
+        const configuration = await guide.loadConfiguration(client)
+        if (!configuration.skill || !configuration.skill.text) return reply(400, { ok: false, error: 'no wrap-up skill is configured' })
+        systemText = settings.skillSystemText(configuration.skill) +
+          (configuration.template && configuration.template.text ? require('../lib/template').outputInstructions(configuration.template.text) : '')
+        skillName = configuration.skill.name || ''
+        templateText = configuration.template && configuration.template.text ? configuration.template.text : null
+        promptId = configuration.prompt && configuration.prompt.promptId
+        promptName = configuration.prompt && configuration.prompt.name ? configuration.prompt.name : 'Wrap-up guide'
+        promptText = configuration.prompt && configuration.prompt.text ? configuration.prompt.text : ai.WRAPUP_PROMPT
       }
       const doc = {
         analysisId: crypto.randomUUID(),
@@ -221,9 +232,9 @@ async function llmRerun (params) {
         submissionId: old.submissionId || null,
         assessment: old.assessment,
         trigger: old.trigger || 'manual',
-        ...(old.promptId ? { promptId: old.promptId } : {}),
-        promptName: old.promptName,
-        promptText: old.promptText,
+        ...(promptId ? { promptId } : {}),
+        promptName,
+        promptText,
         ...(systemText ? { systemText } : {}),
         skillName,
         rerunOf: old.analysisId,
@@ -385,6 +396,57 @@ async function questionBank (params) {
   }
 }
 
+// The RFI intake definitions are stored for admin reference and editing only; the public form
+// remains its own static copy.
+async function profileQuestionBank (params) {
+  const method = (params.__ow_method || 'get').toLowerCase()
+  if (method !== 'get' && method !== 'post') return reply(405, { ok: false, error: 'method not allowed' })
+  if (method === 'post' && params.op !== 'profile-question-save') {
+    return reply(400, { ok: false, error: 'op must be profile-question-save' })
+  }
+  try {
+    return await withDb(params, async (client) => {
+      const col = client.collection(profileQuestions.COLLECTION)
+      await ensureIndexes(col, profileQuestions.INDEXES)
+      await profileQuestions.seedMissing(col)
+      if (method === 'get') {
+        const items = await col.find({}).limit(100).toArray()
+        items.sort((a, b) => a.order - b.order)
+        return reply(200, {
+          ok: true,
+          dataset: 'profile-questions',
+          total: items.length,
+          count: items.length,
+          items: items.map(profileQuestions.publicQuestion)
+        })
+      }
+      return saveProfileQuestion(col, params)
+    })
+  } catch (e) {
+    console.error('assessments-admin profile questions failed:', e.name, e.httpStatusCode, e.message)
+    return reply(500, { ok: false, error: 'internal error' })
+  }
+}
+
+async function saveProfileQuestion (col, params) {
+  const input = params.question || {}
+  const key = String(input.questionId || '').trim()
+  const existing = key ? await findOneOrNull(col, { questionId: key }) : null
+  if (input.update !== true || !existing) {
+    return reply(input.update === true ? 404 : 400, {
+      ok: false,
+      errors: { questionId: input.update === true ? 'not found' : 'RFI fields cannot be added here' }
+    })
+  }
+  const now = new Date().toISOString()
+  const { doc, errors } = profileQuestions.validateEdit(input, existing, now, editorOf(params))
+  if (Object.keys(errors).length) return reply(400, { ok: false, errors })
+  await col.updateOne({ questionId: key }, { $set: doc })
+  const saved = await findOneOrNull(col, { questionId: key })
+  console.log('assessments-admin updated RFI question', key)
+  return reply(200, { ok: true, created: false, question: profileQuestions.publicQuestion(saved) })
+}
+
 // The answers behind one profile: its linked responses, each as a full question-by-question sheet.
 async function profileAnswers (params) {
   if (!UUID_RE.test(params.submissionId || '')) return reply(400, { ok: false, error: 'invalid submissionId' })
@@ -491,7 +553,7 @@ async function appSettings (params) {
       if (method === 'get') {
         const ai = await findOneOrNull(store, { key: settings.AI_KEY })
         const list = await prompts.find({}).limit(500).toArray()
-        list.sort((a, b) => String(a.name).localeCompare(String(b.name)))
+        list.sort(guide.comparePrompts)
         const skill = await findOneOrNull(store, { key: settings.SKILL_KEY })
         const template = await findOneOrNull(store, { key: settings.TEMPLATE_KEY })
         return reply(200, { ok: true, ai: settings.publicAi(ai), prompts: list.map(settings.publicPrompt), skill: settings.publicSkill(skill), template: settings.publicTemplate(template) })

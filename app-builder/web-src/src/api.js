@@ -66,6 +66,17 @@ export async function saveQuestion({
   });
 }
 
+/** The RFI intake definitions shown in the admin Questions page; not used by the public form. */
+export async function fetchProfileQuestions({ token, org }) {
+  const qs = new URLSearchParams({ dataset: 'profile-questions' });
+  return call(`${ENDPOINT}?${qs}`, { headers: authHeaders(token, org) });
+}
+
+/** Updates one existing RFI intake definition. */
+export async function saveProfileQuestion({ token, org, question, editor }) {
+  return postAdmin(token, org, { op: 'profile-question-save', question, editor });
+}
+
 /** The responses linked to one profile, each laid out against the whole question bank. */
 export async function fetchProfileAnswers({ token, org, submissionId }) {
   const qs = new URLSearchParams({ dataset: 'profile-answers', submissionId });
@@ -78,15 +89,15 @@ export async function fetchAnalyses({ token, org, responseId }) {
   return call(`${ENDPOINT}?${qs}`, { headers: authHeaders(token, org) });
 }
 
-/** Sends a completed response to AI with a stored prompt; resolves to { analysis } (queued). */
+/** Sends a completed response to AI using the shared prompt, skill and template; resolves to { analysis } (queued). */
 export async function sendToAi({
-  token, org, responseId, promptId, editor,
+  token, org, responseId, editor,
 }) {
   return call(ENDPOINT, {
     method: 'POST',
     headers: { ...authHeaders(token, org), 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      op: 'ai-send', responseId, promptId, editor,
+      op: 'ai-send', responseId, editor,
     }),
   });
 }

@@ -621,6 +621,7 @@ const questionsApi = {
     'The question bank (collection `assessment_questions`) holds every question of an assessment: section, key, full text, answer type and options. The responses API checks answers against it, and the Questions page of this viewer edits it.',
     'Keys are the stable IDs stored with answers: `section` and `question` in `answer` / `save` calls, and option `key`s as values. Keys are fixed once saved; saved options can be relabelled but not removed, and a saved question\'s answer type cannot change.',
     'Changes reach the responses API within about 30 seconds. Scoring thresholds and capability copy come from `lib/scoring-config.json` (facilitator-led uses the self-guided rules, see `lib/scoring-rules.js`).',
+    'The separate RFI intake definitions (`profile_questions`) are admin-only reference data. They are editable in the Questions page, but do not change the live self-guided form.',
   ],
   ops: [
     {
@@ -709,6 +710,66 @@ const questionsApi = {
       curl: [curlPost('assessments-admin', saveExisting, ADMIN_CURL_HEADERS), '', '# add a question', curlPost('assessments-admin', saveNew, ADMIN_CURL_HEADERS)].join('\n'),
       fetch: fetchPost('assessments-admin', saveNew, ADMIN_FETCH_HEADERS + ', '),
       notes: ['There is no delete: stored answers reference question and option keys.'],
+    },
+    {
+      id: 'rfi-questions-list',
+      title: 'List RFI intake definitions (admin)',
+      method: 'GET',
+      summary: '`?dataset=profile-questions` on `assessments-admin`. The first read seeds the 13 profile intake fields into `profile_questions`; requires an Adobe IMS user token.',
+      fieldsLabel: 'Query parameters',
+      fields: [['dataset', '"profile-questions"', 'yes', '']],
+      success: {
+        status: 200,
+        body: json({
+          ok: true,
+          dataset: 'profile-questions',
+          total: 13,
+          count: 13,
+          items: [{ questionId: 'first-name', field: 'firstName', section: 'rfi-intake', sectionTitle: 'RFI intake', title: 'First name', type: 'text', required: true, options: [], updatedAt: NOW, updatedBy: '' }, { '...': 'one per RFI intake field' }],
+        }),
+      },
+      errors: [
+        { status: 401, when: 'Missing or invalid IMS token (gateway error body)', body: '{ "error": "<gateway message>" }' },
+      ],
+      curl: curlGet('assessments-admin', 'dataset=profile-questions', ADMIN_CURL_HEADERS),
+      fetch: fetchGet('assessments-admin', 'dataset=profile-questions', ADMIN_FETCH_HEADERS),
+      notes: ['These definitions are for admin reference only; editing them does not change the public intake form.'],
+    },
+    {
+      id: 'rfi-question-save',
+      title: 'Update an RFI intake definition (admin)',
+      method: 'POST',
+      summary: '`op: "profile-question-save"` updates an existing RFI definition. Field identity and type are fixed; saved option keys cannot be removed or changed. Requires an Adobe IMS user token.',
+      fields: [
+        ['op', '"profile-question-save"', 'yes', ''],
+        ['question.questionId', 'string', 'yes', 'The existing RFI definition key.'],
+        ['question.update', 'true', 'yes', 'Must be `true`; new RFI fields cannot be added here.'],
+        ['question.title', 'string', 'yes', 'Question label, up to 500 characters.'],
+        ['question.help', 'string', 'no', 'Help text, up to 1000 characters.'],
+        ['question.required', 'boolean', 'no', 'Whether the stored definition is marked required.'],
+        ['question.options', '{key, label}[]', 'yes', 'Required for dropdown fields; saved keys must all remain. Text fields have no options.'],
+        ['editor', 'string', 'no', 'Who made the change (stored as `updatedBy`).'],
+      ],
+      success: {
+        status: 200,
+        body: json({ ok: true, created: false, question: { questionId: 'first-name', field: 'firstName', title: 'Given name', type: 'text', required: true, options: [], updatedBy: 'admin@example.com', '...': '...' } }),
+      },
+      errors: [
+        { status: 400, when: 'Invalid field values or attempting to create a new RFI definition', body: json({ ok: false, errors: { title: 'required' } }) },
+        { status: 404, when: '`update: true` but no saved RFI definition has that key', body: json({ ok: false, errors: { questionId: 'not found' } }) },
+        { status: 401, when: 'Missing or invalid IMS token (gateway error body)', body: '{ "error": "<gateway message>" }' },
+      ],
+      curl: curlPost('assessments-admin', {
+        op: 'profile-question-save',
+        question: { questionId: 'first-name', update: true, title: 'Given name', help: '', required: true, options: [] },
+        editor: 'admin@example.com',
+      }, ADMIN_CURL_HEADERS),
+      fetch: fetchPost('assessments-admin', {
+        op: 'profile-question-save',
+        question: { questionId: 'first-name', update: true, title: 'Given name', help: '', required: true, options: [] },
+        editor: 'admin@example.com',
+      }, ADMIN_FETCH_HEADERS + ', '),
+      notes: ['This endpoint only edits admin reference data. It does not update the public intake page or its profile validation.'],
     },
   ],
 };
@@ -884,11 +945,10 @@ const adminApi = {
       id: 'admin-ai',
       title: 'Send to AI',
       method: 'GET / POST',
-      summary: '`op: "ai-send"` sends a completed response to Claude on Amazon Bedrock (`anthropic.claude-opus-5-5`, us-east-2) with a stored prompt, server to server. The message holds every question\u2019s full text with the answer labels and the scored result, never contact details, followed by the prompt. It runs in the background (action `ai-analysis`): the reply is `201` with a `queued` analysis; poll `GET ?dataset=ai-analyses&responseId=` until `status` is `done` or `failed`. Replies are stored in `ai_analyses`.',
+      summary: '`op: "ai-send"` sends a completed response to Claude on Amazon Bedrock (`us.anthropic.claude-sonnet-5-5`, us-east-2) using the same shared Settings prompt, skill/resources, template and assessment input as Finish & Wrap Up. Contact details are excluded. It runs in the background (action `ai-analysis`): the reply is `201` with a `queued` analysis; poll `GET ?dataset=ai-analyses&responseId=` until `status` is `done` or `failed`. Replies are stored in `ai_analyses`.',
       fields: [
         ['op', '"ai-send"', 'POST', ''],
         ['responseId', 'uuid', 'yes', 'A completed response. For `GET ?dataset=ai-analyses`, the response whose analyses to list.'],
-        ['promptId', 'uuid', 'ai-send', 'A prompt saved on the Settings page.'],
         ['editor', 'string', 'no', 'Who sent it (stored as `createdBy`).'],
       ],
       success: {
@@ -897,19 +957,19 @@ const adminApi = {
           ok: true,
           responseId: '<responseId>',
           analyses: [{
-            analysisId: '<analysisId>', responseId: '<responseId>', status: 'done', error: '', promptId: '<promptId>', promptName: 'Executive summary', model: 'anthropic.claude-opus-5-5', output: '…Claude\u2019s reply…', stopReason: 'end_turn', usage: { inputTokens: 1800, outputTokens: 650 }, input: 'Assessment: …\n\n## Start here\n\nQuestion: Where\u2019s your focus?\nAnswer: Understanding your customers\n…', createdAt: NOW, createdBy: 'jordan.rivera@example.com', finishedAt: NOW,
+            analysisId: '<analysisId>', responseId: '<responseId>', status: 'done', error: '', promptId: '<promptId>', promptName: 'Shared guide', model: 'us.anthropic.claude-sonnet-5-5', output: '…Claude\u2019s reply…', stopReason: 'end_turn', usage: { inputTokens: 1800, outputTokens: 650 }, input: 'Assessment: …\n\n## Start here\n\nQuestion: Where\u2019s your focus?\nAnswer: Understanding your customers\n…', createdAt: NOW, createdBy: 'jordan.rivera@example.com', finishedAt: NOW,
           }],
         }),
       },
       errors: [
         { status: 201, when: 'ai-send queued the analysis', body: json({ ok: true, analysis: { analysisId: '<analysisId>', status: 'queued', '...': '...' } }) },
-        { status: 400, when: 'The response is not completed, the prompt is unknown, or no API key is saved', body: json({ ok: false, error: 'only completed assessments can be sent to AI' }) },
+        { status: 400, when: 'The response is not completed, the wrap-up skill is missing, or no API key is saved', body: json({ ok: false, error: 'only completed assessments can be sent to AI' }) },
         { status: 404, when: 'Unknown responseId', body: json({ ok: false, error: 'not found' }) },
         { status: 409, when: 'An analysis of this response is already queued or running', body: json({ ok: false, error: 'an analysis of this assessment is already running' }) },
         { status: 200, when: 'Failed analyses are listed with a short reason (e.g. the key was rejected); one stuck for 15 minutes is reported as failed', body: json({ ok: true, analyses: [{ status: 'failed', error: 'The API key was rejected by Amazon Bedrock. Replace it on the Settings page.', '...': '...' }] }) },
       ],
-      curl: [curlPost('assessments-admin', { op: 'ai-send', responseId: '<responseId>', promptId: '<promptId>' }, ADMIN_CURL_HEADERS), '', '# poll for the reply', curlGet('assessments-admin', 'dataset=ai-analyses&responseId=<responseId>', ADMIN_CURL_HEADERS)].join('\n'),
-      fetch: fetchPost('assessments-admin', { op: 'ai-send', responseId: '<responseId>', promptId: '<promptId>' }, ADMIN_FETCH_HEADERS + ', '),
+      curl: [curlPost('assessments-admin', { op: 'ai-send', responseId: '<responseId>' }, ADMIN_CURL_HEADERS), '', '# poll for the reply', curlGet('assessments-admin', 'dataset=ai-analyses&responseId=<responseId>', ADMIN_CURL_HEADERS)].join('\n'),
+      fetch: fetchPost('assessments-admin', { op: 'ai-send', responseId: '<responseId>' }, ADMIN_FETCH_HEADERS + ', '),
     },
     {
       id: 'admin-delete',
