@@ -43,6 +43,38 @@ test('the facilitator page takes its view from the link and saves as facilitator
   assert.ok(!/assessment:'self-guided'|assessment=self-guided/.test(FAC))
 })
 
+test('the public landing page links to each environment and routes admin links through its IMS org', () => {
+  const webSrc = path.join(__dirname, '..', 'web-src')
+  const landing = fs.readFileSync(path.join(webSrc, 'index.html'), 'utf8')
+  const admin = fs.readFileSync(path.join(webSrc, 'admin.html'), 'utf8')
+  assert.ok(landing.includes('href="./admin.html"'))
+  for (const host of ['20409-157ochretakin-stage', '20409-157ochretakin']) {
+    assert.ok(landing.includes(`https://${host}.adobeio-static.net/self-guided.html`))
+    assert.ok(landing.includes(`https://${host}.adobeio-static.net/facilitator.html?view=practitioner`))
+    assert.ok(landing.includes(`https://${host}.adobeio-static.net/facilitator.html?view=executive`))
+    assert.ok(landing.includes(`https://${host}.adobeio-static.net/api/v1/web/marketingprototype/assessment-download?form=self-guided`))
+    assert.ok(landing.includes(`https://${host}.adobeio-static.net/api/v1/web/marketingprototype/assessment-download?form=facilitator`))
+    assert.ok(landing.includes(`https%3A%2F%2F${host}.adobeio-static.net%2Fadmin.html`))
+  }
+  assert.strictEqual((landing.match(/orgId=adobe-lamont-crook/g) || []).length, 2)
+  assert.strictEqual((landing.match(/Facilitator-led assessment/g) || []).length, 2)
+  assert.strictEqual((landing.match(/One form; choose a view/g) || []).length, 2)
+  assert.strictEqual((landing.match(/class="view-option"/g) || []).length, 4)
+  assert.strictEqual((landing.match(/class="download-link"/g) || []).length, 4)
+  assert.strictEqual((landing.match(/Download HTML for hosting/g) || []).length, 4)
+  assert.strictEqual((landing.match(/class="product-heading"/g) || []).length, 2)
+  assert.ok(landing.includes('Additional products will appear here as they become available.'))
+  assert.ok(!landing.includes('Facilitator — Practitioner'))
+  assert.ok(!landing.includes('Facilitator — Executive'))
+  const externalLinks = [...landing.matchAll(/<a\b[^>]*href="https?:\/\/[^"]*"[^>]*>/g)].map(([tag]) => tag)
+  assert.ok(externalLinks.length > 0)
+  for (const tag of externalLinks) {
+    assert.match(tag, /\btarget="_blank"/)
+    assert.match(tag, /\brel="noopener noreferrer"/)
+  }
+  assert.ok(admin.includes('src="./src/index.js"'))
+})
+
 test('every inline script parses', () => {
   for (const html of [SELF, FAC]) {
     for (const m of html.matchAll(/<script(?![^>]*\bsrc\b)[^>]*>([\s\S]*?)<\/script>/g)) new vm.Script(m[1])

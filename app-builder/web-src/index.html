@@ -1,49 +1,201 @@
 <!DOCTYPE html>
+<!--
+THESIS: An environment switchboard organized by product, not a generic assessment directory.
+OWN-WORLD: Adobe Spectrum neutrals, Adobe Clean UI typography, blue action links, compact borders, and clear focus.
+STORY: Choose an environment, then an AA-to-CJA assessment; future products can have their own groups.
+FIRST VIEWPORT: Product context and a concise instruction above equal Stage and Production panels.
+FORM: User-selected Adobe Spectrum, applied as a responsive two-column link hub without external fonts or components.
+-->
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <link rel="icon" type="image/png" href="./static/favicon-32.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="./static/favicon-192.png" sizes="192x192">
-    <link rel="icon" type="image/png" href="./static/favicon-512.png" sizes="512x512">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Viewer for CJA migration assessment submissions"
-    />
-    <link rel="apple-touch-icon" href="./static/favicon-192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
-    <link rel="manifest" href="./manifest.json" />
-        
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
+    <meta name="theme-color" content="#f8f8f8" />
+    <meta name="description" content="Guided Discovery assessment links for Stage and Production." />
+    <title>Guided Discovery</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Adobe Clean", "Source Sans Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: #2c2c2c;
+        background: #f8f8f8;
+        --canvas: #f8f8f8;
+        --surface: #fff;
+        --text: #2c2c2c;
+        --muted: #6e6e6e;
+        --border: #e1e1e1;
+        --border-hover: #b1b1b1;
+        --blue: #1473e6;
+        --blue-hover: #0d66d0;
+        --blue-focus: #2680eb;
+      }
 
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>Assessment profiles</title>
+      * { box-sizing: border-box; }
+      body { margin: 0; min-width: 320px; background: var(--canvas); color: var(--text); font-size: 15px; line-height: 1.5; }
+      a { color: inherit; }
+      a:focus-visible { outline: 2px solid var(--blue-focus); outline-offset: 3px; }
+
+      .site-header { background: var(--surface); border-bottom: 1px solid var(--border); }
+      .masthead { display: flex; align-items: center; max-width: 1120px; min-height: 60px; margin: 0 auto; padding: 0 24px; }
+      .brand { color: var(--text); font-size: 16px; font-weight: 700; letter-spacing: -.01em; text-decoration: none; }
+
+      main { max-width: 1120px; margin: 0 auto; padding: 44px 24px 40px; }
+      .page-intro { margin-bottom: 28px; }
+      h1 { margin: 0; font-size: clamp(28px, 4vw, 36px); font-weight: 700; letter-spacing: -.025em; line-height: 1.2; }
+      .page-intro p { max-width: 62ch; margin: 10px 0 0; color: var(--muted); font-size: 16px; }
+
+      .environments { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+      .environment { min-width: 0; overflow: hidden; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+      .environment-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 20px; border-bottom: 1px solid var(--border); }
+      h2 { margin: 0; font-size: 20px; font-weight: 700; line-height: 1.3; }
+      .environment-label { color: var(--muted); font-size: 13px; }
+      .environment-content { padding: 16px 20px 20px; }
+      h3 { margin: 0 0 8px; color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+      .product-heading { margin: 0 0 12px; color: var(--text); font-size: 17px; font-weight: 700; letter-spacing: -.01em; text-transform: none; }
+      .assessment-label { margin: 0 0 8px; color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+      .link-list { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+      .resource-link { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 56px; padding: 9px 10px; border: 1px solid transparent; border-radius: 4px; text-decoration: none; transition: background-color 120ms ease, border-color 120ms ease; }
+      .resource-link:hover { border-color: var(--border); background: #f8f8f8; }
+      .resource-copy { display: grid; gap: 1px; min-width: 0; }
+      .resource-title { font-weight: 600; }
+      .resource-description { color: var(--muted); font-size: 13px; }
+      .resource-link:hover .resource-title { color: var(--blue-hover); }
+      .resource-arrow { flex: none; color: var(--blue); font-size: 20px; line-height: 1; }
+      .assessment-row { display: flex; align-items: center; gap: 4px; }
+      .assessment-row .resource-link { flex: 1; min-width: 0; }
+      .download-link { display: grid; flex: none; place-items: center; width: 44px; height: 44px; border: 1px solid var(--border); border-radius: 4px; color: var(--blue); }
+      .download-link:hover { border-color: #b1d5ff; background: #f2f8ff; color: var(--blue-hover); }
+      .download-link svg { width: 20px; height: 20px; }
+      .facilitator-entry { display: grid; grid-template-columns: minmax(0, 1fr) 44px; grid-template-areas: "copy download" "views download"; align-items: center; column-gap: 12px; row-gap: 8px; padding: 11px 0 12px 10px; border-radius: 4px; }
+      .facilitator-entry .resource-copy { grid-area: copy; }
+      .facilitator-entry .download-link { grid-area: download; }
+      .view-options { display: flex; grid-area: views; flex-wrap: wrap; gap: 8px; }
+      .view-option { padding: 3px 8px; border: 1px solid var(--border); border-radius: 4px; color: var(--blue-hover); font-size: 13px; font-weight: 600; text-decoration: none; }
+      .view-option:hover { border-color: #b1d5ff; background: #f2f8ff; }
+      .admin-group { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+      .admin-link .resource-title { color: var(--blue-hover); }
+
+      .access-note { display: flex; align-items: flex-start; gap: 10px; margin-top: 20px; padding: 14px 16px; border: 1px solid #d3e6ff; border-radius: 6px; background: #f2f8ff; }
+      .info-icon { display: grid; flex: none; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--blue); color: white; font-size: 13px; font-weight: 700; line-height: 1; }
+      .access-note p { margin: 0; }
+      .access-note strong { font-weight: 700; }
+
+      @media (max-width: 700px) {
+        main { padding-top: 32px; }
+        .environments { grid-template-columns: 1fr; gap: 16px; }
+      }
+
+      @media (max-width: 420px) {
+        .masthead { min-height: 54px; padding: 0 16px; }
+        main { padding: 28px 16px 32px; }
+        .environment-heading { padding: 16px; }
+        .environment-content { padding: 14px 14px 16px; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+      }
+    </style>
   </head>
   <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <!-- public self-guided assessment page (no sign-in); linking it here makes the build publish it -->
-    <a href="./self-guided.html" hidden>Self-guided assessment</a>
-    <div id="root"></div>
-    <script type="module" src="./src/index.js" async="true"></script>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
-
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
-
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
+    <header class="site-header">
+      <div class="masthead">
+        <a class="brand" href="./" aria-label="Guided Discovery home">Guided Discovery</a>
+      </div>
+    </header>
+    <a href="./admin.html" hidden>Admin viewer</a>
+    <main>
+      <div class="page-intro">
+        <h1>Choose an environment</h1>
+        <p>Select Stage or Production, then choose an AA-to-CJA assessment. Additional products will appear here as they become available.</p>
+      </div>
+      <div class="environments">
+        <section class="environment" aria-labelledby="stage-heading">
+          <div class="environment-heading">
+            <h2 id="stage-heading">Stage</h2>
+            <span class="environment-label">Testing environment</span>
+          </div>
+          <div class="environment-content">
+            <h3 class="product-heading">AA-to-CJA</h3>
+            <h4 class="assessment-label">Assessments</h4>
+            <ul class="link-list">
+              <li class="assessment-row"><a class="resource-link" href="https://20409-157ochretakin-stage.adobeio-static.net/self-guided.html" target="_blank" rel="noopener noreferrer">
+                <span class="resource-copy"><span class="resource-title">Self-guided assessment</span><span class="resource-description">Complete an assessment independently</span></span>
+                <span class="resource-arrow" aria-hidden="true">›</span>
+              </a><a class="download-link" href="https://20409-157ochretakin-stage.adobeio-static.net/api/v1/web/marketingprototype/assessment-download?form=self-guided" target="_blank" rel="noopener noreferrer" aria-label="Download the Stage self-guided assessment HTML" title="Download HTML for hosting">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v11"></path><path d="m7.5 10 4.5 4.5 4.5-4.5"></path><path d="M5 16v4h14v-4"></path></svg>
+              </a></li>
+              <li class="facilitator-entry">
+                <div class="resource-copy">
+                  <span class="resource-title">Facilitator-led assessment</span>
+                  <span class="resource-description">One form; choose a view</span>
+                </div>
+                <div class="view-options" aria-label="Facilitator assessment views">
+                  <a class="view-option" href="https://20409-157ochretakin-stage.adobeio-static.net/facilitator.html?view=practitioner" target="_blank" rel="noopener noreferrer">Practitioner view</a>
+                  <a class="view-option" href="https://20409-157ochretakin-stage.adobeio-static.net/facilitator.html?view=executive" target="_blank" rel="noopener noreferrer">Executive view</a>
+                </div>
+                <a class="download-link" href="https://20409-157ochretakin-stage.adobeio-static.net/api/v1/web/marketingprototype/assessment-download?form=facilitator" target="_blank" rel="noopener noreferrer" aria-label="Download the Stage facilitator-led assessment HTML" title="Download HTML for hosting">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v11"></path><path d="m7.5 10 4.5 4.5 4.5-4.5"></path><path d="M5 16v4h14v-4"></path></svg>
+                </a>
+              </li>
+            </ul>
+            <div class="admin-group">
+              <h3>Administration</h3>
+              <ul class="link-list">
+                <li><a class="resource-link admin-link" href="https://experience.adobe.com/?devMode=true&amp;orgId=adobe-lamont-crook#/custom-apps/?localDevUrl=https%3A%2F%2F20409-157ochretakin-stage.adobeio-static.net%2Fadmin.html" target="_blank" rel="noopener noreferrer">
+                  <span class="resource-copy"><span class="resource-title">Open admin viewer</span><span class="resource-description">Profiles, questions, settings, and API reference · Sign-in required</span></span>
+                  <span class="resource-arrow" aria-hidden="true">↗</span>
+                </a></li>
+              </ul>
+            </div>
+          </div>
+        </section>
+        <section class="environment" aria-labelledby="production-heading">
+          <div class="environment-heading">
+            <h2 id="production-heading">Production</h2>
+            <span class="environment-label">Live environment</span>
+          </div>
+          <div class="environment-content">
+            <h3 class="product-heading">AA-to-CJA</h3>
+            <h4 class="assessment-label">Assessments</h4>
+            <ul class="link-list">
+              <li class="assessment-row"><a class="resource-link" href="https://20409-157ochretakin.adobeio-static.net/self-guided.html" target="_blank" rel="noopener noreferrer">
+                <span class="resource-copy"><span class="resource-title">Self-guided assessment</span><span class="resource-description">Complete an assessment independently</span></span>
+                <span class="resource-arrow" aria-hidden="true">›</span>
+              </a><a class="download-link" href="https://20409-157ochretakin.adobeio-static.net/api/v1/web/marketingprototype/assessment-download?form=self-guided" target="_blank" rel="noopener noreferrer" aria-label="Download the Production self-guided assessment HTML" title="Download HTML for hosting">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v11"></path><path d="m7.5 10 4.5 4.5 4.5-4.5"></path><path d="M5 16v4h14v-4"></path></svg>
+              </a></li>
+              <li class="facilitator-entry">
+                <div class="resource-copy">
+                  <span class="resource-title">Facilitator-led assessment</span>
+                  <span class="resource-description">One form; choose a view</span>
+                </div>
+                <div class="view-options" aria-label="Facilitator assessment views">
+                  <a class="view-option" href="https://20409-157ochretakin.adobeio-static.net/facilitator.html?view=practitioner" target="_blank" rel="noopener noreferrer">Practitioner view</a>
+                  <a class="view-option" href="https://20409-157ochretakin.adobeio-static.net/facilitator.html?view=executive" target="_blank" rel="noopener noreferrer">Executive view</a>
+                </div>
+                <a class="download-link" href="https://20409-157ochretakin.adobeio-static.net/api/v1/web/marketingprototype/assessment-download?form=facilitator" target="_blank" rel="noopener noreferrer" aria-label="Download the Production facilitator-led assessment HTML" title="Download HTML for hosting">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v11"></path><path d="m7.5 10 4.5 4.5 4.5-4.5"></path><path d="M5 16v4h14v-4"></path></svg>
+                </a>
+              </li>
+            </ul>
+            <div class="admin-group">
+              <h3>Administration</h3>
+              <ul class="link-list">
+                <li><a class="resource-link admin-link" href="https://experience.adobe.com/?devMode=true&amp;orgId=adobe-lamont-crook#/custom-apps/?localDevUrl=https%3A%2F%2F20409-157ochretakin.adobeio-static.net%2Fadmin.html" target="_blank" rel="noopener noreferrer">
+                  <span class="resource-copy"><span class="resource-title">Open admin viewer</span><span class="resource-description">Profiles, questions, settings, and API reference · Sign-in required</span></span>
+                  <span class="resource-arrow" aria-hidden="true">↗</span>
+                </a></li>
+              </ul>
+            </div>
+          </div>
+        </section>
+      </div>
+      <aside class="access-note" aria-label="Sign-in information">
+        <span class="info-icon" aria-hidden="true">i</span>
+        <p>Assessment pages are public. Downloaded HTML is configured for its selected environment; hosting it on another domain requires that domain to be allowed by API CORS. The admin viewer opens in Adobe Experience Cloud and requires an Adobe sign-in for the Guided Discovery organization.</p>
+      </aside>
+    </main>
   </body>
 </html>

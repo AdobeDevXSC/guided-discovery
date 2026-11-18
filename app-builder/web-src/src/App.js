@@ -203,7 +203,7 @@ export default function App() {
     return <Notice title="Connecting to Experience Cloud…"><p>Waiting for your Adobe sign-in.</p></Notice>;
   }
   if (auth.status === 'outside') {
-    const shell = `https://experience.adobe.com/?devMode=true#/custom-apps/?localDevUrl=${encodeURIComponent(window.location.href.split('#')[0])}`;
+    const shell = `https://experience.adobe.com/?devMode=true&orgId=adobe-lamont-crook#/custom-apps/?localDevUrl=${encodeURIComponent(window.location.href.split('#')[0])}`;
     return (
       <Notice title="Open this app in Experience Cloud Shell">
         <p>
