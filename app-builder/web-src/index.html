@@ -67,10 +67,10 @@ FORM: User-selected Adobe Spectrum, applied as a responsive two-column link hub 
       .download-link { display: grid; flex: none; place-items: center; width: 44px; height: 44px; border: 1px solid var(--border); border-radius: 4px; color: var(--blue); }
       .download-link:hover { border-color: #b1d5ff; background: #f2f8ff; color: var(--blue-hover); }
       .download-link svg { width: 20px; height: 20px; }
-      .facilitator-entry { padding: 11px 10px 12px; border-radius: 4px; }
-      .facilitator-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-      .facilitator-heading .resource-copy { min-width: 0; }
-      .view-options { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+      .facilitator-entry { display: grid; grid-template-columns: minmax(0, 1fr) 44px; grid-template-areas: "copy download" "views download"; align-items: center; column-gap: 12px; row-gap: 8px; padding: 11px 10px 12px; border-radius: 4px; }
+      .facilitator-entry .resource-copy { grid-area: copy; }
+      .facilitator-entry .download-link { grid-area: download; }
+      .view-options { display: flex; grid-area: views; flex-wrap: wrap; gap: 8px; }
       .view-option { padding: 3px 8px; border: 1px solid var(--border); border-radius: 4px; color: var(--blue-hover); font-size: 13px; font-weight: 600; text-decoration: none; }
       .view-option:hover { border-color: #b1d5ff; background: #f2f8ff; }
       .admin-group { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
@@ -127,19 +127,17 @@ FORM: User-selected Adobe Spectrum, applied as a responsive two-column link hub 
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v11"></path><path d="m7.5 10 4.5 4.5 4.5-4.5"></path><path d="M5 16v4h14v-4"></path></svg>
               </a></li>
               <li class="facilitator-entry">
-                <div class="facilitator-heading">
-                  <div class="resource-copy">
-                    <span class="resource-title">Facilitator-led assessment</span>
-                    <span class="resource-description">One form; choose a view</span>
-                  </div>
-                  <a class="download-link" href="https://20409-157ochretakin-stage.adobeio-static.net/api/v1/web/marketingprototype/assessment-download?form=facilitator" target="_blank" rel="noopener noreferrer" aria-label="Download the Stage facilitator-led assessment HTML" title="Download HTML for hosting">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v11"></path><path d="m7.5 10 4.5 4.5 4.5-4.5"></path><path d="M5 16v4h14v-4"></path></svg>
-                  </a>
+                <div class="resource-copy">
+                  <span class="resource-title">Facilitator-led assessment</span>
+                  <span class="resource-description">One form; choose a view</span>
                 </div>
                 <div class="view-options" aria-label="Facilitator assessment views">
                   <a class="view-option" href="https://20409-157ochretakin-stage.adobeio-static.net/facilitator.html?view=practitioner" target="_blank" rel="noopener noreferrer">Practitioner view</a>
                   <a class="view-option" href="https://20409-157ochretakin-stage.adobeio-static.net/facilitator.html?view=executive" target="_blank" rel="noopener noreferrer">Executive view</a>
                 </div>
+                <a class="download-link" href="https://20409-157ochretakin-stage.adobeio-static.net/api/v1/web/marketingprototype/assessment-download?form=facilitator" target="_blank" rel="noopener noreferrer" aria-label="Download the Stage facilitator-led assessment HTML" title="Download HTML for hosting">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v11"></path><path d="m7.5 10 4.5 4.5 4.5-4.5"></path><path d="M5 16v4h14v-4"></path></svg>
+                </a>
               </li>
             </ul>
             <div class="admin-group">
@@ -169,19 +167,17 @@ FORM: User-selected Adobe Spectrum, applied as a responsive two-column link hub 
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v11"></path><path d="m7.5 10 4.5 4.5 4.5-4.5"></path><path d="M5 16v4h14v-4"></path></svg>
               </a></li>
               <li class="facilitator-entry">
-                <div class="facilitator-heading">
-                  <div class="resource-copy">
-                    <span class="resource-title">Facilitator-led assessment</span>
-                    <span class="resource-description">One form; choose a view</span>
-                  </div>
-                  <a class="download-link" href="https://20409-157ochretakin.adobeio-static.net/api/v1/web/marketingprototype/assessment-download?form=facilitator" target="_blank" rel="noopener noreferrer" aria-label="Download the Production facilitator-led assessment HTML" title="Download HTML for hosting">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v11"></path><path d="m7.5 10 4.5 4.5 4.5-4.5"></path><path d="M5 16v4h14v-4"></path></svg>
-                  </a>
+                <div class="resource-copy">
+                  <span class="resource-title">Facilitator-led assessment</span>
+                  <span class="resource-description">One form; choose a view</span>
                 </div>
                 <div class="view-options" aria-label="Facilitator assessment views">
                   <a class="view-option" href="https://20409-157ochretakin.adobeio-static.net/facilitator.html?view=practitioner" target="_blank" rel="noopener noreferrer">Practitioner view</a>
                   <a class="view-option" href="https://20409-157ochretakin.adobeio-static.net/facilitator.html?view=executive" target="_blank" rel="noopener noreferrer">Executive view</a>
                 </div>
+                <a class="download-link" href="https://20409-157ochretakin.adobeio-static.net/api/v1/web/marketingprototype/assessment-download?form=facilitator" target="_blank" rel="noopener noreferrer" aria-label="Download the Production facilitator-led assessment HTML" title="Download HTML for hosting">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v11"></path><path d="m7.5 10 4.5 4.5 4.5-4.5"></path><path d="M5 16v4h14v-4"></path></svg>
+                </a>
               </li>
             </ul>
             <div class="admin-group">
