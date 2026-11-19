@@ -33,12 +33,21 @@ function Entry({
 }) {
   const [confirming, setConfirming] = useState(false);
   useEffect(() => { setConfirming(false); }, [entry.analysisId]);
+  const busy = entry.status === 'queued' || entry.status === 'running';
   return (
     <aside className="detail question-editor" aria-label="LLM query">
       <div className="detail-head">
         <h2>LLM query</h2>
         <div className="actions">
-          <button type="button" className="primary" onClick={onRerun} disabled={rerunning || deleting}>{rerunning ? 'Sending…' : 'Rerun'}</button>
+          <button
+            type="button"
+            className="primary"
+            onClick={onRerun}
+            disabled={rerunning || deleting || busy}
+            title={busy ? 'Wait for this query to finish before running it again' : undefined}
+          >
+            {rerunning ? 'Sending…' : 'Rerun'}
+          </button>
           {!confirming ? (
             <button type="button" className="ghost" onClick={() => setConfirming(true)} disabled={deleting}>Delete</button>
           ) : (
