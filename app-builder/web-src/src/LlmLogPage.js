@@ -18,6 +18,31 @@ const deckUrl = (e) => (GUIDE && e.trigger === 'wrapup' && e.status === 'done' &
   ? `${GUIDE}?op=wrapup-status&format=html&responseId=${encodeURIComponent(e.responseId)}&analysisId=${encodeURIComponent(e.analysisId)}`
   : '');
 
+// Open the deck, or copy its link to paste into a new tab (a click inside the Experience Cloud shell can be
+// intercepted by it). If the browser blocks clipboard access here, the link is shown selected so it can be copied by hand.
+function DeckLink({ url }) {
+  const [state, setState] = useState('');
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setState('copied');
+    } catch (e) { setState('manual'); }
+  };
+  return (
+    <div>
+      <p>
+        <a className="primary" href={url} target="_blank" rel="noopener noreferrer">Open deck</a>
+        {' '}
+        <button type="button" className="ghost" onClick={copy}>{state === 'copied' ? 'Link copied' : 'Copy link'}</button>
+        <span className="muted small"> Anyone with this link can view the deck.</span>
+      </p>
+      {state === 'manual' && (
+        <input type="text" readOnly value={url} onFocus={(e) => e.target.select()} aria-label="Deck link" style={{ width: '100%' }} />
+      )}
+    </div>
+  );
+}
+
 function Block({ title, text }) {
   if (!text) return null;
   return (
@@ -80,12 +105,7 @@ function Entry({
       <Block title="Prompt" text={entry.promptText} />
       <Block title="Assessment sent" text={entry.input} />
       <Block title="Claude's JSON (filled into the template)" text={entry.rawOutput} />
-      {deckUrl(entry) && (
-        <p>
-          <a className="primary" href={deckUrl(entry)} target="_blank" rel="noopener noreferrer">Open deck</a>
-          <span className="muted small"> Opens the finished deck in a new tab. Anyone with this link can view it.</span>
-        </p>
-      )}
+      {deckUrl(entry) && <DeckLink url={deckUrl(entry)} key={entry.analysisId} />}
       <Block title="Reply" text={entry.output} />
     </aside>
   );
