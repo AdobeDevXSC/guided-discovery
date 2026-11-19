@@ -264,7 +264,8 @@ async function llmRerun (params) {
 
 // Facts shown in a template preview (a real wrap-up computes them from the scoring rules)
 const SAMPLE_COMPUTED = {
-  company: 'Sample company', date: 'January 1, 2027', readinessPct: 62, band: 'Building your case',
+  company: 'XYZ Company', contactName: 'Jordan Lee', email: 'jordan.lee@xyzcompany.com',
+  contactLine: 'Jordan Lee | jordan.lee@xyzcompany.com', date: 'January 1, 2027', readinessPct: 62, band: 'Building your case',
   engagement: { label: 'Standard', title: 'Standard engagement', duration: '6 weeks' },
   capabilities: [{ label: 'Connected Data', description: 'Sample description' }, { label: 'Journey Mapping', description: 'Sample description' }],
   capabilityCount: 2

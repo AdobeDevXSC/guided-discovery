@@ -43,8 +43,14 @@ function computedFacts ({ assessment, response, profile }) {
   })
   const p = profile || {}
   const when = new Date(response.completedAt || Date.now())
+  // Contact details fill the template server side; they are never part of what is sent to Claude.
+  const contactName = [p.firstName, p.lastName].filter(Boolean).join(' ').slice(0, 200)
+  const email = String(p.email || '').slice(0, 200)
   return {
     company: String(p.organization || p.company || p.companyName || '').slice(0, 200),
+    contactName,
+    email,
+    contactLine: [contactName, email].filter(Boolean).join(' | '),
     date: when.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' }),
     readinessPct: typeof r.readinessPct === 'number' ? Math.round(r.readinessPct * 100) : null,
     band: r.headline ? labelOf(rules.headlines, r.headline) : '',
