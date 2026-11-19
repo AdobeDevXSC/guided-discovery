@@ -458,6 +458,22 @@ async function wrapupStatus (params) {
       const d = await findOneOrNull(client.collection(ai.ANALYSES_COLLECTION), { analysisId })
       if (!d || d.responseId !== responseId || d.trigger !== 'wrapup') return reply(404, { ok: false, error: 'not found' })
       const a = ai.publicAnalysis(d)
+      // format=html: a finished HTML deck as a page, so the link can be opened or shared (the two ids are the secret)
+      if (params.format === 'html') {
+        const deck = a.status === 'done' ? ai.deckDocument(a.output) : null
+        if (!deck) return reply(404, { ok: false, error: a.status === 'done' ? 'this reply is not an HTML deck' : 'the deck is not ready' })
+        return {
+          statusCode: 200,
+          headers: {
+            'Content-Type': 'text/html; charset=utf-8',
+            'Cache-Control': 'no-store',
+            'X-Content-Type-Options': 'nosniff',
+            'X-Robots-Tag': 'noindex, nofollow',
+            'Referrer-Policy': 'no-referrer'
+          },
+          body: deck
+        }
+      }
       const body = { ok: true, analysisId, status: a.status, output: a.status === 'done' ? a.output : '', error: a.status === 'failed' ? a.error : '' }
       // format=pdf: the reply typeset as a PDF (base64), only once it is done
       if (params.format === 'pdf' && a.status === 'done' && a.output && !/^\s*(```(html)?\s*)?(<!doctype html|<html[\s>])/i.test(a.output)) {

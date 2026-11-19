@@ -5905,15 +5905,10 @@ window.addEventListener('beforeunload',e=>{if(state.responseId&&pending){e.preve
       if (MODERNIZATION_GUIDE.downloadUrl && MODERNIZATION_GUIDE.downloadUrl.startsWith('blob:')) URL.revokeObjectURL(MODERNIZATION_GUIDE.downloadUrl);
       const base = CONFIG.client.name.replace(/\s+/g, '-') + '-Analytics-Modernization-Guide';
       if (isHtml) {
-        // an HTML deck is saved as a PDF by the browser: Download guide opens it in a new tab and starts the
-        // print dialog (Save as PDF); the deck's own styles and its Save as PDF button do the rest
-        const title = base.replace(/[<>&"]/g, '');
-        const printable = res.output
-          .replace(/^\s*```(html)?[ \t]*\n/i, '') // a reply saved before fences were removed
-          .replace(/(<\/html>)[\s\S]*$/i, '$1') // drop any commentary after the document
-          .replace(/<title>[\s\S]*?<\/title>/i, '<title>' + title + '</title>')
-          .replace(/<\/body>/i, '<script>addEventListener("load",function(){setTimeout(function(){print()},800)})<\/script></body>');
-        MODERNIZATION_GUIDE.downloadUrl = URL.createObjectURL(new Blob([printable], { type: 'text/html' }));
+        // an HTML deck is a link: Download guide opens the hosted deck in a new tab (the same link can be shared);
+        // the deck's own Save as PDF button saves it as a PDF
+        MODERNIZATION_GUIDE.downloadUrl = BASE + '/guided-discovery?op=wrapup-status&format=html&responseId=' + encodeURIComponent(state.responseId)
+          + '&analysisId=' + encodeURIComponent(sent.analysisId);
         MODERNIZATION_GUIDE.fileName = base + '.pdf';
         MODERNIZATION_GUIDE.fileType = 'application/pdf';
         window.WRAPUP_GUIDE.printable = true;

@@ -66,6 +66,13 @@ function unfenceHtml (text) {
   return m && /^\s*(<!doctype html|<html[\s>])/i.test(m[1]) ? m[1].trim() : text
 }
 
+/** A finished reply that is an HTML document (e.g. a deck) as a clean standalone page, otherwise null. */
+function deckDocument (output) {
+  const text = String(output || '').replace(/^\s*```(?:html)?[ \t]*\n/i, '') // a reply saved before fences were removed
+  if (!/^\s*(<!doctype html|<html[\s>])/i.test(text)) return null
+  return text.replace(/(<\/html>)[\s\S]*$/i, '$1') // drop any commentary after the document
+}
+
 const STATUSES = ['queued', 'running', 'done', 'failed']
 const MODEL = 'us.anthropic.claude-sonnet-5-5' // Bedrock inference profile (cross-region, us)
 const REGION = 'us-east-2' // https://bedrock-runtime.us-east-2.amazonaws.com
@@ -209,6 +216,7 @@ module.exports = {
   profileLines,
   computedFacts,
   unfenceHtml,
+  deckDocument,
   MODEL,
   REGION,
   buildInput,

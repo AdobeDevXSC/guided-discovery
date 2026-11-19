@@ -154,3 +154,14 @@ describe('wrap-up deck template', () => {
     expect(ai.unfenceHtml('```js\nconsole.log(1)\n```')).toBe('```js\nconsole.log(1)\n```')
   })
 })
+
+describe('deckDocument', () => {
+  const ai = require('../actions/lib/ai')
+  test('an HTML reply becomes a standalone page, without a fence or trailing notes', () => {
+    expect(ai.deckDocument('```html\n<!doctype html><html><body>x</body></html>\nNotes')).toBe('<!doctype html><html><body>x</body></html>')
+  })
+  test('a reply that is not HTML is not a deck', () => {
+    expect(ai.deckDocument('# Guide\n\nText')).toBeNull()
+    expect(ai.deckDocument('')).toBeNull()
+  })
+})

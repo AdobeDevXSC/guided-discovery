@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { fetchLlmLog, fetchLlmLogEntry, deleteLlmEntry, rerunLlmEntry } from './api';
 import { fmt } from './Detail';
+import actions from './config.json';
 
 // LLM log: every query sent to the model, newest first - the admin's "Send to AI" and the wrap-up
 // that runs when a user finishes the assessment. Click a row for the full system prompt, prompt,
@@ -10,6 +11,12 @@ const denied = (e) => e && (e.status === 401 || e.status === 403);
 const TRIGGER_LABELS = { manual: 'Admin', wrapup: 'Wrap-up' };
 const secs = (ms) => (typeof ms === 'number' ? `${(ms / 1000).toFixed(1)}s` : '—');
 const tokens = (u) => (u ? `${u.inputTokens} in / ${u.outputTokens} out` : '—');
+
+// A finished wrap-up whose reply is an HTML deck has a public page (the response and analysis ids are the secret).
+const GUIDE = actions['marketingprototype/guided-discovery'] || actions['guided-discovery'];
+const deckUrl = (e) => (GUIDE && e.trigger === 'wrapup' && e.status === 'done' && /^\s*(```(html)?\s*)?(<!doctype html|<html[\s>])/i.test(e.output || '')
+  ? `${GUIDE}?op=wrapup-status&format=html&responseId=${encodeURIComponent(e.responseId)}&analysisId=${encodeURIComponent(e.analysisId)}`
+  : '');
 
 function Block({ title, text }) {
   if (!text) return null;
@@ -64,6 +71,12 @@ function Entry({
       <Block title="Prompt" text={entry.promptText} />
       <Block title="Assessment sent" text={entry.input} />
       <Block title="Claude's JSON (filled into the template)" text={entry.rawOutput} />
+      {deckUrl(entry) && (
+        <p>
+          <a className="primary" href={deckUrl(entry)} target="_blank" rel="noopener noreferrer">Open deck</a>
+          <span className="muted small"> Opens the finished deck in a new tab. Anyone with this link can view it.</span>
+        </p>
+      )}
       <Block title="Reply" text={entry.output} />
     </aside>
   );
