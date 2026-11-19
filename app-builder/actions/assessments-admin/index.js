@@ -226,6 +226,17 @@ async function llmRerun (params) {
         promptName = configuration.prompt && configuration.prompt.name ? configuration.prompt.name : 'Wrap-up guide'
         promptText = configuration.prompt && configuration.prompt.text ? configuration.prompt.text : ai.WRAPUP_PROMPT
       }
+      // A template is filled with facts computed again from the stored response and profile, so a run made before
+      // a new fact existed (e.g. the contact name) still gets it. Without the response, the old facts are kept.
+      let computed = old.computed || {}
+      if (templateText) {
+        const response = await findOneOrNull(client.collection(responses.COLLECTION), { responseId: old.responseId })
+        if (response) {
+          const submissionId = response.submissionId || old.submissionId
+          const profile = submissionId ? await findOneOrNull(client.collection(assessments.COLLECTION), { submissionId }) : null
+          computed = ai.computedFacts({ assessment: response.assessment, response, profile: profile && profile.profile })
+        }
+      }
       const doc = {
         analysisId: crypto.randomUUID(),
         responseId: old.responseId,
@@ -238,7 +249,7 @@ async function llmRerun (params) {
         ...(systemText ? { systemText } : {}),
         skillName,
         rerunOf: old.analysisId,
-        ...(templateText ? { templateText, computed: old.computed || {} } : {}),
+        ...(templateText ? { templateText, computed } : {}),
         model: ai.MODEL,
         input: old.input,
         status: 'queued',
