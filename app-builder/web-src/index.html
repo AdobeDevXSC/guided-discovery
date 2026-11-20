@@ -73,6 +73,11 @@ FORM: User-selected Adobe Spectrum, applied as a responsive two-column link hub 
       .view-options { display: flex; grid-area: views; flex-wrap: wrap; gap: 8px; }
       .view-option { padding: 3px 8px; border: 1px solid var(--border); border-radius: 4px; color: var(--blue-hover); font-size: 13px; font-weight: 600; text-decoration: none; }
       .view-option:hover { border-color: #b1d5ff; background: #f2f8ff; }
+      .endpoint-group { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+      .endpoint-group p { margin: 0 0 8px; color: var(--muted); font-size: 13px; }
+      .endpoint-url { display: flex; align-items: center; gap: 8px; margin: 0; padding: 9px 10px; border: 1px solid var(--border); border-radius: 4px; background: #f8f8f8; font-size: 13px; line-height: 1.4; }
+      .endpoint-method { flex: none; padding: 1px 6px; border-radius: 3px; background: var(--text); color: #fff; font-size: 11px; font-weight: 700; letter-spacing: .04em; }
+      .endpoint-url code { min-width: 0; overflow-wrap: anywhere; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; user-select: all; }
       .admin-group { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
       .admin-link .resource-title { color: var(--blue-hover); }
 
@@ -140,6 +145,11 @@ FORM: User-selected Adobe Spectrum, applied as a responsive two-column link hub 
                 </a>
               </li>
             </ul>
+            <div class="endpoint-group">
+              <h3>Form submission endpoint</h3>
+              <p>For reference: where the assessment form posts its profile and answers (JSON).</p>
+              <p class="endpoint-url"><span class="endpoint-method">POST</span><code>https://20409-157ochretakin-stage.adobeio-static.net/api/v1/web/marketingprototype/assessments</code></p>
+            </div>
             <div class="admin-group">
               <h3>Administration</h3>
               <ul class="link-list">
@@ -180,6 +190,11 @@ FORM: User-selected Adobe Spectrum, applied as a responsive two-column link hub 
                 </a>
               </li>
             </ul>
+            <div class="endpoint-group">
+              <h3>Form submission endpoint</h3>
+              <p>For reference: where the assessment form posts its profile and answers (JSON).</p>
+              <p class="endpoint-url"><span class="endpoint-method">POST</span><code>https://20409-157ochretakin.adobeio-static.net/api/v1/web/marketingprototype/assessments</code></p>
+            </div>
             <div class="admin-group">
               <h3>Administration</h3>
               <ul class="link-list">
