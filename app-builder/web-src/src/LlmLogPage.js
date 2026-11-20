@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { fetchLlmLog, fetchLlmLogEntry, deleteLlmEntry, rerunLlmEntry } from './api';
 import { fmt } from './Detail';
+import actions from './config.json';
 
 // LLM log: every query sent to the model, newest first - the admin's "Send to AI" and the wrap-up
 // that runs when a user finishes the assessment. Click a row for the full system prompt, prompt,
@@ -10,6 +11,37 @@ const denied = (e) => e && (e.status === 401 || e.status === 403);
 const TRIGGER_LABELS = { manual: 'Admin', wrapup: 'Wrap-up' };
 const secs = (ms) => (typeof ms === 'number' ? `${(ms / 1000).toFixed(1)}s` : '—');
 const tokens = (u) => (u ? `${u.inputTokens} in / ${u.outputTokens} out` : '—');
+
+// A finished wrap-up whose reply is an HTML deck has a public page (the response and analysis ids are the secret).
+const GUIDE = actions['marketingprototype/guided-discovery'] || actions['guided-discovery'];
+const deckUrl = (e) => (GUIDE && e.trigger === 'wrapup' && e.status === 'done' && /^\s*(```(html)?\s*)?(<!doctype html|<html[\s>])/i.test(e.output || '')
+  ? `${GUIDE}?op=wrapup-status&format=html&responseId=${encodeURIComponent(e.responseId)}&analysisId=${encodeURIComponent(e.analysisId)}`
+  : '');
+
+// Open the deck, or copy its link to paste into a new tab (a click inside the Experience Cloud shell can be
+// intercepted by it). If the browser blocks clipboard access here, the link is shown selected so it can be copied by hand.
+function DeckLink({ url }) {
+  const [state, setState] = useState('');
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setState('copied');
+    } catch (e) { setState('manual'); }
+  };
+  return (
+    <div>
+      <p>
+        <a className="primary" href={url} target="_blank" rel="noopener noreferrer">Open deck</a>
+        {' '}
+        <button type="button" className="ghost" onClick={copy}>{state === 'copied' ? 'Link copied' : 'Copy link'}</button>
+        <span className="muted small"> Anyone with this link can view the deck.</span>
+      </p>
+      {state === 'manual' && (
+        <input type="text" readOnly value={url} onFocus={(e) => e.target.select()} aria-label="Deck link" style={{ width: '100%' }} />
+      )}
+    </div>
+  );
+}
 
 function Block({ title, text }) {
   if (!text) return null;
@@ -26,12 +58,21 @@ function Entry({
 }) {
   const [confirming, setConfirming] = useState(false);
   useEffect(() => { setConfirming(false); }, [entry.analysisId]);
+  const busy = entry.status === 'queued' || entry.status === 'running';
   return (
     <aside className="detail question-editor" aria-label="LLM query">
       <div className="detail-head">
         <h2>LLM query</h2>
         <div className="actions">
-          <button type="button" className="primary" onClick={onRerun} disabled={rerunning || deleting}>{rerunning ? 'Sending…' : 'Rerun'}</button>
+          <button
+            type="button"
+            className="primary"
+            onClick={onRerun}
+            disabled={rerunning || deleting || busy}
+            title={busy ? 'Wait for this query to finish before running it again' : undefined}
+          >
+            {rerunning ? 'Sending…' : 'Rerun'}
+          </button>
           {!confirming ? (
             <button type="button" className="ghost" onClick={() => setConfirming(true)} disabled={deleting}>Delete</button>
           ) : (
@@ -64,6 +105,7 @@ function Entry({
       <Block title="Prompt" text={entry.promptText} />
       <Block title="Assessment sent" text={entry.input} />
       <Block title="Claude's JSON (filled into the template)" text={entry.rawOutput} />
+      {deckUrl(entry) && <DeckLink url={deckUrl(entry)} key={entry.analysisId} />}
       <Block title="Reply" text={entry.output} />
     </aside>
   );

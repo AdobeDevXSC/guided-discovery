@@ -137,7 +137,7 @@ body{font-family:var(--body);color:#000;-webkit-font-smoothing:antialiased}
 <!-- 1 Cover -->
 <div class="slide-wrap"><section class="slide cover">
 <h1 class="ct">Analytics modernization<br>assessment</h1>
-<div class="grp"><p class="co">{{computed.company}}</p></div>
+<div class="grp"><p class="co">{{computed.company}}</p>{{#if computed.contactLine}}<p class="cc">{{computed.contactLine}}</p>{{/if}}</div>
 <div class="ev"><p class="en">The Analytics Modernization Workshop</p><p>{{event_line}}</p></div>
 </section></div>
 {{!-- field event_line: workshop date and place, for example "Wednesday, December 2, 2026; San Jose" (or the date only) --}}

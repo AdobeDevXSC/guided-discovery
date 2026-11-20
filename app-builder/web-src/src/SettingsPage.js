@@ -99,7 +99,14 @@ const STARTER_TEMPLATE = `<!doctype html>
   * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   body { margin: 0; font-family: "Helvetica Neue", Arial, sans-serif; color: #2c2c2c; background: #e9e9e9; }
   .slide { width: 1920px; height: 1080px; padding: 120px 140px; background: #fff; break-after: page; page-break-after: always; }
-  .slide.dark { background: #1b1b1b; color: #fff; }
+  .slide.cover { position: relative; padding: 0; background: url(data:image/png;base64,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) 97px 945px/207px 50px no-repeat, linear-gradient(#eb1000, #eb1000) 0 0/20px 100% no-repeat, #000; color: #fff; }
+  .cover .ct { position: absolute; left: 96px; top: 170px; margin: 0; font: 900 108px/100px "Adobe Clean Display Black", "Adobe Clean", "Helvetica Neue", Arial, sans-serif; letter-spacing: -3px; }
+  .cover .grp { position: absolute; left: 96px; top: 520px; }
+  .cover .co { margin: 0; font-size: 56px; line-height: 64px; font-weight: 700; }
+  .cover .cc { margin: 16px 0 0; font-size: 36px; line-height: 44px; font-weight: 400; white-space: nowrap; }
+  .cover .ev { position: absolute; left: 96px; top: 770px; }
+  .cover .ev p { margin: 0; font-size: 34px; line-height: 44px; }
+  .cover .ev .en { font-weight: 700; }
   h1 { font-size: 88px; margin: 0 0 24px; }
   h2 { font-size: 56px; margin: 0 0 40px; }
   p, li { font-size: 32px; line-height: 1.45; }
@@ -109,10 +116,14 @@ const STARTER_TEMPLATE = `<!doctype html>
 </style>
 </head>
 <body>
-<section class="slide dark">
-  <p class="muted">{{computed.date}}</p>
-  <h1>{{headline}}</h1>
-  <p>{{computed.company}} | Analytics modernization assessment</p>
+<section class="slide cover">
+  <h1 class="ct">Analytics modernization<br>assessment</h1>
+  <div class="grp">
+    <p class="co">{{computed.company}}</p>
+    {{#if computed.contactLine}}<p class="cc">{{computed.contactLine}}</p>{{/if}}
+  </div>
+  <div class="ev"><p class="en">The Analytics Modernization Workshop</p><p>{{event_line}}</p></div>
+  {{!-- field event_line: workshop date and place, for example "Wednesday, December 2, 2026; San Jose" (or the date only) --}}
 </section>
 <section class="slide">
   <h2>Where you are today</h2>
@@ -193,7 +204,7 @@ function TemplateCard({
         Optional. HTML with <code>{'{{field}}'}</code> placeholders. When one is saved, Claude is asked only for the content as JSON
         and the guide is this template filled with it, which is much faster than writing the whole document.
         Use <code>{'{{#each list}}…{{/each}}'}</code> for repeated items and <code>{'{{computed.readinessPct}}'}</code>,
-        <code>{' {{computed.company}}'}</code>, <code>{'{{computed.band}}'}</code>, <code>{'{{computed.date}}'}</code>,
+        <code>{' {{computed.company}}'}</code>, <code>{'{{computed.contactName}}'}</code>, <code>{'{{computed.email}}'}</code> (from the profile), <code>{'{{computed.band}}'}</code>, <code>{'{{computed.date}}'}</code>,
         <code>{' {{computed.engagement.label}}'}</code> and <code>{'{{#each computed.capabilities}}{{label}}{{/each}}'}</code> for
         facts taken from the scoring rules. Claude&rsquo;s text is always escaped.
       </p>

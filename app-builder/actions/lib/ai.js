@@ -43,8 +43,14 @@ function computedFacts ({ assessment, response, profile }) {
   })
   const p = profile || {}
   const when = new Date(response.completedAt || Date.now())
+  // Contact details fill the template server side; they are never part of what is sent to Claude.
+  const contactName = [p.firstName, p.lastName].filter(Boolean).join(' ').slice(0, 200)
+  const email = String(p.email || '').slice(0, 200)
   return {
     company: String(p.organization || p.company || p.companyName || '').slice(0, 200),
+    contactName,
+    email,
+    contactLine: [contactName, email].filter(Boolean).join(' | '),
     date: when.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' }),
     readinessPct: typeof r.readinessPct === 'number' ? Math.round(r.readinessPct * 100) : null,
     band: r.headline ? labelOf(rules.headlines, r.headline) : '',
@@ -58,6 +64,13 @@ function computedFacts ({ assessment, response, profile }) {
 function unfenceHtml (text) {
   const m = String(text || '').match(/^\s*```(?:html)?[ \t]*\n([\s\S]*?)\n```/i)
   return m && /^\s*(<!doctype html|<html[\s>])/i.test(m[1]) ? m[1].trim() : text
+}
+
+/** A finished reply that is an HTML document (e.g. a deck) as a clean standalone page, otherwise null. */
+function deckDocument (output) {
+  const text = String(output || '').replace(/^\s*```(?:html)?[ \t]*\n/i, '') // a reply saved before fences were removed
+  if (!/^\s*(<!doctype html|<html[\s>])/i.test(text)) return null
+  return text.replace(/(<\/html>)[\s\S]*$/i, '$1') // drop any commentary after the document
 }
 
 const STATUSES = ['queued', 'running', 'done', 'failed']
@@ -203,6 +216,7 @@ module.exports = {
   profileLines,
   computedFacts,
   unfenceHtml,
+  deckDocument,
   MODEL,
   REGION,
   buildInput,
